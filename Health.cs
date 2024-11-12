@@ -2,15 +2,22 @@ using UnityEngine;
 
 public class Health : MonoBehaviour
 {   
-    [field: SerializeField] public bool IsAlive { get; private set; } = false;
-    public bool IsDead => !IsAlive;
+    public enum State
+    {
+        Alive, Dead
+    }
+
+    [field: SerializeField] public State Current { get; private set; } = State.Dead;
+
+    public bool IsAlive => Current == State.Alive;
+    public bool IsDead  => Current == State.Dead;
 
     [field: SerializeField] public int HP       { get; private set; } = 0;
     [field: SerializeField] public int MaxHP    { get; private set; } = 0;
     
     public delegate void OnHealedEvent(int heal);
     public delegate void OnDamagedEvent(int damage);
-    public delegate void OnDiedEvent();
+    public delegate void OnStateChangedEvent(State state);
      
     /// <summary>
     /// 힐을 받았을때 호출되는 이벤트입니다.
@@ -21,10 +28,15 @@ public class Health : MonoBehaviour
     /// </summary>
     public event OnDamagedEvent OnDamaged;
     /// <summary>
-    /// 죽었을때 호출되는 이벤트입니다.
+    /// 상태가 변화되었을떼 호출되는 이벤트입니다.
     /// </summary>
-    public event OnDiedEvent OnDied;
-    
+    public event OnStateChangedEvent OnStateChanged;
+
+    private void SetState(State state)
+    {
+        OnStateChanged?.Invoke(Current = state);
+    }
+
 /// <summary>
 /// 힐(체력 회복)을 받습니다.
 /// </summary>
@@ -107,7 +119,7 @@ public class Health : MonoBehaviour
     {
         HP = MaxHP;
 
-        IsAlive = true;
+        SetState(State.Alive);
     }
 
 /// <summary>
@@ -116,8 +128,6 @@ public class Health : MonoBehaviour
     public void Die() {
         HP = 0;
 
-        IsAlive = false;
-
-        OnDied?.Invoke();
+        SetState(State.Dead);
     }
 }

@@ -2,10 +2,41 @@ using UnityEngine;
 
 public class Timer
 {
+
+#region Enumerations
+
     public enum State
     {
         Started, Paused, Stopped
     }
+
+#endregion
+
+#region EventArgs
+
+    public struct StateChangedEventArgs
+    {
+        public State Previous;
+        public State Current;
+    }
+
+#endregion
+
+#region Events
+
+    public delegate void OnEndedEvent();
+    public delegate void OnStateChangedEvent(StateChangedEventArgs e);
+
+    /// <summary>
+    /// 타이머가 종료되었을때 호출되는 이벤트입니다.
+    /// </summary>
+    public event OnEndedEvent OnEnded;
+    /// <summary>
+    /// 상태가 변화되었을떼 호출되는 이벤트입니다.
+    /// </summary>
+    public event OnStateChangedEvent OnStateChanged;
+
+#endregion
 
     [field: SerializeField] public State Current { get; private set; } = State.Stopped;
 
@@ -21,23 +52,15 @@ public class Timer
     public float LeftTime01     => LeftTime / time;
     public float ElapsedTime01  => ElapsedTime / time;
 
-    public delegate void OnEndedEvent();
-    public delegate void OnStateChangedEvent(State state);
-
-    /// <summary>
-    /// 타이머가 종료되었을때 호출되는 이벤트입니다.
-    /// </summary>
-    public event OnEndedEvent OnEnded;
-    /// <summary>
-    /// 상태가 변화되었을떼 호출되는 이벤트입니다.
-    /// </summary>
-    public event OnStateChangedEvent OnStateChanged;
-
     private void SetState(State state)
     {
+        State previous = Current, current = state;
+
+        Current = current;
+
         WasEndedThisFrame = false;
 
-        OnStateChanged?.Invoke(Current = state);
+        OnStateChanged?.Invoke(new StateChangedEventArgs { Previous = previous, Current = current });
     }
     
     /// <summary>

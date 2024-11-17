@@ -1,27 +1,62 @@
+using UnityEditor;
 using UnityEngine;
 
 public class Health : MonoBehaviour
 {   
+
+#region Enumerations
+
     public enum State
     {
         Alive, Dead, None
     }
 
-    [field: SerializeField] public State Current { get; private set; } = State.None;
+#endregion
 
-    public bool IsAlive => Current == State.Alive;
-    public bool IsDead  => Current == State.Dead;
+#region EventArgs
 
-    [field: SerializeField] public bool AliveOnAwake  { get; set; } = true;
-    [field: SerializeField] public bool DestroyOnDead { get; set; } = true;
+    public struct HPChangedEventArgs
+    {
+        public int PreviousHP;
+        public int CurrentHP;
+        public int Delta;
+    }
+
+    public struct HealedEventArgs
+    {
+        public int PreviousHP;
+        public int CurrentHP;
+        public int Delta;
+        public int Value;
+    }
+
+    public struct DamagedEventArgs
+    {
+        public int PreviousHP;
+        public int CurrentHP;
+        public int Delta;
+        public int Value;
+    }
+
+    public struct StateChangedEventArgs
+    {
+        public State Previous;
+        public State Current;
+    }
+
+#endregion
+
+#region Events
+
+    public delegate void OnHPChangedEvent(HPChangedEventArgs e);
+    public delegate void OnHealedEvent(HealedEventArgs e);
+    public delegate void OnDamagedEvent(DamagedEventArgs e);
+    public delegate void OnStateChangedEvent(StateChangedEventArgs e);
     
-    [field: SerializeField] public int HP       { get; private set; } = 0;
-    [field: SerializeField] public int MaxHP    { get; private set; } = 0;
-    
-    public delegate void OnHealedEvent(int heal);
-    public delegate void OnDamagedEvent(int damage);
-    public delegate void OnStateChangedEvent(State state);
-    
+    /// <summary>
+    /// 체력이 변경되었을때 호출되는 이벤트입니다.
+    /// </summary>
+    public event OnHPChangedEvent OnHPChanged;
     /// <summary>
     /// 힐을 받았을때 호출되는 이벤트입니다.
     /// </summary>
@@ -35,6 +70,19 @@ public class Health : MonoBehaviour
     /// </summary>
     public event OnStateChangedEvent OnStateChanged;
 
+#endregion
+
+    [field: SerializeField] public State Current { get; private set; } = State.None;
+
+    public bool IsAlive => Current == State.Alive;
+    public bool IsDead  => Current == State.Dead;
+
+    [field: SerializeField] public bool AliveOnAwake  { get; set; } = true;
+    [field: SerializeField] public bool DestroyOnDead { get; set; } = true;
+    
+    [field: SerializeField] public int HP       { get; private set; } = 0;
+    [field: SerializeField] public int MaxHP    { get; private set; } = 0;
+
     private void Awake()
     {
         if (AliveOnAwake)
@@ -43,7 +91,7 @@ public class Health : MonoBehaviour
         }
     }
 
-    private void LateUpdate()
+    private void Update()
     {
         // 살아있는데
         if (IsAlive)
@@ -51,36 +99,42 @@ public class Health : MonoBehaviour
             // HP가 0이면
             if (HP == 0)
             {
-                // 죽습니다.
-                Die();
+                // 죽은 상태로 설정합니다.
+                SetDead();
             }
         }
     }
 
-    private void Die()
+    private void Destroy()
     {
-        if (DestroyOnDead)
-        {
-            gameObject.Despawn();
-        }
+        #if UNITY_EDITOR
+            if (!EditorApplication.isPlaying) return;
+        #endif
+        
+        gameObject.Despawn();
     }
     
     private void SetState(State state)
     {
-        Current = state;
+        State previous = Current; State current = state;
+
+        Current = current;
         
-        if (state == State.Alive)
+        if (current == State.Alive)
         {
             SetHP(MaxHP);
         }
         
-        OnStateChanged?.Invoke(state);
+        OnStateChanged?.Invoke(new StateChangedEventArgs { Previous = previous, Current = current });
 
-        if (state == State.Dead)
+        if (current == State.Dead)
         {
             SetHP(0);
 
-            Die();
+            if (DestroyOnDead)
+            {
+                Destroy();
+            }
         }
     }
 
@@ -106,17 +160,11 @@ public class Health : MonoBehaviour
     /// <param name="hp">체력 값</param>
     public void SetHP(int hp)
     {
-        SetHP(hp, out int delta);
-    }
+        int previousHP = HP;
 
-    /// <summary>
-    /// 체력을 설정합니다.
-    /// </summary>
-    /// <param name="hp">체력 값</param>
-    /// <param name="delta">변화 값</param>
-    public void SetHP(int hp, out int delta)
-    {
-        HP += (delta = Mathf.Clamp(hp, 0, MaxHP) - HP);
+        HP = Mathf.Clamp(hp, 0, MaxHP);
+
+        OnHPChanged?.Invoke(new HPChangedEventArgs { PreviousHP = previousHP, CurrentHP = HP, Delta = HP - previousHP });
     }
 
     /// <summary>
@@ -144,6 +192,11 @@ public class Health : MonoBehaviour
     /// <param name="heal">힐 값</param>
     public void TakeHeal(int heal)
     {
+        // 죽은 상태면 힐을 받지 않습니다.
+        if (IsDead) return;
+
+        int previousHP = HP;
+
         if (heal < 0) {
             #if UNITY_EDITOR
                 Debug.LogWarning("힐 값은 0보다 작을 수 없습니다.");
@@ -151,15 +204,12 @@ public class Health : MonoBehaviour
     
             heal = 0;
         }
-
-        // 죽은 상태면 힐을 받지 않습니다.
-        if (IsDead) return;
         
         // 체력을 회복합니다.
-        SetHP(HP + heal, out int delta);
+        SetHP(HP + heal);
 
         // 힐 이벤트 발생
-        OnHealed?.Invoke(delta);
+        OnHealed?.Invoke(new HealedEventArgs { PreviousHP = previousHP, CurrentHP = HP, Delta = HP - previousHP, Value = heal });
     }
 
     /// <summary>
@@ -168,6 +218,11 @@ public class Health : MonoBehaviour
     /// <param name="damage">데미지 값</param>
     public void TakeDamage(int damage)
     {
+        // 죽은 상태면 데미지를 입지 않습니다.
+        if (IsDead) return;
+        
+        int previousHP = HP;
+
         if (damage < 0) 
         {
             #if UNITY_EDITOR
@@ -177,13 +232,10 @@ public class Health : MonoBehaviour
             damage = 0;
         }
          
-        // 죽은 상태면 데미지를 입지 않습니다.
-        if (IsDead) return;
-        
         // 체력을 깎습니다.
-        SetHP(HP - damage, out int delta);
+        SetHP(HP - damage);
         
         // 데미지 이벤트 발생
-        OnDamaged?.Invoke(delta);
+        OnDamaged?.Invoke(new DamagedEventArgs { PreviousHP = previousHP, CurrentHP = HP, Delta = HP - previousHP, Value = damage });
     }
 }

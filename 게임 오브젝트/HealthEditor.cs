@@ -77,5 +77,10 @@ public class HealthEditor : Editor
             health.TakeDamage(damageValue);
         }
         EditorGUILayout.EndHorizontal();
+
+        if (GUI.changed)
+        {
+            EditorUtility.SetDirty(target);
+        }
     }
 }

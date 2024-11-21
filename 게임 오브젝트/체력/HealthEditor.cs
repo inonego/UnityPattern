@@ -1,6 +1,9 @@
 using UnityEditor;
 using UnityEngine;
 
+namespace inonego
+{
+
 [CustomEditor(typeof(Health))]
 public class HealthEditor : Editor
 {
@@ -83,4 +86,6 @@ public class HealthEditor : Editor
             EditorUtility.SetDirty(target);
         }
     }
+}
+
 }

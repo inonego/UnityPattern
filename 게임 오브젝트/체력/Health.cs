@@ -1,6 +1,9 @@
 using UnityEditor;
 using UnityEngine;
 
+namespace inonego
+{
+
 public class Health : MonoBehaviour
 {   
 
@@ -238,4 +241,6 @@ public class Health : MonoBehaviour
         // 데미지 이벤트 발생
         OnDamaged?.Invoke(new DamagedEventArgs { PreviousHP = previousHP, CurrentHP = HP, Delta = HP - previousHP, Value = damage });
     }
+}
+
 }

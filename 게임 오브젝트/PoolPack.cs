@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace inonego
+{
+
 [Serializable]
     public class Pool
     {
@@ -180,4 +183,6 @@ public static class PoolUtil
             GameObject.Destroy(GO);
         }
     }
+}
+
 }

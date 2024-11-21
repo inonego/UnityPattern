@@ -1,5 +1,8 @@
 using UnityEngine;
 
+namespace inonego
+{
+
 public class Timer
 {
 
@@ -130,4 +133,6 @@ public class Timer
             SetState(State.Started);
         }
     }
+}
+
 }

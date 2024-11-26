@@ -185,4 +185,9 @@ public static class PoolUtil
     }
 }
 
+public partial class Health
+{
+    private partial void Destroy() => gameObject.Despawn();
+}
+
 }

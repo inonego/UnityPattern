@@ -5,8 +5,26 @@ using UnityEngine;
 namespace inonego
 {
 
+using inonego.util;
+
 public class Timer
 {
+    public struct TimeDATA
+    {
+        public float Total      { get; private set; }
+        public float Current    { get; private set; }
+
+        public float LeftTime       => Current;
+        public float ElapsedTime    => Total - Current;
+        public float LeftTime01     => LeftTime / Total;
+        public float ElapsedTime01  => ElapsedTime / Total;
+
+        public void Set(float total, float current)
+        {
+            Total = total;
+            Current = current;
+        }
+    }
 
 #region Enumerations
 
@@ -19,33 +37,17 @@ public class Timer
 
 #region Events
 
-    public delegate void EventHandler();
-    public delegate void EventHandler<TEventArgs>(Timer sender, TEventArgs e);
-
-    [Flags]
-    private enum EventFlag
-    {
-        StateChanged    = 1 << 0,
-        Ended           = 1 << 1,
-    }
-
-    private class Event
-    {   
-        public EventFlag Flag;
-
-        public bool HasFlag(EventFlag eventFlag) => Flag.HasFlag(eventFlag);
-
-        public void Clear() => Flag = 0;
-    }
-
-    private Event @event;
-
     #region EventArgs
 
         public struct StateChangedEventArgs
         {
             public State Previous;
             public State Current;
+        }        
+        
+        public struct EndedEventArgs
+        {
+            // TODO
         }
 
     #endregion
@@ -53,11 +55,14 @@ public class Timer
     /// <summary>
     /// 상태가 변화되었을떼 호출되는 이벤트입니다.
     /// </summary>
-    public event EventHandler<StateChangedEventArgs> OnStateChanged;
+    public event Action<Timer, StateChangedEventArgs> OnStateChanged { add => OnStateChangedEvent += value; remove => OnStateChangedEvent -= value; }
+    private Event<Timer, StateChangedEventArgs> OnStateChangedEvent = new();
+
     /// <summary>
     /// 타이머가 종료되었을때 호출되는 이벤트입니다.
     /// </summary>
-    public event EventHandler OnEnded;
+    public event Action<Timer, EndedEventArgs> OnEnded { add => OnEndedEvent += value; remove => OnEndedEvent -= value; }
+    private Event<Timer, EndedEventArgs> OnEndedEvent = new();
 
 #endregion
 
@@ -65,20 +70,12 @@ public class Timer
 
     public bool IsWorking => Current == State.Started;
 
-    private float time      = 0f;
-    private float current   = 0f;
-
-    public float LeftTime       => current; 
-    public float ElapsedTime    => time - current;
-    public float LeftTime01     => LeftTime / time;
-    public float ElapsedTime01  => ElapsedTime / time;
+    public TimeDATA Time { get; private set; } = new();
 
     private State previous  = State.Stopped;
 
     private void Clear()
     {
-        @event.Clear();
-
         previous = Current;
     }
     
@@ -89,25 +86,20 @@ public class Timer
     {
         if (IsWorking)
         {
-            current -= Time.deltaTime;
+            Time.Set(total: Time.Total, current: Time.Current - UnityEngine.Time.deltaTime);
 
-            if (current <= 0f)
+            // 타이머의 시간이 0 이하가 되면 타이머를 종료합니다.
+            if (Time.Current <= 0f)
             {
                 Stop();
                 
-                @event.Flag |= EventFlag.Ended;
+                OnEndedEvent.SetDirty();
             }
         }
 
-        if (@event.HasFlag(EventFlag.StateChanged))
-        {
-            OnStateChanged?.Invoke(this, new StateChangedEventArgs { Previous = previous, Current = Current });
-        }
+        OnStateChangedEvent.InvokeIfDirty(this, new StateChangedEventArgs { Previous = previous, Current = Current });
 
-        if (@event.HasFlag(EventFlag.Ended))
-        {
-            OnEnded?.Invoke();
-        }
+        OnEndedEvent.InvokeIfDirty(this, new EndedEventArgs { });
 
         Clear();
     }
@@ -116,7 +108,7 @@ public class Timer
     {
         Current = state;
 
-        @event.Flag |= EventFlag.StateChanged;
+        OnStateChangedEvent.SetDirty();
     }
 
     /// <summary>
@@ -125,9 +117,9 @@ public class Timer
     /// <param name="time">시간 값</param>
     public void Start(float time)
     {
+        Time.Set(total: time, current: time);
+        
         SetState(State.Started);
-
-        this.time = current = time;
     }
 
     /// <summary>
@@ -137,9 +129,9 @@ public class Timer
     {
         if (Current != State.Stopped)
         {
-            SetState(State.Stopped);
+            Time.Set(total: 0f, current: 0f);
 
-            this.time = current = 0f;
+            SetState(State.Stopped);
         }
     }
 

@@ -1,5 +1,3 @@
-// #define USE_DEFAULT_DESTROY
-
 using System;
 
 using UnityEditor;
@@ -8,7 +6,9 @@ using UnityEngine;
 namespace inonego
 {
 
-public partial class Health : MonoBehaviour
+using inonego.util;
+
+public class HP : MonoBehaviour
 {   
 
 #region Enumerations
@@ -21,28 +21,6 @@ public partial class Health : MonoBehaviour
 
 #region Events
 
-    public delegate void EventHandler();
-    public delegate void EventHandler<TEventArgs>(Health sender, TEventArgs e);
-
-    [Flags]
-    private enum EventFlag
-    {
-        StateChanged    = 1 << 0,
-        HPChanged       = 1 << 1,
-        Applied         = 1 << 2,
-    }
-
-    private class Event
-    {   
-        public EventFlag Flag;
-
-        public bool HasFlag(EventFlag eventFlag) => Flag.HasFlag(eventFlag);
-
-        public void Clear() => Flag = 0;
-    }
-
-    private Event @event;
-
     #region EventArgs
 
         public struct StateChangedEventArgs
@@ -53,15 +31,15 @@ public partial class Health : MonoBehaviour
 
         public struct HPChangedEventArgs
         {
-            public int PreviousHP;
-            public int CurrentHP;
+            public int PreviousValue;
+            public int CurrentValue;
             public int Delta;
         }
 
         public struct AppliedEventArgs
         {
-            public int PreviousHP;
-            public int CurrentHP;
+            public int PreviousValue;
+            public int CurrentValue;
             public int Delta;
 
             public int? Heal;
@@ -73,41 +51,53 @@ public partial class Health : MonoBehaviour
     /// <summary>
     /// 상태가 변화되었을때 호출되는 이벤트입니다.
     /// </summary>
-    public event EventHandler<StateChangedEventArgs> OnStateChanged;
+    public Event<HP, StateChangedEventArgs> OnStateChangedEvent = new();
+    public event Action<HP, StateChangedEventArgs> OnStateChanged     { add => OnStateChangedEvent += value; remove => OnStateChangedEvent -= value; }
 
     /// <summary>
     /// 체력이 변경되었을때 호출되는 이벤트입니다.
     /// </summary>
-    public event EventHandler<HPChangedEventArgs> OnHPChanged;
+    public Event<HP, HPChangedEventArgs> OnHPChangedEvent = new();
+    public event Action<HP, HPChangedEventArgs> OnHPChanged           { add => OnHPChangedEvent += value; remove => OnHPChangedEvent -= value; }
+
     /// <summary>
     /// 힐이나 데미지가 적용되었을때 호출되는 이벤트입니다.
     /// </summary>
-    public event EventHandler<AppliedEventArgs> OnHealDamageApplied;
+    public Event<HP, AppliedEventArgs> OnAppliedEvent = new();
+    public event Action<HP, AppliedEventArgs> OnApplied               { add => OnAppliedEvent += value; remove => OnAppliedEvent -= value; }
 
 #endregion
 
+    /// <summary>
+    /// 현재 상태
+    /// </summary>
     [field: SerializeField] public State Current { get; private set; } = State.None;
 
+    /// <summary>
+    /// 살아있는 상태인지 여부
+    /// </summary>
     public bool IsAlive => Current == State.Alive;
+
+    /// <summary>
+    /// 죽어있는 상태인지 여부
+    /// </summary>
     public bool IsDead  => Current == State.Dead;
 
     [field: SerializeField] public bool AliveOnAwake  { get; set; } = true;
     [field: SerializeField] public bool DestroyOnDead { get; set; } = true;
     
-    [field: SerializeField] public int HP       { get; private set; } = 0;
-    [field: SerializeField] public int MaxHP    { get; private set; } = 0;
+    [field: SerializeField] public int Value       { get; private set; } = 0;
+    [field: SerializeField] public int MaxValue    { get; private set; } = 0;
 
     private State previous  = State.None;
-    private int previousHP  = 0;
+    private int previousValue  = 0;
     private int? heal       = null;
     private int? damage     = null;
 
     private void Clear()
     {
-        @event.Clear();
-
         previous   = Current;
-        previousHP = HP;
+        previousValue = Value;
         heal       = null;
         damage     = null;
     }
@@ -124,46 +114,36 @@ public partial class Health : MonoBehaviour
     {
         ProcessEvent();
 
+        // 이전 상태를 재설정합니다.
         Clear();
     }
 
-    #if USE_DEFAULT_DESTROY
-        // 기본적으로 게임 오브젝트를 파괴합니다.
-        private void Destroy() => Destroy(gameObject);
-    #else
-        // 다른 곳에서 Destroy에 대해서 정의하는 경우에만 사용하세요.
-        private partial void Destroy();
-    #endif
+    protected virtual void Destroy() => Destroy(gameObject);
 
+    /// <summary>
+    /// 이벤트를 처리합니다.
+    /// </summary>
     private void ProcessEvent()
     {
-        if (heal is not null || damage is not null) SetHP(HP + (heal ?? 0) - (damage ?? 0));
+        // 체력이 회복되거나 데미지를 입었을때 체력을 설정하도록 합니다.
+        if (heal is not null || damage is not null) SetHP(Value + (heal ?? 0) - (damage ?? 0));
 
-        if (@event.HasFlag(EventFlag.Applied))
-        {   
-            OnHealDamageApplied?.Invoke(this, new AppliedEventArgs { PreviousHP = previousHP, CurrentHP = HP, Delta = HP - previousHP, Heal = heal, Damage = damage });
-        }
-       
-        if (@event.HasFlag(EventFlag.HPChanged))
-        {
-            OnHPChanged?.Invoke(this, new HPChangedEventArgs { PreviousHP = previousHP, CurrentHP = HP, Delta = HP - previousHP });
-        }
+        OnAppliedEvent.InvokeIfDirty(this, new AppliedEventArgs { PreviousValue = previousValue, CurrentValue = Value, Delta = Value - previousValue, Heal = heal, Damage = damage });
+
+        OnHPChangedEvent.InvokeIfDirty(this, new HPChangedEventArgs { PreviousValue = previousValue, CurrentValue = Value, Delta = Value - previousValue });
 
         // 살아있는데
         if (IsAlive)
         {
             // HP가 0이면
-            if (HP == 0)
+            if (Value == 0)
             {
                 // 죽은 상태로 설정합니다.
                 SetDead();
             }
         }
 
-        if (@event.HasFlag(EventFlag.StateChanged))
-        {
-            OnStateChanged?.Invoke(this, new StateChangedEventArgs { Previous = previous, Current = Current });
-        }
+        OnStateChangedEvent.InvokeIfDirty(this, new StateChangedEventArgs { Previous = previous, Current = Current });
 
         if (IsDead)
         {
@@ -178,13 +158,17 @@ public partial class Health : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 상태를 설정합니다.
+    /// </summary>
+    /// <param name="state">설정할 상태</param>
     private void SetState(State state)
     {
         Current = state;
         
         if (Current == State.Alive)
         {
-            SetHP(MaxHP);
+            SetHP(MaxValue);
         }
         else
         //
@@ -193,7 +177,7 @@ public partial class Health : MonoBehaviour
             SetHP(0);
         }
 
-        @event.Flag |= EventFlag.StateChanged;
+        OnStateChangedEvent.SetDirty();
     }
 
     /// <summary>
@@ -218,9 +202,9 @@ public partial class Health : MonoBehaviour
     /// <param name="hp">체력 값</param>
     public void SetHP(int hp)
     {
-        HP = Mathf.Clamp(hp, 0, MaxHP);
+        Value = Mathf.Clamp(hp, 0, MaxValue);
 
-        @event.Flag |= EventFlag.HPChanged;
+        OnHPChangedEvent.SetDirty();
     }
 
     /// <summary>
@@ -237,10 +221,10 @@ public partial class Health : MonoBehaviour
             value = 0;
         }
         
-        MaxHP = value;
+        MaxValue = value;
 
         // 최대 체력이 변경됨에 따라 HP도 조정되도록 합니다.
-        SetHP(HP);
+        SetHP(Value);
     }
     
     /// <summary>
@@ -292,7 +276,7 @@ public partial class Health : MonoBehaviour
             damage += value; 
         }
         
-        @event.Flag |= EventFlag.Applied;
+        OnAppliedEvent.SetDirty();
     }
 }
 

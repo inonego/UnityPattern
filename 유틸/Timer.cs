@@ -5,6 +5,12 @@ using UnityEngine;
 namespace inonego
 {
 
+using inonego.util;
+
+// TODO
+// 타이머 시간 조정 메서드 및 이벤트 추가
+// 타이머 시간 무제한(스톱워치) 기능 추가
+
 public class Timer
 {
 
@@ -19,33 +25,17 @@ public class Timer
 
 #region Events
 
-    public delegate void EventHandler();
-    public delegate void EventHandler<TEventArgs>(Timer sender, TEventArgs e);
-
-    [Flags]
-    private enum EventFlag
-    {
-        StateChanged    = 1 << 0,
-        Ended           = 1 << 1,
-    }
-
-    private class Event
-    {   
-        public EventFlag Flag;
-
-        public bool HasFlag(EventFlag eventFlag) => Flag.HasFlag(eventFlag);
-
-        public void Clear() => Flag = 0;
-    }
-
-    private Event @event;
-
     #region EventArgs
 
         public struct StateChangedEventArgs
         {
             public State Previous;
             public State Current;
+        }        
+        
+        public struct EndedEventArgs
+        {
+            // 아직은 아무것도 없음
         }
 
     #endregion
@@ -53,11 +43,14 @@ public class Timer
     /// <summary>
     /// 상태가 변화되었을떼 호출되는 이벤트입니다.
     /// </summary>
-    public event EventHandler<StateChangedEventArgs> OnStateChanged;
+    public event Action<Timer, StateChangedEventArgs> OnStateChanged;
+    private Event<Timer, StateChangedEventArgs> OnStateChangedEvent = new();
+
     /// <summary>
     /// 타이머가 종료되었을때 호출되는 이벤트입니다.
     /// </summary>
-    public event EventHandler OnEnded;
+    public event Action OnEnded;
+    private Event<Timer, EndedEventArgs> OnEndedEvent = new();
 
 #endregion
 
@@ -77,8 +70,6 @@ public class Timer
 
     private void Clear()
     {
-        @event.Clear();
-
         previous = Current;
     }
     
@@ -95,19 +86,13 @@ public class Timer
             {
                 Stop();
                 
-                @event.Flag |= EventFlag.Ended;
+                OnEndedEvent.SetDirty();
             }
         }
 
-        if (@event.HasFlag(EventFlag.StateChanged))
-        {
-            OnStateChanged?.Invoke(this, new StateChangedEventArgs { Previous = previous, Current = Current });
-        }
+        OnStateChangedEvent.InvokeIfDirty(this, new StateChangedEventArgs { Previous = previous, Current = Current });
 
-        if (@event.HasFlag(EventFlag.Ended))
-        {
-            OnEnded?.Invoke();
-        }
+        OnEndedEvent.InvokeIfDirty(this, new EndedEventArgs());
 
         Clear();
     }
@@ -116,7 +101,7 @@ public class Timer
     {
         Current = state;
 
-        @event.Flag |= EventFlag.StateChanged;
+        OnStateChangedEvent.SetDirty();
     }
 
     /// <summary>

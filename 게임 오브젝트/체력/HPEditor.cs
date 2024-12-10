@@ -4,8 +4,8 @@ using UnityEngine;
 namespace inonego
 {
 
-[CustomEditor(typeof(Health))]
-public class HealthEditor : Editor
+[CustomEditor(typeof(HP))]
+public class HPEditor : Editor
 {
     private int newMaxHP = 0;
     private int newHP = 0;
@@ -14,22 +14,22 @@ public class HealthEditor : Editor
 
     public override void OnInspectorGUI()
     {
-        Health health = (Health)target;
+        HP hp = (HP)target;
 
         // 상태 관리 섹션
         EditorGUILayout.LabelField("상태 관리", EditorStyles.boldLabel);
-        EditorGUILayout.LabelField("현재 상태:", health.Current.ToString());
-        health.AliveOnAwake = EditorGUILayout.Toggle("시작 시 살아있는 상태", health.AliveOnAwake);
-        health.DestroyOnDead = EditorGUILayout.Toggle("죽을 때 오브젝트 제거", health.DestroyOnDead);
+        EditorGUILayout.LabelField("현재 상태:", hp.Current.ToString());
+        hp.AliveOnAwake = EditorGUILayout.Toggle("시작 시 살아있는 상태", hp.AliveOnAwake);
+        hp.DestroyOnDead = EditorGUILayout.Toggle("죽을 때 오브젝트 제거", hp.DestroyOnDead);
 
         EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button("살아있는 상태로 설정"))
         {
-            health.SetAlive();
+            hp.SetAlive();
         }
         if (GUILayout.Button("죽은 상태로 설정"))
         {
-            health.SetDead();
+            hp.SetDead();
         }
         EditorGUILayout.EndHorizontal();
 
@@ -37,9 +37,9 @@ public class HealthEditor : Editor
 
         // 체력 관리 섹션 - 체력 바 상단에 표시
         EditorGUILayout.LabelField("체력 관리", EditorStyles.boldLabel);
-        float healthRatio = health.MaxHP > 0 ? (float)health.HP / health.MaxHP : 0;
-        Rect healthBarRect = EditorGUILayout.GetControlRect(false, 20);
-        EditorGUI.ProgressBar(healthBarRect, healthRatio, $"{health.HP} / {health.MaxHP}");
+        float hpRatio = hp.MaxValue > 0 ? (float)hp.Value / hp.MaxValue : 0;
+        Rect hpBarRect = EditorGUILayout.GetControlRect(false, 20);
+        EditorGUI.ProgressBar(hpBarRect, hpRatio, $"{hp.Value} / {hp.MaxValue}");
         EditorGUILayout.Space();
         
         // 최대 체력 설정
@@ -47,7 +47,7 @@ public class HealthEditor : Editor
         newMaxHP = EditorGUILayout.IntField("최대 체력", newMaxHP);
         if (GUILayout.Button("설정", GUILayout.Width(50)))
         {
-            health.SetMaxHP(newMaxHP);
+            hp.SetMaxHP(newMaxHP);
         }
         EditorGUILayout.EndHorizontal();
         
@@ -56,7 +56,7 @@ public class HealthEditor : Editor
         newHP = EditorGUILayout.IntField("현재 체력", newHP);
         if (GUILayout.Button("설정", GUILayout.Width(50)))
         {
-            health.SetHP(newHP);
+            hp.SetHP(newHP);
         }
         EditorGUILayout.EndHorizontal();
         
@@ -68,7 +68,7 @@ public class HealthEditor : Editor
         healValue = EditorGUILayout.IntField("힐", healValue);
         if (GUILayout.Button("적용", GUILayout.Width(50)))
         {
-            health.ApplyHeal(healValue);
+            hp.ApplyHeal(healValue);
         }
         EditorGUILayout.EndHorizontal();
 
@@ -77,7 +77,7 @@ public class HealthEditor : Editor
         damageValue = EditorGUILayout.IntField("데미지", damageValue);
         if (GUILayout.Button("적용", GUILayout.Width(50)))
         {
-            health.ApplyDamage(damageValue);
+            hp.ApplyDamage(damageValue);
         }
         EditorGUILayout.EndHorizontal();
 

@@ -185,7 +185,7 @@ public static class PoolUtil
     }
 }
 
-public partial class Health
+public partial class HP
 {
     private partial void Destroy() => gameObject.Despawn();
 }

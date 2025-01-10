@@ -66,7 +66,8 @@ public class Timer
 
 #endregion
 
-    [field: SerializeField] public State Current { get; private set; } = State.Stopped;
+    [field: SerializeField]
+    public State Current { get; private set; } = State.Stopped;
 
     public bool IsWorking => Current == State.Started;
 

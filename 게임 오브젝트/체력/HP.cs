@@ -126,7 +126,7 @@ public class HP : MonoBehaviour
     private void ProcessEvent()
     {
         // 체력이 회복되거나 데미지를 입었을때 체력을 설정하도록 합니다.
-        if (heal is not null || damage is not null) SetHP(Value + (heal ?? 0) - (damage ?? 0));
+        if (heal is not null || damage is not null) SetValue(Value + (heal ?? 0) - (damage ?? 0));
 
         OnAppliedEvent.InvokeIfDirty(this, new AppliedEventArgs { PreviousValue = previousValue, CurrentValue = Value, Delta = Value - previousValue, Heal = heal, Damage = damage });
 
@@ -168,13 +168,13 @@ public class HP : MonoBehaviour
         
         if (Current == State.Alive)
         {
-            SetHP(MaxValue);
+            SetValue(MaxValue);
         }
         else
         //
         if (Current == State.Dead)
         {
-            SetHP(0);
+            SetValue(0);
         }
 
         OnStateChangedEvent.SetDirty();
@@ -200,7 +200,7 @@ public class HP : MonoBehaviour
     /// 체력을 설정합니다.
     /// </summary>
     /// <param name="hp">체력 값</param>
-    public void SetHP(int hp)
+    public void SetValue(int hp)
     {
         Value = Mathf.Clamp(hp, 0, MaxValue);
 
@@ -211,7 +211,7 @@ public class HP : MonoBehaviour
     /// 최대 체력을 설정합니다.
     /// </summary>
     /// <param name="maxHP">최대 체력 값</param>
-    public void SetMaxHP(int value)
+    public void SetMaxValue(int value)
     {
         if (value < 0) {
             #if UNITY_EDITOR
@@ -224,7 +224,7 @@ public class HP : MonoBehaviour
         MaxValue = value;
 
         // 최대 체력이 변경됨에 따라 HP도 조정되도록 합니다.
-        SetHP(Value);
+        SetValue(Value);
     }
     
     /// <summary>

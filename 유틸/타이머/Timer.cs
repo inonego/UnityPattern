@@ -39,7 +39,8 @@ public class Timer
     /// <summary>
     /// 상태가 변화되었을떼 호출되는 이벤트입니다.
     /// </summary>
-    public Event<Timer, StateChangedEventArgs> OnStateChanged = new();
+    protected Event<Timer, StateChangedEventArgs> OnStateChangedEvent = new();
+    public event Action<Timer, StateChangedEventArgs> OnStateChanged { add => OnStateChangedEvent += value; remove => OnStateChangedEvent -= value; }
 
     public struct StateChangedEventArgs
     {
@@ -50,7 +51,8 @@ public class Timer
     /// <summary>
     /// 타이머가 종료되었을때 호출되는 이벤트입니다.
     /// </summary>
-    public Event<Timer, EndedEventArgs> OnEnded = new();
+    protected Event<Timer, EndedEventArgs> OnEndedEvent = new();
+    public event Action<Timer, EndedEventArgs> OnEnded { add => OnEndedEvent += value; remove => OnEndedEvent -= value; }
 
     public struct EndedEventArgs
     {
@@ -61,8 +63,8 @@ public class Timer
 
 #region 상태
 
+    [field: SerializeField][HideInInspector] private State previous = State.Stopped;
     [field: SerializeField] public State Current    { get; private set; } = State.Stopped;
-    [field: SerializeField] public State Previous   { get; private set; } = State.Stopped;
     
     public bool IsWorking => Current == State.Started;
 
@@ -76,7 +78,7 @@ public class Timer
 
     private void Clear()
     {
-        Previous = Current;
+        previous = Current;
     }
     
     /// <summary>
@@ -93,13 +95,13 @@ public class Timer
             {
                 Stop();
                 
-                OnEnded.SetDirty();
+                OnEndedEvent.SetDirty();
             }
         }
 
-        OnStateChanged.InvokeIfDirty(this, new StateChangedEventArgs { Previous = Previous, Current = Current });
+        OnStateChangedEvent.InvokeIfDirty(this, new StateChangedEventArgs { Previous = previous, Current = Current });
 
-        OnEnded.InvokeIfDirty(this, new EndedEventArgs { });
+        OnEndedEvent.InvokeIfDirty(this, new EndedEventArgs { });
 
         Clear();
     }
@@ -108,7 +110,7 @@ public class Timer
     {
         Current = state;
 
-        OnStateChanged.SetDirty();
+        OnStateChangedEvent.SetDirty();
     }
 
     /// <summary>

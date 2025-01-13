@@ -14,8 +14,11 @@ where TCollider     : Component
 
 #region 이벤트
 
-    public Event<GroundCheckerBase<TRigidbody, TCollider>, GroundEventArgs> OnGroundEnter = new();
-    public Event<GroundCheckerBase<TRigidbody, TCollider>, GroundEventArgs> OnGroundExit  = new();
+    protected Event<GroundCheckerBase<TRigidbody, TCollider>, GroundEventArgs> OnGroundEnterEvent = new();
+    public event Action<GroundCheckerBase<TRigidbody, TCollider>, GroundEventArgs> OnGroundEnter { add => OnGroundEnterEvent += value; remove => OnGroundEnterEvent -= value; }
+
+    protected Event<GroundCheckerBase<TRigidbody, TCollider>, GroundEventArgs> OnGroundExitEvent = new();
+    public event Action<GroundCheckerBase<TRigidbody, TCollider>, GroundEventArgs> OnGroundExit { add => OnGroundExitEvent += value; remove => OnGroundExitEvent -= value; }
 
     public struct GroundEventArgs
     {
@@ -90,7 +93,7 @@ where TCollider     : Component
         {
             if (previousIsGrounded && (!IsGrounded || IsCurrentGroundChanged()))
             {
-                OnGroundExit?.InvokeHere(this, previousGround.Value);
+                OnGroundExitEvent?.InvokeHere(this, previousGround.Value);
             }
         }
 
@@ -98,7 +101,7 @@ where TCollider     : Component
         {
             if (IsGrounded && (!previousIsGrounded || IsCurrentGroundChanged()))
             { 
-                OnGroundEnter?.InvokeHere(this, currentGround.Value);
+                OnGroundEnterEvent?.InvokeHere(this, currentGround.Value);
             }
         }
     }

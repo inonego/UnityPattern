@@ -29,7 +29,8 @@ public class HP : MonoBehaviour
     /// <summary>
     /// 상태가 변화되었을때 호출되는 이벤트입니다.
     /// </summary>
-    public Event<HP, StateChangedEventArgs> OnStateChanged = new();
+    protected Event<HP, StateChangedEventArgs> OnStateChangedEvent = new();
+    public event Action<HP, StateChangedEventArgs> OnStateChanged { add => OnStateChangedEvent += value; remove => OnStateChangedEvent -= value; }
 
     public struct StateChangedEventArgs
     {
@@ -40,7 +41,8 @@ public class HP : MonoBehaviour
     /// <summary>
     /// 체력이 변경되었을때 호출되는 이벤트입니다.
     /// </summary>
-    public Event<HP, HPChangedEventArgs> OnHPChanged = new();
+    protected Event<HP, HPChangedEventArgs> OnHPChangedEvent = new();
+    public event Action<HP, HPChangedEventArgs> OnHPChanged { add => OnHPChangedEvent += value; remove => OnHPChangedEvent -= value; }
 
     public struct HPChangedEventArgs
     {
@@ -52,7 +54,8 @@ public class HP : MonoBehaviour
     /// <summary>
     /// 힐이나 데미지가 적용되었을때 호출되는 이벤트입니다.
     /// </summary>
-    public Event<HP, AppliedEventArgs> OnApplied = new();
+    protected Event<HP, AppliedEventArgs> OnAppliedEvent = new();
+    public event Action<HP, AppliedEventArgs> OnApplied { add => OnAppliedEvent += value; remove => OnAppliedEvent -= value; }
 
     public struct AppliedEventArgs
     {
@@ -71,8 +74,8 @@ public class HP : MonoBehaviour
     /// <summary>
     /// 현재 상태
     /// </summary>
+    [field: SerializeField][HideInInspector] private State previous = State.Dead;
     [field: SerializeField] public State Current  { get; private set; } = State.Dead;
-    [field: SerializeField] public State Previous { get; private set; } = State.Dead;
 
     /// <summary>
     /// 살아있는 상태인지 여부
@@ -106,8 +109,8 @@ public class HP : MonoBehaviour
     }
 */
 
+    [field: SerializeField][HideInInspector] private TValue previousValue = default;
     [field: SerializeField] public TValue CurrentValue     { get; private set; } = default;
-    [field: SerializeField] public TValue PreviousValue    { get; private set; } = default;
     [field: SerializeField] public TValue MaxValue         { get; private set; } = default;
 
     private TValue? heal       = null;
@@ -117,9 +120,9 @@ public class HP : MonoBehaviour
 
     private void Clear()
     {
-        Previous = Current;
+        previous = Current;
 
-        PreviousValue = CurrentValue;
+        previousValue = CurrentValue;
 
         heal       = null;
         damage     = null;
@@ -151,9 +154,9 @@ public class HP : MonoBehaviour
         // 체력이 회복되거나 데미지를 입었을때 체력을 설정하도록 합니다.
         if (heal is not null || damage is not null) SetValue(CurrentValue + (heal ?? default) - (damage ?? default));
 
-        OnApplied.InvokeIfDirty(this, new AppliedEventArgs { PreviousValue = PreviousValue, CurrentValue = CurrentValue, Delta = CurrentValue - PreviousValue, Heal = heal, Damage = damage });
+        OnAppliedEvent.InvokeIfDirty(this, new AppliedEventArgs { PreviousValue = previousValue, CurrentValue = CurrentValue, Delta = CurrentValue - previousValue, Heal = heal, Damage = damage });
 
-        OnHPChanged.InvokeIfDirty(this, new HPChangedEventArgs { PreviousValue = PreviousValue, CurrentValue = CurrentValue, Delta = CurrentValue - PreviousValue });
+        OnHPChangedEvent.InvokeIfDirty(this, new HPChangedEventArgs { PreviousValue = previousValue, CurrentValue = CurrentValue, Delta = CurrentValue - previousValue });
 
         // 살아있는데
         if (IsAlive)
@@ -166,7 +169,7 @@ public class HP : MonoBehaviour
             }
         }
 
-        OnStateChanged.InvokeIfDirty(this, new StateChangedEventArgs { Previous = Previous, Current = Current });
+        OnStateChangedEvent.InvokeIfDirty(this, new StateChangedEventArgs { Previous = previous, Current = Current });
 
         if (IsDead)
         {
@@ -200,7 +203,7 @@ public class HP : MonoBehaviour
             SetValue(default);
         }
 
-        OnStateChanged.SetDirty();
+        OnStateChangedEvent.SetDirty();
     }
 
     /// <summary>
@@ -227,7 +230,7 @@ public class HP : MonoBehaviour
     {
         CurrentValue = Math.Clamp(hp, default, MaxValue);
 
-        OnHPChanged.SetDirty();
+        OnHPChangedEvent.SetDirty();
     }
 
     /// <summary>
@@ -299,7 +302,7 @@ public class HP : MonoBehaviour
             damage += value; 
         }
         
-        OnApplied.SetDirty();
+        OnAppliedEvent.SetDirty();
     }
 }
 

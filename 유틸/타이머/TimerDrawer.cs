@@ -23,7 +23,7 @@ public class TimerDrawer : PropertyDrawer
         return timer.Current switch
         {
             Timer.State.Started =>  ( "PauseButton", "일시정지", timer.Pause  ),
-            Timer.State.Paused =>   ( "PlayButton",  "재개",     timer.Resume ),
+            Timer.State.Paused  =>  ( "PlayButton",  "재개",     timer.Resume ),
             Timer.State.Stopped =>  ( "PlayButton",  "시작",     timer.Start  ),
 
             _ => (string.Empty, string.Empty, null)

@@ -9,10 +9,10 @@ using inonego.util;
 
 public class Timer
 {
-    public struct TimeDATA
+    public class DATA
     {
-        public float Total      { get; private set; }
-        public float Current    { get; private set; }
+        [field: SerializeField] public float Total      { get; private set; }
+        [field: SerializeField] public float Current    { get; private set; }
 
         public float LeftTime       => Current;
         public float ElapsedTime    => Total - Current;
@@ -71,7 +71,7 @@ public class Timer
 
     public bool IsWorking => Current == State.Started;
 
-    public TimeDATA Time { get; private set; } = new();
+    public DATA Time { get; private set; } = new();
 
     private State previous  = State.Stopped;
 
@@ -88,7 +88,7 @@ public class Timer
         if (IsWorking)
         {
             Time.Set(total: Time.Total, current: Time.Current - UnityEngine.Time.deltaTime);
-
+            
             // 타이머의 시간이 0 이하가 되면 타이머를 종료합니다.
             if (Time.Current <= 0f)
             {

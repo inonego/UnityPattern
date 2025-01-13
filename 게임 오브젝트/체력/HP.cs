@@ -11,67 +11,63 @@ using inonego.util;
 public class HP : MonoBehaviour
 {   
 
-#region Enumerations
+#region 열거형 타입 정의
 
-    public enum State       { Alive, Dead, None }
+    public enum State        { Alive, Dead }
 
     private enum ApplyType   { Heal, Damage }
 
 #endregion
 
-#region Events
-
-    #region EventArgs
-
-        public struct StateChangedEventArgs
-        {
-            public State Previous;
-            public State Current;
-        }
-
-        public struct HPChangedEventArgs
-        {
-            public int PreviousValue;
-            public int CurrentValue;
-            public int Delta;
-        }
-
-        public struct AppliedEventArgs
-        {
-            public int PreviousValue;
-            public int CurrentValue;
-            public int Delta;
-
-            public int? Heal;
-            public int? Damage;
-        }
-
-    #endregion
+#region 이벤트
 
     /// <summary>
     /// 상태가 변화되었을때 호출되는 이벤트입니다.
     /// </summary>
     public Event<HP, StateChangedEventArgs> OnStateChangedEvent = new();
-    public event Action<HP, StateChangedEventArgs> OnStateChanged     { add => OnStateChangedEvent += value; remove => OnStateChangedEvent -= value; }
 
+    public struct StateChangedEventArgs
+    {
+        public State Previous;
+        public State Current;
+    }
+    
     /// <summary>
     /// 체력이 변경되었을때 호출되는 이벤트입니다.
     /// </summary>
     public Event<HP, HPChangedEventArgs> OnHPChangedEvent = new();
-    public event Action<HP, HPChangedEventArgs> OnHPChanged           { add => OnHPChangedEvent += value; remove => OnHPChangedEvent -= value; }
 
+    public struct HPChangedEventArgs
+    {
+        public int PreviousValue;
+        public int CurrentValue;
+        public int Delta;
+    }
+    
     /// <summary>
     /// 힐이나 데미지가 적용되었을때 호출되는 이벤트입니다.
     /// </summary>
     public Event<HP, AppliedEventArgs> OnAppliedEvent = new();
-    public event Action<HP, AppliedEventArgs> OnApplied               { add => OnAppliedEvent += value; remove => OnAppliedEvent -= value; }
 
-#endregion
+    public struct AppliedEventArgs
+    {
+        public int PreviousValue;
+        public int CurrentValue;
+        public int Delta;
+
+        public int? Heal;
+        public int? Damage;
+    }
+
+    #endregion
+
+    #region 상태
 
     /// <summary>
     /// 현재 상태
     /// </summary>
-    [field: SerializeField] public State Current { get; private set; } = State.None;
+    [field: SerializeField] public State Current  { get; private set; } = State.Dead;
+    [field: SerializeField] public State Previous { get; private set; } = State.Dead;
 
     /// <summary>
     /// 살아있는 상태인지 여부
@@ -85,19 +81,26 @@ public class HP : MonoBehaviour
 
     [field: SerializeField] public bool AliveOnAwake  { get; set; } = true;
     [field: SerializeField] public bool DestroyOnDead { get; set; } = true;
-    
-    [field: SerializeField] public int Value       { get; private set; } = 0;
-    [field: SerializeField] public int MaxValue    { get; private set; } = 0;
 
-    private State previous  = State.None;
-    private int previousValue  = 0;
+    #endregion
+
+    #region 값
+
+    [field: SerializeField] public int CurrentValue     { get; private set; } = 0;
+    [field: SerializeField] public int PreviousValue    { get; private set; } = 0;
+    [field: SerializeField] public int MaxValue         { get; private set; } = 0;
+
     private int? heal       = null;
     private int? damage     = null;
 
+    #endregion
+
     private void Clear()
     {
-        previous   = Current;
-        previousValue = Value;
+        Previous = Current;
+
+        PreviousValue = CurrentValue;
+
         heal       = null;
         damage     = null;
     }
@@ -126,24 +129,24 @@ public class HP : MonoBehaviour
     private void ProcessEvent()
     {
         // 체력이 회복되거나 데미지를 입었을때 체력을 설정하도록 합니다.
-        if (heal is not null || damage is not null) SetValue(Value + (heal ?? 0) - (damage ?? 0));
+        if (heal is not null || damage is not null) SetValue(CurrentValue + (heal ?? 0) - (damage ?? 0));
 
-        OnAppliedEvent.InvokeIfDirty(this, new AppliedEventArgs { PreviousValue = previousValue, CurrentValue = Value, Delta = Value - previousValue, Heal = heal, Damage = damage });
+        OnAppliedEvent.InvokeIfDirty(this, new AppliedEventArgs { PreviousValue = PreviousValue, CurrentValue = CurrentValue, Delta = CurrentValue - PreviousValue, Heal = heal, Damage = damage });
 
-        OnHPChangedEvent.InvokeIfDirty(this, new HPChangedEventArgs { PreviousValue = previousValue, CurrentValue = Value, Delta = Value - previousValue });
+        OnHPChangedEvent.InvokeIfDirty(this, new HPChangedEventArgs { PreviousValue = PreviousValue, CurrentValue = CurrentValue, Delta = CurrentValue - PreviousValue });
 
         // 살아있는데
         if (IsAlive)
         {
             // HP가 0이면
-            if (Value == 0)
+            if (CurrentValue == 0)
             {
                 // 죽은 상태로 설정합니다.
                 SetDead();
             }
         }
 
-        OnStateChangedEvent.InvokeIfDirty(this, new StateChangedEventArgs { Previous = previous, Current = Current });
+        OnStateChangedEvent.InvokeIfDirty(this, new StateChangedEventArgs { Previous = Previous, Current = Current });
 
         if (IsDead)
         {
@@ -202,7 +205,7 @@ public class HP : MonoBehaviour
     /// <param name="hp">체력 값</param>
     public void SetValue(int hp)
     {
-        Value = Mathf.Clamp(hp, 0, MaxValue);
+        CurrentValue = Mathf.Clamp(hp, 0, MaxValue);
 
         OnHPChangedEvent.SetDirty();
     }
@@ -224,7 +227,7 @@ public class HP : MonoBehaviour
         MaxValue = value;
 
         // 최대 체력이 변경됨에 따라 HP도 조정되도록 합니다.
-        SetValue(Value);
+        SetValue(CurrentValue);
     }
     
     /// <summary>

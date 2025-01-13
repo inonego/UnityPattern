@@ -1,6 +1,8 @@
 using UnityEditor;
 using UnityEngine;
 
+#if UNITY_EDITOR
+
 namespace inonego
 {
 
@@ -37,9 +39,9 @@ public class HPEditor : Editor
 
         // 체력 관리 섹션 - 체력 바 상단에 표시
         EditorGUILayout.LabelField("체력 관리", EditorStyles.boldLabel);
-        float hpRatio = hp.MaxValue > 0 ? (float)hp.Value / hp.MaxValue : 0;
+        float hpRatio = hp.MaxValue > 0 ? (float)hp.CurrentValue / hp.MaxValue : 0;
         Rect hpBarRect = EditorGUILayout.GetControlRect(false, 20);
-        EditorGUI.ProgressBar(hpBarRect, hpRatio, $"{hp.Value} / {hp.MaxValue}");
+        EditorGUI.ProgressBar(hpBarRect, hpRatio, $"{hp.CurrentValue} / {hp.MaxValue}");
         EditorGUILayout.Space();
         
         // 최대 체력 설정
@@ -47,7 +49,7 @@ public class HPEditor : Editor
         newMaxHP = EditorGUILayout.IntField("최대 체력", newMaxHP);
         if (GUILayout.Button("설정", GUILayout.Width(50)))
         {
-            hp.SetMaxHP(newMaxHP);
+            hp.SetMaxValue(newMaxHP);
         }
         EditorGUILayout.EndHorizontal();
         
@@ -56,7 +58,7 @@ public class HPEditor : Editor
         newHP = EditorGUILayout.IntField("현재 체력", newHP);
         if (GUILayout.Button("설정", GUILayout.Width(50)))
         {
-            hp.SetHP(newHP);
+            hp.SetValue(newHP);
         }
         EditorGUILayout.EndHorizontal();
         
@@ -89,3 +91,5 @@ public class HPEditor : Editor
 }
 
 }
+
+#endif

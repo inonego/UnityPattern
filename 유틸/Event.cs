@@ -7,6 +7,7 @@ namespace inonego.util
 {
     public struct EventArgs { }
 
+    [Serializable]
     public class Event<TSender, TEventArgs>
     {
         private event Action<TSender, TEventArgs> internal_event;

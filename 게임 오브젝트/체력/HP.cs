@@ -3,6 +3,11 @@ using System;
 using UnityEditor;
 using UnityEngine;
 
+// 체력 값의 타입을 정의합니다.
+// 현재로서는 하나의 게임 안에서 한가지 타입만 사용할 수 있습니다.
+// 향후 유니티가 C# 11.0을 지원하게 되면 Generic Math를 이용해 제너릭으로 적용할 예정입니다.
+using TValue = System.Double;
+
 namespace inonego
 {
 
@@ -24,7 +29,7 @@ public class HP : MonoBehaviour
     /// <summary>
     /// 상태가 변화되었을때 호출되는 이벤트입니다.
     /// </summary>
-    public Event<HP, StateChangedEventArgs> OnStateChangedEvent = new();
+    public Event<HP, StateChangedEventArgs> OnStateChanged = new();
 
     public struct StateChangedEventArgs
     {
@@ -35,33 +40,33 @@ public class HP : MonoBehaviour
     /// <summary>
     /// 체력이 변경되었을때 호출되는 이벤트입니다.
     /// </summary>
-    public Event<HP, HPChangedEventArgs> OnHPChangedEvent = new();
+    public Event<HP, HPChangedEventArgs> OnHPChanged = new();
 
     public struct HPChangedEventArgs
     {
-        public int PreviousValue;
-        public int CurrentValue;
-        public int Delta;
+        public TValue PreviousValue;
+        public TValue CurrentValue;
+        public TValue Delta;
     }
     
     /// <summary>
     /// 힐이나 데미지가 적용되었을때 호출되는 이벤트입니다.
     /// </summary>
-    public Event<HP, AppliedEventArgs> OnAppliedEvent = new();
+    public Event<HP, AppliedEventArgs> OnApplied = new();
 
     public struct AppliedEventArgs
     {
-        public int PreviousValue;
-        public int CurrentValue;
-        public int Delta;
+        public TValue PreviousValue;
+        public TValue CurrentValue;
+        public TValue Delta;
 
-        public int? Heal;
-        public int? Damage;
+        public TValue? Heal;
+        public TValue? Damage;
     }
 
-    #endregion
+#endregion
 
-    #region 상태
+#region 상태
 
     /// <summary>
     /// 현재 상태
@@ -82,18 +87,33 @@ public class HP : MonoBehaviour
     [field: SerializeField] public bool AliveOnAwake  { get; set; } = true;
     [field: SerializeField] public bool DestroyOnDead { get; set; } = true;
 
-    #endregion
+#endregion
 
-    #region 값
+#region 값
 
-    [field: SerializeField] public int CurrentValue     { get; private set; } = 0;
-    [field: SerializeField] public int PreviousValue    { get; private set; } = 0;
-    [field: SerializeField] public int MaxValue         { get; private set; } = 0;
+/*
+    // 현재 값을 정수로 사용할지에 대한 여부입니다.
+    private bool useAsInteger = false;
+    public bool UseAsInteger
+    {
+        get => useAsInteger;
+        set
+        {
+            useAsInteger = value; 
+            
+            SetMaxValue(MaxValue);
+        }
+    }
+*/
 
-    private int? heal       = null;
-    private int? damage     = null;
+    [field: SerializeField] public TValue CurrentValue     { get; private set; } = default;
+    [field: SerializeField] public TValue PreviousValue    { get; private set; } = default;
+    [field: SerializeField] public TValue MaxValue         { get; private set; } = default;
 
-    #endregion
+    private TValue? heal       = null;
+    private TValue? damage     = null;
+
+#endregion
 
     private void Clear()
     {
@@ -129,24 +149,24 @@ public class HP : MonoBehaviour
     private void ProcessEvent()
     {
         // 체력이 회복되거나 데미지를 입었을때 체력을 설정하도록 합니다.
-        if (heal is not null || damage is not null) SetValue(CurrentValue + (heal ?? 0) - (damage ?? 0));
+        if (heal is not null || damage is not null) SetValue(CurrentValue + (heal ?? default) - (damage ?? default));
 
-        OnAppliedEvent.InvokeIfDirty(this, new AppliedEventArgs { PreviousValue = PreviousValue, CurrentValue = CurrentValue, Delta = CurrentValue - PreviousValue, Heal = heal, Damage = damage });
+        OnApplied.InvokeIfDirty(this, new AppliedEventArgs { PreviousValue = PreviousValue, CurrentValue = CurrentValue, Delta = CurrentValue - PreviousValue, Heal = heal, Damage = damage });
 
-        OnHPChangedEvent.InvokeIfDirty(this, new HPChangedEventArgs { PreviousValue = PreviousValue, CurrentValue = CurrentValue, Delta = CurrentValue - PreviousValue });
+        OnHPChanged.InvokeIfDirty(this, new HPChangedEventArgs { PreviousValue = PreviousValue, CurrentValue = CurrentValue, Delta = CurrentValue - PreviousValue });
 
         // 살아있는데
         if (IsAlive)
         {
             // HP가 0이면
-            if (CurrentValue == 0)
+            if (CurrentValue == default)
             {
                 // 죽은 상태로 설정합니다.
                 SetDead();
             }
         }
 
-        OnStateChangedEvent.InvokeIfDirty(this, new StateChangedEventArgs { Previous = Previous, Current = Current });
+        OnStateChanged.InvokeIfDirty(this, new StateChangedEventArgs { Previous = Previous, Current = Current });
 
         if (IsDead)
         {
@@ -177,10 +197,10 @@ public class HP : MonoBehaviour
         //
         if (Current == State.Dead)
         {
-            SetValue(0);
+            SetValue(default);
         }
 
-        OnStateChangedEvent.SetDirty();
+        OnStateChanged.SetDirty();
     }
 
     /// <summary>
@@ -203,25 +223,25 @@ public class HP : MonoBehaviour
     /// 체력을 설정합니다.
     /// </summary>
     /// <param name="hp">체력 값</param>
-    public void SetValue(int hp)
+    public void SetValue(TValue hp)
     {
-        CurrentValue = Mathf.Clamp(hp, 0, MaxValue);
+        CurrentValue = Math.Clamp(hp, default, MaxValue);
 
-        OnHPChangedEvent.SetDirty();
+        OnHPChanged.SetDirty();
     }
 
     /// <summary>
     /// 최대 체력을 설정합니다.
     /// </summary>
     /// <param name="maxHP">최대 체력 값</param>
-    public void SetMaxValue(int value)
+    public void SetMaxValue(TValue value)
     {
-        if (value < 0) {
+        if (value < default(TValue)) {
             #if UNITY_EDITOR
                 Debug.LogWarning("최대 체력 값은 0보다 작을 수 없습니다.");
             #endif
     
-            value = 0;
+            value = default;
         }
         
         MaxValue = value;
@@ -234,7 +254,7 @@ public class HP : MonoBehaviour
     /// 힐(체력 회복)를 적용시킵니다.
     /// </summary>
     /// <param name="value">적용할 값</param>
-    public void ApplyHeal(int value)
+    public void ApplyHeal(TValue value)
     {
         Apply(ApplyType.Heal, value);
     }
@@ -243,7 +263,7 @@ public class HP : MonoBehaviour
     /// 데미지(체력 감소)를 적용시킵니다.
     /// </summary>
     /// <param name="value">적용할 값</param>
-    public void ApplyDamage(int value)
+    public void ApplyDamage(TValue value)
     {
         Apply(ApplyType.Damage, value);
     }
@@ -253,33 +273,33 @@ public class HP : MonoBehaviour
     /// </summary>
     /// <param name="applyType">적용할 타입</param>
     /// <param name="value">적용할 값</param>
-    private void Apply(ApplyType applyType, int value)
+    private void Apply(ApplyType applyType, TValue value)
     {
         // 죽은 상태면 데미지나 힐을 받지 않습니다.
         if (IsDead) return;
 
-        if (value < 0) {
+        if (value < default(TValue)) {
             #if UNITY_EDITOR
                 Debug.LogWarning("값이 0보다 작을 수 없습니다.");
             #endif
     
-            value = 0;
+            value = default;
         }
         
         if (applyType == ApplyType.Heal)
         {
-            if (heal is null) heal = 0;
+            if (heal is null) heal = default;
 
             heal += value;
         }
         else
         {
-            if (damage is null) damage = 0;
+            if (damage is null) damage = default;
 
             damage += value; 
         }
         
-        OnAppliedEvent.SetDirty();
+        OnApplied.SetDirty();
     }
 }
 

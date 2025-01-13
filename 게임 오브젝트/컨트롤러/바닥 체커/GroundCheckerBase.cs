@@ -4,13 +4,18 @@ using UnityEngine;
 namespace inonego
 {
 
+using inonego.util;
+
 public abstract class GroundCheckerBase<TRigidbody, TCollider> : MonoBehaviour
 
 where TRigidbody    : Component
 where TCollider     : Component
 {
 
-#region EventArgs
+#region 이벤트
+
+    public Event<GroundCheckerBase<TRigidbody, TCollider>, GroundEventArgs> OnGroundEnter = new();
+    public Event<GroundCheckerBase<TRigidbody, TCollider>, GroundEventArgs> OnGroundExit  = new();
 
     public struct GroundEventArgs
     {
@@ -18,16 +23,6 @@ where TCollider     : Component
         public TRigidbody Rigidbody;
         public TCollider Collider;
     }
-    
-#endregion
-
-#region Events
-
-    public delegate void OnGroundEnterEvent(GroundEventArgs e);
-    public delegate void OnGroundExitEvent(GroundEventArgs e);
-
-    public event OnGroundEnterEvent OnGroundEnter;
-    public event OnGroundEnterEvent OnGroundExit;
 
 #endregion
 
@@ -95,7 +90,7 @@ where TCollider     : Component
         {
             if (previousIsGrounded && (!IsGrounded || IsCurrentGroundChanged()))
             {
-                OnGroundExit?.Invoke(previousGround.Value);
+                OnGroundExit?.InvokeHere(this, previousGround.Value);
             }
         }
 
@@ -103,7 +98,7 @@ where TCollider     : Component
         {
             if (IsGrounded && (!previousIsGrounded || IsCurrentGroundChanged()))
             { 
-                OnGroundEnter?.Invoke(currentGround.Value);
+                OnGroundEnter?.InvokeHere(this, currentGround.Value);
             }
         }
     }

@@ -291,13 +291,13 @@ public class HP : MonoBehaviour
         
         if (applyType == ApplyType.Heal)
         {
-            if (heal is null) heal = default;
+            if (heal is null) heal = default(TValue);
 
             heal += value;
         }
         else
         {
-            if (damage is null) damage = default;
+            if (damage is null) damage = default(TValue);
 
             damage += value; 
         }

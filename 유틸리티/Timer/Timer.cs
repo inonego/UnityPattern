@@ -6,168 +6,158 @@ using TValue = System.Double;
 
 namespace inonego
 {
-
-using inonego.util;
-
-[Serializable]
-public class Timer
-{
+    // ==================================================================
+    /// <summary>
+    /// <br/>타이머 클래스입니다.
+    /// <br/>업데이트 메서드를 통해서, 타이머의 작동 시간을 업데이트해야합니다.
+    /// </summary>
+    // ==================================================================
     [Serializable]
-    public class DATA
+    public class Timer
     {
-        [field: SerializeField] public TValue Target     { get; set; } = default;
-        [field: SerializeField] public TValue Current    { get; set; } = default;
+        [SerializeField] private TValue duration = default;
+        [SerializeField] private TValue elapsedTime = default;
 
-        public TValue LeftTime       => Target - Current;
-        public TValue ElapsedTime    => Current;
+        public TValue Duration => duration;
 
-        public TValue LeftTime01     => LeftTime / Target;
-        public TValue ElapsedTime01  => ElapsedTime / Target;
-    }
+        public TValue ElapsedTime => Math.Min(duration, elapsedTime);
+        public TValue RemainingTime => Math.Max(duration - elapsedTime, 0.0);
 
-#region 열거형 타입 정의
+        public TValue ElapsedTime01  => ElapsedTime / duration;
+        public TValue RemainingTime01 => RemainingTime / duration;
 
-    public enum State
-    {
-        Started, Paused, Stopped
-    }
+    #region 열거형 타입 정의
 
-#endregion
+        public enum State { Begin, Pause, End }
 
-#region 이벤트
-        
-    /// <summary>
-    /// 상태가 변화되었을떼 호출되는 이벤트입니다.
-    /// </summary>
-    protected Event<Timer, StateChangedEventArgs> OnStateChangedEvent = new();
-    public event Action<Timer, StateChangedEventArgs> OnStateChanged { add => OnStateChangedEvent += value; remove => OnStateChangedEvent -= value; }
+    #endregion
 
-    public struct StateChangedEventArgs
-    {
-        public State Previous;
-        public State Current;
-    }        
+    #region 상태
 
-    /// <summary>
-    /// 타이머가 종료되었을때 호출되는 이벤트입니다.
-    /// </summary>
-    protected Event<Timer, EndedEventArgs> OnEndedEvent = new();
-    public event Action<Timer, EndedEventArgs> OnEnded { add => OnEndedEvent += value; remove => OnEndedEvent -= value; }
+        [SerializeField]
+        private State current = State.Begin;
+        public State Current => current;
 
-    public struct EndedEventArgs
-    {
-        // TODO
-    }
-
-#endregion
-
-#region 상태
-
-    [field: SerializeField][HideInInspector] private State previous = State.Stopped;
-    [field: SerializeField] public State Current    { get; private set; } = State.Stopped;
-    
-    public bool IsWorking => Current == State.Started;
-
-#endregion
-
-#region 값
-
-    [field: SerializeField] public DATA Time { get; private set; } = new();
-
-#endregion
-
-    private void Clear()
-    {
-        previous = Current;
-    }
-    
-    /// <summary>
-    /// 타이머를 업데이트합니다.
-    /// </summary>
-    public void Update()
-    {
-        if (IsWorking)
+        // 내부적으로 상태를 변경할때 state 프로퍼티를 사용하세요!
+        private State state
         {
-            Time.Current += UnityEngine.Time.deltaTime;
-            
-            // 타이머의 시간이 목표 시간을 초과하면 타이머를 종료합니다.
-            if (Time.Current >= Time.Target)
+            get => current;
+            set
             {
-                Stop();
+                var (prev, next) = (current, value);
+
+                // 상태 변화가 없으면 종료합니다.
+                if (prev == next) return;
+
+                current = next;
+
+                OnStateChange?.Invoke(this, new ValueChangeEventArgs<State> { Previous = prev, Current = current });
+            }
+        }
+        
+        public bool IsWorking => Current == State.Begin;
+        public bool IsPaused => Current == State.Pause;
+
+    #endregion
+        
+    #region 이벤트
+
+        public event ValueChangeEvent<Timer, State> OnStateChange = null;
+
+    #endregion
+
+    #region 업데이트
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 타이머를 업데이트합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void Update(float deltaTime)
+        {
+            if (IsWorking)
+            {
+                elapsedTime += deltaTime;
                 
-                OnEndedEvent.SetDirty();
+                // 타이머의 시간이 목표 시간을 초과하면 타이머를 종료합니다.
+                if (elapsedTime >= duration)
+                {
+                    Stop();
+                }
             }
         }
 
-        OnStateChangedEvent.InvokeIfDirty(this, new StateChangedEventArgs { Previous = previous, Current = Current });
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 타이머를 업데이트합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void Update() => Update(Time.deltaTime);
 
-        OnEndedEvent.InvokeIfDirty(this, new EndedEventArgs { });
+    #endregion
 
-        Clear();
-    }
+    #region 시작, 중지, 일시정지, 재개
 
-    private void SetState(State state)
-    {
-        Current = state;
-
-        OnStateChangedEvent.SetDirty();
-    }
-
-    /// <summary>
-    /// 타이머의 작동을 시작시킵니다.
-    /// </summary>
-    public void Start()
-    {
-        Time.Current = default;
-
-        SetState(State.Started);
-    }
-
-    /// <summary>
-    /// 타이머의 작동을 시작시킵니다.
-    /// </summary>
-    /// <param name="time">목표 시간 값</param>
-    public void Start(TValue time)
-    {
-        Time.Target = time;
-
-        Start();
-    }
-
-    /// <summary>
-    /// 타이머의 작동을 중지시킵니다.
-    /// </summary>
-    public void Stop()
-    {
-        if (Current != State.Stopped)
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 타이머의 작동을 시작합니다.
+        /// </summary>
+        /// <param name="duration">지속 시간</param>
+        // ------------------------------------------------------------
+        public void Start(TValue duration)
         {
-            Time.Current = default;
+            if (IsWorking || IsPaused)
+            {
+                throw new InvalidOperationException("타이머가 이미 작동 중입니다. 중지 후 시작해주세요.");
+            }
 
-            SetState(State.Stopped);
+            state = State.Begin;
+
+            (this.duration, elapsedTime) = (duration, default);
         }
-    }
 
-    /// <summary>
-    /// 타이머의 작동을 일시정지시킵니다.
-    /// </summary>
-    public void Pause()
-    {
-        if (Current == State.Started)
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 타이머의 작동을 중지합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void Stop()
         {
-            SetState(State.Paused);
+            if (IsWorking || IsPaused)
+            {
+                state = State.End;
+                    
+                (this.duration, elapsedTime) = (default, default);
+            }
         }
-    }
 
-    /// <summary>
-    /// 타이머의 작동을 재개시킵니다.
-    /// </summary>
-    public void Resume()
-    {
-        if (Current == State.Paused)
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 타이머의 작동을 일시정지합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void Pause()
         {
-            SetState(State.Started);
+            if (IsWorking)
+            {
+                state = State.Pause;
+            }
         }
-    }
-}
 
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 타이머의 작동을 재개합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void Resume()
+        {
+            if (IsPaused)
+            {
+                state = State.Begin;
+            }
+        }
+
+    #endregion
+
+    }
 }

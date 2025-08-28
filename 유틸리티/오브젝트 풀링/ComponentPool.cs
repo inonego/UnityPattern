@@ -4,11 +4,12 @@ using UnityEngine;
 
 namespace inonego
 {
-    // ============================================================
+    // ===============================================================================
     /// <summary>
-    /// 유니티에서 사용하는 컴포넌트에 사용 가능한 풀입니다.
+    /// <br/>유니티에서 사용하는 컴포넌트에 사용 가능한 풀입니다.
+    /// <br/>컴포넌트를 풀링하기 위해서는 해당 T 컴포넌트가 최상단에 포함된 프리팹이 필요합니다.
     /// </summary>
-    // ============================================================
+    // ===============================================================================
     [Serializable]
     public class ComponentPool<T> : Pool<T> where T : Component
     {
@@ -42,7 +43,7 @@ namespace inonego
         
         protected override T Create()
         {
-            return GameObject.Instantiate(prefab, active).GetComponentInChildren<T>();
+            return GameObject.Instantiate(prefab, active).GetComponent<T>();
         }
 
         protected override void OnAcquire(T item)

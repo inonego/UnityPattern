@@ -15,6 +15,9 @@ namespace inonego
     [Serializable]
     public class Timer
     {
+        [SerializeField]
+        private bool invokeEvent = true;
+
         [SerializeField] private TValue duration = default;
         [SerializeField] private TValue elapsedTime = default;
 
@@ -51,7 +54,10 @@ namespace inonego
 
                 current = next;
 
-                OnStateChange?.Invoke(this, new ValueChangeEventArgs<State> { Previous = prev, Current = current });
+                if (invokeEvent)
+                {
+                    OnStateChange?.Invoke(this, new ValueChangeEventArgs<State> { Previous = prev, Current = current });
+                }
             }
         }
         
@@ -63,6 +69,14 @@ namespace inonego
     #region 이벤트
 
         public event ValueChangeEvent<Timer, State> OnStateChange = null;
+
+        [Serializable]
+        public struct EndEventArgs
+        {
+            // NONE
+        }
+
+        public event Action<Timer, EndEventArgs> OnEnd = null;
 
     #endregion
 
@@ -82,6 +96,11 @@ namespace inonego
                 // 타이머의 시간이 목표 시간을 초과하면 타이머를 종료합니다.
                 if (elapsedTime >= duration)
                 {
+                    if (invokeEvent)
+                    {
+                        OnEnd?.Invoke(this, new EndEventArgs { });
+                    }
+
                     Stop();
                 }
             }

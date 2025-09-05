@@ -15,8 +15,12 @@ namespace inonego
     [Serializable]
     public class Timer
     {
-        [SerializeField]
-        private bool invokeEvent = true;
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 타이머의 이벤트를 호출할지 여부를 결정합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public bool InvokeEvent = true;
 
         [SerializeField] private TValue duration = default;
         [SerializeField] private TValue elapsedTime = default;
@@ -39,13 +43,10 @@ namespace inonego
 
         [SerializeField]
         private State current = State.Begin;
-        public State Current => current;
-
-        // 내부적으로 상태를 변경할때 state 프로퍼티를 사용하세요!
-        private State state
+        public State Current
         {
             get => current;
-            set
+            protected set
             {
                 var (prev, next) = (current, value);
 
@@ -54,15 +55,15 @@ namespace inonego
 
                 current = next;
 
-                if (invokeEvent)
+                if (InvokeEvent)
                 {
-                    OnStateChange?.Invoke(this, new ValueChangeEventArgs<State> { Previous = prev, Current = current });
+                    OnStateChange?.Invoke(this, new ValueChangeEventArgs<State> { Previous = prev, Current = next });
                 }
             }
         }
         
-        public bool IsWorking => Current == State.Begin;
-        public bool IsPaused => Current == State.Pause;
+        public bool IsWorking => current == State.Begin;
+        public bool IsPaused => current == State.Pause;
 
     #endregion
         
@@ -96,7 +97,7 @@ namespace inonego
                 // 타이머의 시간이 목표 시간을 초과하면 타이머를 종료합니다.
                 if (elapsedTime >= duration)
                 {
-                    if (invokeEvent)
+                    if (InvokeEvent)
                     {
                         OnEnd?.Invoke(this, new EndEventArgs { });
                     }
@@ -130,7 +131,7 @@ namespace inonego
                 throw new InvalidOperationException("타이머가 이미 작동 중입니다. 중지 후 시작해주세요.");
             }
 
-            state = State.Begin;
+            Current = State.Begin;
 
             (this.duration, elapsedTime) = (duration, default);
         }
@@ -144,7 +145,7 @@ namespace inonego
         {
             if (IsWorking || IsPaused)
             {
-                state = State.End;
+                Current = State.End;
                     
                 (this.duration, elapsedTime) = (default, default);
             }
@@ -159,7 +160,7 @@ namespace inonego
         {
             if (IsWorking)
             {
-                state = State.Pause;
+                Current = State.Pause;
             }
         }
 
@@ -172,7 +173,7 @@ namespace inonego
         {
             if (IsPaused)
             {
-                state = State.Begin;
+                Current = State.Begin;
             }
         }
 

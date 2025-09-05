@@ -14,6 +14,13 @@ namespace inonego
 [Serializable]
 public class Level
 {
+    // ------------------------------------------------------------
+    /// <summary>
+    /// 이벤트를 호출할지 여부를 결정합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    public bool InvokeEvent = true;
+
     [SerializeField] private int current = 0;
     [SerializeField] private int exp = 0;
 
@@ -123,7 +130,7 @@ public class Level
     /// 레벨 업 시킵니다.
     /// </summary>
     // ------------------------------------------------------------
-    public void LevelUp(int amount = 1, bool invokeEvent = true)
+    public void LevelUp(int amount = 1)
     {   
         for (int i = 0; i < amount; i++)
         {
@@ -131,7 +138,7 @@ public class Level
             {
                 Current++;
 
-                if (invokeEvent)
+                if (InvokeEvent)
                 {
                     OnLevelUp?.Invoke(this, new LevelUpEventArgs { Value = current });
                 }

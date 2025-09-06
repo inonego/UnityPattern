@@ -6,6 +6,8 @@ using TValue = System.Double;
 
 namespace inonego
 {
+    using static ITimer;
+
     // ==================================================================
     /// <summary>
     /// <br/>타이머 클래스입니다.
@@ -13,7 +15,7 @@ namespace inonego
     /// </summary>
     // ==================================================================
     [Serializable]
-    public class Timer
+    public class Timer : ITimer
     {
         // ------------------------------------------------------------
         /// <summary>
@@ -32,12 +34,6 @@ namespace inonego
 
         public TValue ElapsedTime01  => ElapsedTime / duration;
         public TValue RemainingTime01 => RemainingTime / duration;
-
-    #region 열거형 타입 정의
-
-        public enum State { Begin, Pause, End }
-
-    #endregion
 
     #region 상태
 
@@ -70,14 +66,19 @@ namespace inonego
     #region 이벤트
 
         public event ValueChangeEvent<Timer, State> OnStateChange = null;
+        public event Action<Timer, EndEventArgs> OnEnd = null;
 
-        [Serializable]
-        public struct EndEventArgs
+        event ValueChangeEvent<ITimer, State> ITimer.OnStateChange
         {
-            // NONE
+            add => OnStateChange += value;
+            remove => OnStateChange -= value;
         }
 
-        public event Action<Timer, EndEventArgs> OnEnd = null;
+        event Action<ITimer, EndEventArgs> ITimer.OnEnd
+        {
+            add => OnEnd += value;
+            remove => OnEnd -= value;
+        }
 
     #endregion
 

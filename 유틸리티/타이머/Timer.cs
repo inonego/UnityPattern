@@ -44,12 +44,12 @@ namespace inonego
             get => current;
             protected set
             {
-                var (prev, next) = (current, value);
+                var (prev, next) = (this.current, value);
 
                 // 상태 변화가 없으면 종료합니다.
-                if (prev.Equals(next)) return;
+                if (prev == next) return;
 
-                current = next;
+                this.current = next;
 
                 if (InvokeEvent)
                 {

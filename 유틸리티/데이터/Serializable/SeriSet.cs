@@ -4,12 +4,16 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
-namespace inonego.Collections.Serializable
+namespace inonego.Serializable
 {
+    // ========================================================================
+    /// <summary>
+    /// 직렬화 가능한 HashSet입니다.
+    /// </summary>
+    // ========================================================================
     [Serializable]
-    public class SeriQueue<T> : Queue<T>, ISerializationCallbackReceiver
+    public class SeriSet<T> : HashSet<T>, ISerializationCallbackReceiver
     {
-
         [SerializeField]
         private List<T> items = new();
 
@@ -26,10 +30,10 @@ namespace inonego.Collections.Serializable
         public void OnAfterDeserialize()
         {
             Clear();
-            
+
             for (int i = 0; i < items.Count; i++)
             {
-                Enqueue(items[i]);
+                Add(items[i]);
             }
         }
     }

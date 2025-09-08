@@ -3,10 +3,10 @@ using UnityEditor;
 
 #if UNITY_EDITOR
 
-namespace inonego
+namespace inonego.Serializable
 {
-    [CustomPropertyDrawer(typeof(Nullable<>))]
-    public class NullableDrawer : PropertyDrawer
+    [CustomPropertyDrawer(typeof(SeriNullable<>))]
+    public class SeriNullableDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {

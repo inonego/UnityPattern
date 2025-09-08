@@ -2,7 +2,7 @@ using System;
 
 using UnityEngine;
 
-namespace inonego
+namespace inonego.Serializable
 {
     // ========================================================================
     /// <summary>
@@ -11,7 +11,7 @@ namespace inonego
     /// </summary>
     // ========================================================================
     [Serializable]
-    public struct Nullable<T> where T : struct
+    public struct SeriNullable<T> where T : struct
     {
         [SerializeField] private bool hasValue;
         [SerializeField] private T value;
@@ -19,39 +19,39 @@ namespace inonego
         public bool HasValue => hasValue;
         public T Value => hasValue ? value : throw new InvalidOperationException("Nullable의 값이 null입니다. HasValue를 통해 먼저 값이 있는지 확인해주세요.");
 
-        public Nullable(T value) 
+        public SeriNullable(T value) 
         {
             this.hasValue = true;
             this.value = value;
         }
 
-        public Nullable(T? nullable) 
+        public SeriNullable(T? nullable) 
         {
             this.hasValue = nullable.HasValue;
             this.value  = nullable.GetValueOrDefault();
         }
 
-        public static implicit operator Nullable<T>(T? value) => new(value);
-        public static implicit operator T?(Nullable<T> nullable) => nullable.GetValueOrDefault();
+        public static implicit operator SeriNullable<T>(T? value) => new(value);
+        public static implicit operator T?(SeriNullable<T> nullable) => nullable.GetValueOrDefault();
 
-        public static implicit operator Nullable<T>(T value) => new(value);
-        public static explicit operator T(Nullable<T> nullable) => nullable.GetValueOrDefault();
+        public static implicit operator SeriNullable<T>(T value) => new(value);
+        public static explicit operator T(SeriNullable<T> nullable) => nullable.GetValueOrDefault();
 
-        public static bool operator ==(Nullable<T> left, Nullable<T> right)
+        public static bool operator ==(SeriNullable<T> left, SeriNullable<T> right)
         {
             if (!left.hasValue && !right.hasValue) return true;
             if (!left.hasValue || !right.hasValue) return false;
             return left.value.Equals(right.value);
         }
 
-        public static bool operator !=(Nullable<T> left, Nullable<T> right) => !(left == right);
+        public static bool operator !=(SeriNullable<T> left, SeriNullable<T> right) => !(left == right);
         
         public T GetValueOrDefault() => hasValue ? value : default;
         public T GetValueOrDefault(T defaultValue) => hasValue ? value : defaultValue;
 
         public override bool Equals(object obj)
         {
-            if (obj is Nullable<T> other)
+            if (obj is SeriNullable<T> other)
                 return this == other;
             if (obj is T directValue)
                 return hasValue && value.Equals(directValue);

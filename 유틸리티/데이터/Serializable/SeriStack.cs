@@ -4,10 +4,15 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
-namespace inonego.Collections.Serializable
+namespace inonego.Serializable
 {
+    // ========================================================================
+    /// <summary>
+    /// 직렬화 가능한 Stack입니다.
+    /// </summary>
+    // ========================================================================
     [Serializable]
-    public class SeriSet<T> : HashSet<T>, ISerializationCallbackReceiver
+    public class SeriStack<T> : Stack<T>, ISerializationCallbackReceiver
     {
         [SerializeField]
         private List<T> items = new();
@@ -15,7 +20,8 @@ namespace inonego.Collections.Serializable
         public void OnBeforeSerialize()
         {
             items.Clear();
-
+            
+            // 스택은 역순으로 직렬화
             foreach (var item in this)
             {
                 items.Add(item);
@@ -25,10 +31,12 @@ namespace inonego.Collections.Serializable
         public void OnAfterDeserialize()
         {
             Clear();
-
+            
             for (int i = 0; i < items.Count; i++)
             {
-                Add(items[i]);
+                int index = (items.Count - 1) - i;
+
+                Push(items[index]);
             }
         }
     }

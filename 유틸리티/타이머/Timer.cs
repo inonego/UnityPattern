@@ -47,7 +47,7 @@ namespace inonego
                 var (prev, next) = (current, value);
 
                 // 상태 변화가 없으면 종료합니다.
-                if (prev == next) return;
+                if (prev.Equals(next)) return;
 
                 current = next;
 

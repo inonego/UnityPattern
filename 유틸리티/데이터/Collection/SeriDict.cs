@@ -7,7 +7,7 @@ using UnityEngine;
 namespace inonego.Collections.Serializable
 {
     [Serializable]
-    public class Dictionary<TKey, TValue> : System.Collections.Generic.Dictionary<TKey, TValue>, ISerializationCallbackReceiver
+    public class SeriDict<TKey, TValue> : Dictionary<TKey, TValue>, ISerializationCallbackReceiver
     {
         [Serializable]
         private struct KeyValuePair

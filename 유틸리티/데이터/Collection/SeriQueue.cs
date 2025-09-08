@@ -7,8 +7,9 @@ using UnityEngine;
 namespace inonego.Collections.Serializable
 {
     [Serializable]
-    public class HashSet<T> : System.Collections.Generic.HashSet<T>, ISerializationCallbackReceiver
+    public class SeriQueue<T> : Queue<T>, ISerializationCallbackReceiver
     {
+
         [SerializeField]
         private List<T> items = new();
 
@@ -25,10 +26,10 @@ namespace inonego.Collections.Serializable
         public void OnAfterDeserialize()
         {
             Clear();
-
+            
             for (int i = 0; i < items.Count; i++)
             {
-                Add(items[i]);
+                Enqueue(items[i]);
             }
         }
     }

@@ -7,16 +7,16 @@ using UnityEngine;
 namespace inonego.Collections.Serializable
 {
     [Serializable]
-    public class Queue<T> : System.Collections.Generic.Queue<T>, ISerializationCallbackReceiver
+    public class SeriStack<T> : Stack<T>, ISerializationCallbackReceiver
     {
-
         [SerializeField]
         private List<T> items = new();
 
         public void OnBeforeSerialize()
         {
             items.Clear();
-
+            
+            // 스택은 역순으로 직렬화
             foreach (var item in this)
             {
                 items.Add(item);
@@ -29,7 +29,9 @@ namespace inonego.Collections.Serializable
             
             for (int i = 0; i < items.Count; i++)
             {
-                Enqueue(items[i]);
+                int index = (items.Count - 1) - i;
+
+                Push(items[index]);
             }
         }
     }

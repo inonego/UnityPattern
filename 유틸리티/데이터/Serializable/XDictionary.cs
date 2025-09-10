@@ -7,7 +7,7 @@ using UnityEngine;
 namespace inonego.Serializable
 {
     [Serializable]
-    public struct SeriKeyValuePair<TKey, TValue>
+    public struct XKeyValuePair<TKey, TValue>
     {
         public TKey Key;
         public TValue Value;
@@ -19,10 +19,10 @@ namespace inonego.Serializable
     /// </summary>
     // ========================================================================
     [Serializable]
-    public class SeriDict<TKey, TValue> : Dictionary<TKey, TValue>, ISerializationCallbackReceiver
+    public class XDictionary<TKey, TValue> : Dictionary<TKey, TValue>, ISerializationCallbackReceiver
     {
         [SerializeField]
-        private List<SeriKeyValuePair<TKey, TValue>> items = new();
+        private List<XKeyValuePair<TKey, TValue>> items = new();
 
         public void OnBeforeSerialize()
         {
@@ -30,7 +30,7 @@ namespace inonego.Serializable
 
             foreach (var kvp in this)
             {
-                var pair = new SeriKeyValuePair<TKey, TValue> 
+                var pair = new XKeyValuePair<TKey, TValue> 
                 {
                     Key = kvp.Key,
                     Value = kvp.Value

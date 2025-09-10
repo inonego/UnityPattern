@@ -8,11 +8,11 @@ namespace inonego.Serializable
 {
     // ========================================================================
     /// <summary>
-    /// 직렬화 가능한 Queue입니다.
+    /// 직렬화 가능한 HashSet입니다.
     /// </summary>
     // ========================================================================
     [Serializable]
-    public class SeriQueue<T> : Queue<T>, ISerializationCallbackReceiver
+    public class XHashSet<T> : HashSet<T>, ISerializationCallbackReceiver
     {
         [SerializeField]
         private List<T> items = new();
@@ -30,10 +30,10 @@ namespace inonego.Serializable
         public void OnAfterDeserialize()
         {
             Clear();
-            
+
             for (int i = 0; i < items.Count; i++)
             {
-                Enqueue(items[i]);
+                Add(items[i]);
             }
         }
     }

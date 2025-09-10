@@ -5,8 +5,8 @@ using UnityEditor;
 
 namespace inonego.Serializable
 {
-    [CustomPropertyDrawer(typeof(SeriNullable<>))]
-    public class SeriNullableDrawer : PropertyDrawer
+    [CustomPropertyDrawer(typeof(XNullable<>))]
+    public class XNullableDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {

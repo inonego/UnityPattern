@@ -8,11 +8,11 @@ namespace inonego.Serializable
 {
     // ========================================================================
     /// <summary>
-    /// 직렬화 가능한 Stack입니다.
+    /// 직렬화 가능한 Queue입니다.
     /// </summary>
     // ========================================================================
     [Serializable]
-    public class SeriStack<T> : Stack<T>, ISerializationCallbackReceiver
+    public class XQueue<T> : Queue<T>, ISerializationCallbackReceiver
     {
         [SerializeField]
         private List<T> items = new();
@@ -20,8 +20,7 @@ namespace inonego.Serializable
         public void OnBeforeSerialize()
         {
             items.Clear();
-            
-            // 스택은 역순으로 직렬화
+
             foreach (var item in this)
             {
                 items.Add(item);
@@ -34,9 +33,7 @@ namespace inonego.Serializable
             
             for (int i = 0; i < items.Count; i++)
             {
-                int index = (items.Count - 1) - i;
-
-                Push(items[index]);
+                Enqueue(items[i]);
             }
         }
     }

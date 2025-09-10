@@ -6,8 +6,6 @@ using TValue = System.Double;
 
 namespace inonego
 {
-    using static ITimer;
-
     // ==================================================================
     /// <summary>
     /// <br/>타이머 클래스입니다.
@@ -15,14 +13,20 @@ namespace inonego
     /// </summary>
     // ==================================================================
     [Serializable]
-    public class Timer : ITimer
+    public class Timer : ITimer, ITimerEventHandler<Timer>
     {
         // ------------------------------------------------------------
         /// <summary>
         /// 타이머의 이벤트를 호출할지 여부를 결정합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public bool InvokeEvent = true;
+        [SerializeField]
+        private bool invokeEvent = true;
+        public bool InvokeEvent
+        {
+            get => invokeEvent;
+            set => invokeEvent = value;
+        }
 
         [SerializeField] private TValue duration = default;
         [SerializeField] private TValue elapsedTime = default;
@@ -38,8 +42,8 @@ namespace inonego
     #region 상태
 
         [SerializeField]
-        private State current = State.Begin;
-        public State Current
+        private TimerState current = TimerState.Begin;
+        public TimerState Current
         {
             get => current;
             protected set
@@ -53,32 +57,26 @@ namespace inonego
 
                 if (InvokeEvent)
                 {
-                    OnStateChange?.Invoke(this, new ValueChangeEventArgs<State> { Previous = prev, Current = next });
+                    OnStateChange?.Invoke(this, new ValueChangeEventArgs<TimerState> { Previous = prev, Current = next });
                 }
             }
         }
         
-        public bool IsWorking => current == State.Begin;
-        public bool IsPaused => current == State.Pause;
+        public bool IsWorking => current == TimerState.Begin;
+        public bool IsPaused => current == TimerState.Pause;
 
     #endregion
         
     #region 이벤트
 
-        public event ValueChangeEvent<Timer, State> OnStateChange = null;
-        public event Action<Timer, EndEventArgs> OnEnd = null;
+        public event ValueChangeEvent<Timer, TimerState> OnStateChange = null;
+        public event Action<Timer, TimerEndEventArgs> OnEnd = null;
 
-        event ValueChangeEvent<ITimer, State> ITimer.OnStateChange
-        {
-            add => OnStateChange += value;
-            remove => OnStateChange -= value;
-        }
-
-        event Action<ITimer, EndEventArgs> ITimer.OnEnd
-        {
-            add => OnEnd += value;
-            remove => OnEnd -= value;
-        }
+        event ValueChangeEvent<IReadOnlyTimer, TimerState> ITimerEventHandler<IReadOnlyTimer>.OnStateChange { add => OnStateChange += value; remove => OnStateChange -= value; }
+        event ValueChangeEvent<ITimer, TimerState> ITimerEventHandler<ITimer>.OnStateChange { add => OnStateChange += value; remove => OnStateChange -= value; }
+        
+        event Action<IReadOnlyTimer, TimerEndEventArgs> ITimerEventHandler<IReadOnlyTimer>.OnEnd { add => OnEnd += value; remove => OnEnd -= value; }
+        event Action<ITimer, TimerEndEventArgs> ITimerEventHandler<ITimer>.OnEnd { add => OnEnd += value; remove => OnEnd -= value; }
 
     #endregion
 
@@ -100,7 +98,7 @@ namespace inonego
                 {
                     if (InvokeEvent)
                     {
-                        OnEnd?.Invoke(this, new EndEventArgs { });
+                        OnEnd?.Invoke(this, new TimerEndEventArgs { });
                     }
 
                     Stop();
@@ -132,7 +130,7 @@ namespace inonego
                 throw new InvalidOperationException("타이머가 이미 작동 중입니다. 중지 후 시작해주세요.");
             }
 
-            Current = State.Begin;
+            Current = TimerState.Begin;
 
             (this.duration, elapsedTime) = (duration, default);
         }
@@ -146,7 +144,7 @@ namespace inonego
         {
             if (IsWorking || IsPaused)
             {
-                Current = State.End;
+                Current = TimerState.End;
                     
                 (this.duration, elapsedTime) = (default, default);
             }
@@ -161,7 +159,7 @@ namespace inonego
         {
             if (IsWorking)
             {
-                Current = State.Pause;
+                Current = TimerState.Pause;
             }
         }
 
@@ -174,7 +172,7 @@ namespace inonego
         {
             if (IsPaused)
             {
-                Current = State.Begin;
+                Current = TimerState.Begin;
             }
         }
 

@@ -6,6 +6,14 @@ using TValue = System.Double;
 
 namespace inonego
 {
+    public enum TimerState { Begin, Pause, End }
+
+    [Serializable]
+    public struct TimerEndEventArgs
+    {
+        // NONE
+    }
+
     // ==================================================================
     /// <summary>
     /// <br/>타이머 클래스입니다.
@@ -13,7 +21,7 @@ namespace inonego
     /// </summary>
     // ==================================================================
     [Serializable]
-    public class Timer : ITimer, ITimerEventHandler<Timer>
+    public class Timer : ITimer, IReadOnlyTimer
     {
         // ------------------------------------------------------------
         /// <summary>
@@ -71,12 +79,16 @@ namespace inonego
 
         public event ValueChangeEvent<Timer, TimerState> OnStateChange = null;
         public event Action<Timer, TimerEndEventArgs> OnEnd = null;
-
-        event ValueChangeEvent<IReadOnlyTimer, TimerState> ITimerEventHandler<IReadOnlyTimer>.OnStateChange { add => OnStateChange += value; remove => OnStateChange -= value; }
-        event ValueChangeEvent<ITimer, TimerState> ITimerEventHandler<ITimer>.OnStateChange { add => OnStateChange += value; remove => OnStateChange -= value; }
         
-        event Action<IReadOnlyTimer, TimerEndEventArgs> ITimerEventHandler<IReadOnlyTimer>.OnEnd { add => OnEnd += value; remove => OnEnd -= value; }
-        event Action<ITimer, TimerEndEventArgs> ITimerEventHandler<ITimer>.OnEnd { add => OnEnd += value; remove => OnEnd -= value; }
+        event ValueChangeEvent<ITimer, TimerState> ITimer.OnStateChange 
+        { add => OnStateChange += value; remove => OnStateChange -= value; }
+        event ValueChangeEvent<IReadOnlyTimer, TimerState> IReadOnlyTimer.OnStateChange
+        { add => OnStateChange += value; remove => OnStateChange -= value; }
+        
+        event Action<ITimer, TimerEndEventArgs> ITimer.OnEnd 
+        { add => OnEnd += value; remove => OnEnd -= value; }
+        event Action<IReadOnlyTimer, TimerEndEventArgs> IReadOnlyTimer.OnEnd
+        { add => OnEnd += value; remove => OnEnd -= value; }
 
     #endregion
 

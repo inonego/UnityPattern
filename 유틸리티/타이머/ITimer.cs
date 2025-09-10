@@ -1,24 +1,17 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 using TValue = System.Double;
 
 namespace inonego
 {
-    public enum TimerState { Begin, Pause, End }
-
-    [Serializable]
-    public struct TimerEndEventArgs
-    {
-        // NONE
-    }
-
-    public interface ITimerEventHandler<TSelf> where TSelf : ITimerEventHandler<TSelf>
-    {
-        public event ValueChangeEvent<TSelf, TimerState> OnStateChange;
-        public event Action<TSelf, TimerEndEventArgs> OnEnd;
-    }
-
-    public interface IReadOnlyTimer : ITimerEventHandler<IReadOnlyTimer>
+    // ==================================================================
+    /// <summary>
+    /// 타이머 인터페이스입니다.
+    /// </summary>
+    // ==================================================================
+    public interface ITimer
     {
         // ------------------------------------------------------------
         /// <summary>
@@ -26,6 +19,15 @@ namespace inonego
         /// </summary>
         // ------------------------------------------------------------
         public bool InvokeEvent { get; set; }
+
+    #region 상태
+
+        public bool IsWorking { get; }
+        public bool IsPaused { get; }
+    
+        public TimerState Current { get; }
+
+    #endregion
 
     #region 시간
 
@@ -39,29 +41,11 @@ namespace inonego
 
     #endregion
 
-    #region 상태
-
-        public bool IsWorking { get; }
-        public bool IsPaused { get; }
+    #region 이벤트
     
-        public TimerState Current { get; }
-
-    #endregion
-
-    }
+        public event ValueChangeEvent<ITimer, TimerState> OnStateChange;
+        public event Action<ITimer, TimerEndEventArgs> OnEnd;
     
-    // ==================================================================
-    /// <summary>
-    /// 타이머 인터페이스입니다.
-    /// </summary>
-    // ==================================================================
-    public interface ITimer : IReadOnlyTimer, ITimerEventHandler<ITimer>
-    {
-
-    #region 상태
-    
-        public enum State { Begin, Pause, End }
-
     #endregion
 
     #region 메서드

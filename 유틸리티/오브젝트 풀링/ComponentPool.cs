@@ -15,9 +15,17 @@ namespace inonego
     {
         // ------------------------------------------------------------
         /// <summary>
+        /// Acquire되는 경우 오브젝트의 위치를 유지할지 여부입니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        [SerializeField] private bool worldPositionStays = false;
+
+        // ------------------------------------------------------------
+        /// <summary>
         /// 풀에 사용할 프리팹입니다.
         /// </summary>
         // ------------------------------------------------------------
+        [Header("프리팹")]
         [SerializeField] private GameObject prefab = null;
 
         // ------------------------------------------------------------
@@ -25,6 +33,7 @@ namespace inonego
         /// Release되는 경우 오브젝트가 위치할 부모 트랜스폼입니다.
         /// </summary>
         // ------------------------------------------------------------
+        [Header("부모 트랜스폼")]
         [SerializeField] private Transform pool = null;
 
         // ------------------------------------------------------------
@@ -33,13 +42,6 @@ namespace inonego
         /// </summary>
         // ------------------------------------------------------------
         [SerializeField] private Transform active = null;
-
-        // ------------------------------------------------------------
-        /// <summary>
-        /// Acquire되는 경우 오브젝트의 위치를 유지할지 여부입니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        [SerializeField] private bool worldPositionStays = false;
         
         protected override T Create()
         {

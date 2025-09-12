@@ -18,7 +18,13 @@ namespace inonego
         /// 이벤트를 호출할지 여부를 결정합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public bool InvokeEvent = true;
+        [SerializeField]
+        private bool invokeEvent = true;
+        public bool InvokeEvent
+        {
+            get => invokeEvent;
+            set => invokeEvent = value;
+        }
 
         [SerializeField]
         protected T current;
@@ -27,7 +33,7 @@ namespace inonego
             get => current;
             set
             {
-                var (prev, next) = (this.current, Process(value));
+                var (prev, next) = (this.current, ProcessValue(value));
 
                 // 값 변화가 없으면 종료합니다.
                 if (Equals(prev, next)) return;
@@ -59,7 +65,7 @@ namespace inonego
         /// 값을 설정하기 전에 처리하는 메서드입니다.
         /// </summary>
         // ------------------------------------------------------------
-        protected virtual T Process(T value) => value;
+        protected virtual T ProcessValue(T value) => value;
 
     #endregion
 

@@ -13,6 +13,18 @@ namespace inonego
         {
             (Min, Max) = (min, max);
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is MinMax<T> other)
+            {
+                return Min.Equals(other.Min) && Max.Equals(other.Max);  
+            }
+            
+            return false;
+        }
+
+        public override int GetHashCode() => HashCode.Combine(Min, Max);
     }
 
     // ============================================================
@@ -74,8 +86,8 @@ namespace inonego
 
         public MinMaxValue(MinMax<T> range, T value)
         {  
-            this.range = CheckRange(range);
-            this.current = ClampValue(value);
+            this.range = ProcessRange(range);
+            this.current = ProcessValue(value);
         }
 
     #endregion
@@ -87,7 +99,7 @@ namespace inonego
         /// 범위가 유효한지 확인합니다.
         /// </summary>
         // ------------------------------------------------------------
-        private MinMax<T> CheckRange(MinMax<T> range)
+        protected MinMax<T> CheckRange(MinMax<T> range)
         {
             if (range.Min.CompareTo(range.Max) > 0)
             {
@@ -102,7 +114,7 @@ namespace inonego
         /// 값을 최소값과 최대값 사이로 제한합니다.
         /// </summary>
         // ------------------------------------------------------------
-        private T ClampValue(T val)
+        protected T ClampValue(T val)
         {
             if (val.CompareTo(range.Min) < 0) return range.Min;
             if (val.CompareTo(range.Max) > 0) return range.Max;
@@ -112,10 +124,20 @@ namespace inonego
 
         // ------------------------------------------------------------
         /// <summary>
+        /// 범위를 설정하기 전에 처리하는 메서드입니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        protected virtual MinMax<T> ProcessRange(MinMax<T> value)
+        {
+            return CheckRange(value);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
         /// 값을 설정하기 전에 처리하는 메서드입니다.
         /// </summary>
         // ------------------------------------------------------------
-        protected override T Process(T value)
+        protected override T ProcessValue(T value)
         {
             return ClampValue(value);
         }

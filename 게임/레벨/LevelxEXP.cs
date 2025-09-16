@@ -17,7 +17,18 @@ namespace inonego
     {
 
     #region 필드
-       
+
+        public override int Value
+        {
+            get => base.Value;
+            set 
+            {
+                base.Value = value;
+
+                this.exp = 0;
+            }
+        }
+
         public override int FullMax => RequiredEXPToLevelUpArray.Count;
 
         [SerializeField]
@@ -33,23 +44,26 @@ namespace inonego
             get => exp;
             set
             { 
-                int exp = value;
+                int newEXP = value;
 
-                if (exp >= MaxEXP && !CanLevelUp)
+                // 레벨업 처리
+                while (CanLevelUp)
                 {
-                    exp = MaxEXP;
-                }
-                else
-                {
-                    while (exp >= MaxEXP && CanLevelUp)
+                    if (MaxEXP < 0)
                     {
-                        exp -= MaxEXP;
-                        
-                        LevelUp();
+                        throw new Exception("최대 EXP 값은 0보다 작을 수 없습니다.");
                     }
+
+                    // 최대 EXP보다 작으면 레벨업 처리 종료
+                    if (newEXP < MaxEXP) break;
+                    
+                    newEXP -= MaxEXP;
+                    
+                    LevelUp();
                 }
 
-                this.exp = exp;
+                // EXP 마지막에 업데이트
+                this.exp = Mathf.Min(newEXP, MaxEXP);
             }
         }
 
@@ -59,8 +73,8 @@ namespace inonego
         /// <br/>i번째 인덱스의 값은 레벨 (i)에서 레벨 (i + 1)로 넘어가기 위해 필요한 경험치를 의미합니다.
         /// </summary>
         // ------------------------------------------------------------------------------------------
-        [SerializeField]
-        private List<int> requiredEXPToLevelUpArray;
+        [SerializeField, ReadOnly]
+        private int[] requiredEXPToLevelUpArray;
         public IReadOnlyList<int> RequiredEXPToLevelUpArray => requiredEXPToLevelUpArray;
         
         // ------------------------------------------------------------------------------------------
@@ -83,18 +97,11 @@ namespace inonego
 
         private LevelxEXP() {}
 
-        public LevelxEXP(List<int> requiredEXPToLevelUpArray)
+        public LevelxEXP(int[] requiredEXPToLevelUpArray)
         {
             this.requiredEXPToLevelUpArray = requiredEXPToLevelUpArray;
-
+            
             Reset();
-        }
-
-        protected override void OnValueChangeHandler(Value<int> sender, ValueChangeEventArgs<int> e)
-        {
-            base.OnValueChangeHandler(sender, e);
-
-            exp = 0;
         }
 
     #endregion

@@ -35,7 +35,7 @@ namespace inonego
             set => invokeEvent = value;
         }
 
-        public int Value
+        public virtual int Value
         {
             get => this.value.Current;
             set => this.value.Current = value;
@@ -93,7 +93,7 @@ namespace inonego
             Reset();
         }
 
-        protected virtual void OnValueChangeHandler(Value<int> sender, ValueChangeEventArgs<int> e)
+        private void OnValueChangeHandler(Value<int> sender, ValueChangeEventArgs<int> e)
         {
             OnValueChange?.Invoke(this, e);
         }
@@ -102,6 +102,8 @@ namespace inonego
         {
             LimitMax = FullMax;
 
+            // 이벤트 핸들러 중복 등록 방지
+            value.OnValueChange -= OnValueChangeHandler;
             value.OnValueChange += OnValueChangeHandler;
         }
 

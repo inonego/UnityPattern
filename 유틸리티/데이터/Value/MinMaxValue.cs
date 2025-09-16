@@ -4,29 +4,6 @@ using UnityEngine;
 
 namespace inonego
 {
-    [Serializable]
-    public struct MinMax<T> where T : struct, IComparable<T>
-    {
-        public T Min, Max;
-
-        public MinMax(T min, T max)
-        {
-            (Min, Max) = (min, max);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is MinMax<T> other)
-            {
-                return Min.Equals(other.Min) && Max.Equals(other.Max);  
-            }
-            
-            return false;
-        }
-
-        public override int GetHashCode() => HashCode.Combine(Min, Max);
-    }
-
     // ============================================================
     /// <summary>
     /// 최소값과 최대값 범위를 가지는 값을 관리하는 클래스입니다.
@@ -34,7 +11,7 @@ namespace inonego
     /// </summary>
     // ============================================================
     [Serializable]
-    public class MinMaxValue<T> : Value<T> where T : struct, IComparable<T>
+    public class MinMaxValue<T> : Value<T>, IComparable<T> where T : struct, IComparable<T>
     {
         // ------------------------------------------------------------
         /// <summary>
@@ -57,7 +34,9 @@ namespace inonego
             get => range;
             set
             {
-                var (prev, next) = (this.range, CheckRange(value));
+                var (prev, next) = (this.range, value);
+
+                ProcessRange(prev, ref next);
 
                 // 범위 변경이 없으면 종료합니다.
                 if (Equals(prev, next)) return;
@@ -74,6 +53,18 @@ namespace inonego
             }
         }
 
+        public T Min 
+        {
+            get => Range.Min;
+            set => Range = new MinMax<T>(value, Max);
+        }
+
+        public T Max
+        {
+            get => Range.Max;
+            set => Range = new MinMax<T>(Min, value);
+        }
+
     #endregion
 
     #region 생성자
@@ -82,32 +73,23 @@ namespace inonego
         {
             range = default;
             current = default;
+
+            ProcessRange(default, ref range);
+            ProcessValue(default, ref current);
         }
 
         public MinMaxValue(MinMax<T> range, T value)
         {  
-            this.range = ProcessRange(range);
-            this.current = ProcessValue(value);
+            this.range = range;
+            this.current = value;
+
+            ProcessRange(default, ref range);
+            ProcessValue(default, ref current);
         }
 
     #endregion
 
     #region 메서드
-
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 범위가 유효한지 확인합니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        protected MinMax<T> CheckRange(MinMax<T> range)
-        {
-            if (range.Min.CompareTo(range.Max) > 0)
-            {
-                throw new ArgumentException("최소값이 최대값보다 클 수 없습니다.");
-            }
-            
-            return range;
-        }
 
         // ------------------------------------------------------------
         /// <summary>
@@ -127,9 +109,12 @@ namespace inonego
         /// 범위를 설정하기 전에 처리하는 메서드입니다.
         /// </summary>
         // ------------------------------------------------------------
-        protected virtual MinMax<T> ProcessRange(MinMax<T> value)
-        {
-            return CheckRange(value);
+        protected virtual void ProcessRange(in MinMax<T> prev, ref MinMax<T> next)
+        {  
+            if (range.Min.CompareTo(range.Max) > 0)
+            {
+                throw new ArgumentException("최소값이 최대값보다 클 수 없습니다.");
+            }
         }
 
         // ------------------------------------------------------------
@@ -137,14 +122,16 @@ namespace inonego
         /// 값을 설정하기 전에 처리하는 메서드입니다.
         /// </summary>
         // ------------------------------------------------------------
-        protected override T ProcessValue(T value)
+        protected override void ProcessValue(in T prev, ref T next)
         {
-            return ClampValue(value);
+            next = ClampValue(next);
         }
 
     #endregion
 
     #region 암시적 변환
+
+        public int CompareTo(T other) => current.CompareTo(other);
 
         // ------------------------------------------------------------
         /// <summary>

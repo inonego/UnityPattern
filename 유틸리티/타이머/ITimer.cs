@@ -1,24 +1,15 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
 using TValue = System.Double;
 
 namespace inonego
 {
+
     // ==================================================================
     /// <summary>
     /// 타이머 인터페이스입니다.
     /// </summary>
     // ==================================================================
-    public interface ITimer
+    public interface ITimer : ITimerEventHandler<ITimer>
     {
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 타이머의 이벤트를 호출할지 여부를 결정합니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        public bool InvokeEvent { get; set; }
 
     #region 상태
 
@@ -39,13 +30,6 @@ namespace inonego
         public TValue ElapsedTime01 { get; }
         public TValue RemainingTime01 { get; }
 
-    #endregion
-
-    #region 이벤트
-    
-        public event ValueChangeEvent<ITimer, TimerState> OnStateChange;
-        public event Action<ITimer, TimerEndEventArgs> OnEnd;
-    
     #endregion
 
     #region 메서드

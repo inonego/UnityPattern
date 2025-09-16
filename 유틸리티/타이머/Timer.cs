@@ -8,10 +8,25 @@ namespace inonego
 {
     public enum TimerState { Begin, Pause, End }
 
+    public delegate void TimerEndEvent<in TSender>(TSender sender, TimerEndEventArgs e);
+
     [Serializable]
     public struct TimerEndEventArgs
     {
         // NONE
+    }
+
+    public interface ITimerEventHandler<out TSelf>
+    {
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 타이머의 이벤트를 호출할지 여부를 결정합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public bool InvokeEvent { get; set; }
+
+        public event TimerEndEvent<TSelf> OnEnd;
+        public event ValueChangeEvent<TSelf, TimerState> OnStateChange;
     }
 
     // ==================================================================
@@ -21,7 +36,7 @@ namespace inonego
     /// </summary>
     // ==================================================================
     [Serializable]
-    public class Timer : ITimer, IReadOnlyTimer
+    public class Timer : ITimer, IReadOnlyTimer, ITimerEventHandler<Timer>
     {
         // ------------------------------------------------------------
         /// <summary>
@@ -77,18 +92,18 @@ namespace inonego
         
     #region 이벤트
 
+        public event TimerEndEvent<Timer> OnEnd = null;
         public event ValueChangeEvent<Timer, TimerState> OnStateChange = null;
-        public event Action<Timer, TimerEndEventArgs> OnEnd = null;
         
-        event ValueChangeEvent<ITimer, TimerState> ITimer.OnStateChange 
-        { add => OnStateChange += value; remove => OnStateChange -= value; }
-        event ValueChangeEvent<IReadOnlyTimer, TimerState> IReadOnlyTimer.OnStateChange
-        { add => OnStateChange += value; remove => OnStateChange -= value; }
-        
-        event Action<ITimer, TimerEndEventArgs> ITimer.OnEnd 
+        event TimerEndEvent<ITimer> ITimerEventHandler<ITimer>.OnEnd 
         { add => OnEnd += value; remove => OnEnd -= value; }
-        event Action<IReadOnlyTimer, TimerEndEventArgs> IReadOnlyTimer.OnEnd
+        event TimerEndEvent<IReadOnlyTimer> ITimerEventHandler<IReadOnlyTimer>.OnEnd
         { add => OnEnd += value; remove => OnEnd -= value; }
+
+        event ValueChangeEvent<ITimer, TimerState> ITimerEventHandler<ITimer>.OnStateChange 
+        { add => OnStateChange += value; remove => OnStateChange -= value; }
+        event ValueChangeEvent<IReadOnlyTimer, TimerState> ITimerEventHandler<IReadOnlyTimer>.OnStateChange 
+        { add => OnStateChange += value; remove => OnStateChange -= value; }
 
     #endregion
 

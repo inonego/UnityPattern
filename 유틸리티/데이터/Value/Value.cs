@@ -33,7 +33,9 @@ namespace inonego
             get => current;
             set
             {
-                var (prev, next) = (this.current, ProcessValue(value));
+                var (prev, next) = (this.current, value);
+
+                ProcessValue(prev, ref next);
 
                 // 값 변화가 없으면 종료합니다.
                 if (Equals(prev, next)) return;
@@ -65,7 +67,7 @@ namespace inonego
         /// 값을 설정하기 전에 처리하는 메서드입니다.
         /// </summary>
         // ------------------------------------------------------------
-        protected virtual T ProcessValue(T value) => value;
+        protected virtual void ProcessValue(in T prev, ref T next) { }
 
     #endregion
 
@@ -73,12 +75,16 @@ namespace inonego
 
         public Value()
         {
-            this.current = default;
+            current = default;
+
+            ProcessValue(default, ref current);
         }
 
         public Value(T value)
         {
-            this.current = value;
+            current = value;
+
+            ProcessValue(default, ref current);
         }
 
     #endregion

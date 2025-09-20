@@ -1,4 +1,4 @@
-using TValue = System.Double;
+using TValue = System.Single;
 
 namespace inonego
 {
@@ -24,7 +24,22 @@ namespace inonego
 
         public TValue Duration { get; }
 
+        // ---------------------------------------------------------------------
+        /// <summary>
+        /// <br/>타이머가 경과한 시간입니다.
+        /// <br/>중지되더라도 <see cref="Reset"/>을 통해 리셋하거나,
+        /// <br/><see cref="Start"/>을 통해 새로 시작하기 전까지 값이 유지됩니다.
+        /// </summary>
+        // ---------------------------------------------------------------------
         public TValue ElapsedTime { get; }
+
+        // ---------------------------------------------------------------------
+        /// <summary>
+        /// <br/>타이머의 남은 시간입니다.
+        /// <br/>중지되더라도 <see cref="Reset"/>을 통해 리셋하거나,
+        /// <br/><see cref="Start"/>을 통해 새로 시작하기 전까지 값이 유지됩니다.
+        /// </summary>
+        // ---------------------------------------------------------------------
         public TValue RemainingTime { get; }
         
         public TValue ElapsedTime01 { get; }
@@ -39,7 +54,7 @@ namespace inonego
         /// 타이머를 업데이트합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void Update(float deltaTime);
+        public void Update(TValue deltaTime);
         
         // ------------------------------------------------------------
         /// <summary>
@@ -76,6 +91,13 @@ namespace inonego
         /// </summary>
         // ------------------------------------------------------------
         public void Resume();
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 타이머를 리셋합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void Reset();
 
     #endregion
 

@@ -13,7 +13,7 @@ namespace inonego
     /// </summary>
     // =======================================================================================
     [Serializable]
-    public class LevelxEXP : LevelBase, ILevel, IReadOnlyLevel
+    public partial class LevelxEXP : LevelBase, ILevel, IReadOnlyLevel
     {
 
     #region 필드
@@ -48,7 +48,7 @@ namespace inonego
 
                 if (newEXP < 0)
                 {
-                    throw new ArgumentException($"경험치({newEXP})는 0 이상이어야 합니다.");
+                    throw new InvalidEXPException();
                 }
 
                 // 레벨업 처리
@@ -56,7 +56,7 @@ namespace inonego
                 {
                     if (MaxEXP < 0)
                     {
-                        throw new Exception("최대 EXP 값은 0보다 작을 수 없습니다.");
+                        throw new InvalidMaxEXPException();
                     }
 
                     // 최대 EXP보다 작으면 레벨업 처리 종료
@@ -109,14 +109,14 @@ namespace inonego
             // ------------------------------------------------------------
             if (requiredEXPToLevelUpArray == null)
             {
-                throw new ArgumentNullException("경험치 테이블은 null일 수 없습니다.");
+                throw new NullEXPTableException();
             }
 
             for (int i = 0; i < requiredEXPToLevelUpArray.Length; i++)
             {
                 if (requiredEXPToLevelUpArray[i] < 0)
                 {
-                    throw new ArgumentException($"경험치 테이블의 {i}번째 값({requiredEXPToLevelUpArray[i]})이 음수입니다. 모든 경험치 값은 0 이상이어야 합니다.");
+                    throw new InvalidEXPTableException();
                 }
             }
 

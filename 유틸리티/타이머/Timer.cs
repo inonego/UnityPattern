@@ -2,11 +2,11 @@ using System;
 
 using UnityEngine;
 
-using TValue = System.Double;
+using TValue = System.Single;
 
 namespace inonego
 {
-    public enum TimerState { Begin, Pause, End }
+    public enum TimerState { Ready, Work, Pause }
 
     public delegate void TimerEndEvent<in TSender>(TSender sender, TimerEndEventArgs e);
 
@@ -36,7 +36,7 @@ namespace inonego
     /// </summary>
     // ==================================================================
     [Serializable]
-    public class Timer : ITimer, IReadOnlyTimer, ITimerEventHandler<Timer>
+    public partial class Timer : ITimer, IReadOnlyTimer, ITimerEventHandler<Timer>
     {
         // ------------------------------------------------------------
         /// <summary>
@@ -56,8 +56,8 @@ namespace inonego
 
         public TValue Duration => duration;
 
-        public TValue ElapsedTime => Math.Min(duration, elapsedTime);
-        public TValue RemainingTime => Math.Max(duration - elapsedTime, 0.0);
+        public TValue ElapsedTime => Mathf.Min(duration, elapsedTime);
+        public TValue RemainingTime => Mathf.Max(duration - elapsedTime, 0.0f);
 
         public TValue ElapsedTime01  => ElapsedTime / duration;
         public TValue RemainingTime01 => RemainingTime / duration;
@@ -65,7 +65,7 @@ namespace inonego
     #region 상태
 
         [SerializeField]
-        private TimerState current = TimerState.Begin;
+        private TimerState current = TimerState.Ready;
         public TimerState Current
         {
             get => current;
@@ -85,7 +85,7 @@ namespace inonego
             }
         }
         
-        public bool IsWorking => current == TimerState.Begin;
+        public bool IsWorking => current == TimerState.Work;
         public bool IsPaused => current == TimerState.Pause;
 
     #endregion
@@ -114,10 +114,15 @@ namespace inonego
         /// 타이머를 업데이트합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void Update(float deltaTime)
+        public void Update(TValue deltaTime)
         {
             if (IsWorking)
             {
+                if (deltaTime < 0.0f)
+                {
+                    throw new InvalidDeltaTimeException();
+                }
+
                 elapsedTime += deltaTime;
                 
                 // 타이머의 시간이 목표 시간을 초과하면 타이머를 종료합니다.
@@ -154,10 +159,15 @@ namespace inonego
         {
             if (IsWorking || IsPaused)
             {
-                throw new InvalidOperationException("타이머가 이미 작동 중입니다. 중지 후 시작해주세요.");
+                throw new AlreadyRunningException();
             }
 
-            Current = TimerState.Begin;
+            if (duration < 0.0f)
+            {
+                throw new InvalidDurationException();
+            }
+
+            Current = TimerState.Work;
 
             (this.duration, elapsedTime) = (duration, default);
         }
@@ -171,9 +181,7 @@ namespace inonego
         {
             if (IsWorking || IsPaused)
             {
-                Current = TimerState.End;
-                    
-                (this.duration, elapsedTime) = (default, default);
+                Current = TimerState.Ready;
             }
         }
 
@@ -199,8 +207,23 @@ namespace inonego
         {
             if (IsPaused)
             {
-                Current = TimerState.Begin;
+                Current = TimerState.Work;
             }
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 타이머를 리셋합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void Reset()
+        {
+            if (IsWorking || IsPaused)
+            {
+                throw new FailedToResetException();
+            }
+
+            (this.duration, elapsedTime) = (default, default);
         }
 
     #endregion

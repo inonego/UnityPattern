@@ -1,4 +1,4 @@
-using TValue = System.Double;
+using TValue = System.Single;
 
 namespace inonego
 {
@@ -23,7 +23,18 @@ namespace inonego
 
         public TValue Duration { get; }
 
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 타이머가 경과한 시간입니다.
+        /// </summary>
+        // ------------------------------------------------------------
         public TValue ElapsedTime { get; }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 타이머의 남은 시간입니다.
+        /// </summary>
+        // ------------------------------------------------------------
         public TValue RemainingTime { get; }
         
         public TValue ElapsedTime01 { get; }

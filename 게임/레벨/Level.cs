@@ -11,7 +11,7 @@ namespace inonego
     /// </summary>
     // =======================================================================================
     [Serializable]
-    public class Level : LevelBase
+    public partial class Level : LevelBase
     {
         [SerializeField]
         protected int lFullMax = 0;
@@ -24,7 +24,7 @@ namespace inonego
         {
             if (lFullMax < 0)
             {
-                throw new ArgumentException($"최대 레벨({lFullMax})은 0 이상이어야 합니다.");
+                throw new InvalidMaxLevelException();
             }
 
             this.lFullMax = lFullMax;

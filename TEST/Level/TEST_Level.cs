@@ -151,6 +151,18 @@ public class TEST_Level
         Assert.AreEqual(5, level.LimitMax, "LimitMax가 올바르게 설정되어야 합니다");
     }
 
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Level 생성자에 음수 최대 레벨을 전달할 때 예외를 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Level_07_음수_최대레벨_예외테스트()
+    {
+        // Act & Assert
+        Assert.Throws<Level.InvalidMaxLevelException>(() => new Level(-1));
+    }
+
 #endregion
 
 #region LevelxEXP 클래스 테스트
@@ -357,8 +369,7 @@ public class TEST_Level
         level.EXP = 5;
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => level.EXP = -10);
-        Assert.That(exception.Message, Does.Contain("경험치(-10)는 0 이상이어야 합니다"));
+        Assert.Throws<LevelxEXP.InvalidEXPException>(() => level.EXP = -10);
         
         // 기존 경험치는 변경되지 않아야 함
         Assert.AreEqual(5, level.EXP, "예외 발생 시 기존 경험치는 변경되지 않아야 합니다");
@@ -403,6 +414,33 @@ public class TEST_Level
         // Assert
         Assert.AreEqual(1, level.Value, "레벨 0에서 1로 레벨업하고, 레벨 1에서 10EXP 미만이므로 더 이상 레벨업하지 않습니다");
         Assert.AreEqual(1, level.EXP, "레벨 1에서 1 경험치가 남아야 합니다");
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// LevelxEXP 생성자에 null 경험치 테이블을 전달할 때 예외를 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void LevelxEXP_12_생성자_null_테이블_예외테스트()
+    {
+        // Act & Assert
+        Assert.Throws<LevelxEXP.NullEXPTableException>(() => new LevelxEXP(null));
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// LevelxEXP 생성자에 음수값이 포함된 경험치 테이블을 전달할 때 예외를 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void LevelxEXP_13_생성자_음수값_포함_예외테스트()
+    {
+        // Arrange
+        var expTable = new int[] { 10, -5, 20 }; // 음수값 포함
+
+        // Act & Assert
+        Assert.Throws<LevelxEXP.InvalidEXPTableException>(() => new LevelxEXP(expTable));
     }
 
 #endregion

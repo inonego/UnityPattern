@@ -88,9 +88,9 @@ namespace inonego
 
     #region 생성자
 
-        public LevelBase()
+        protected LevelBase()
         {
-            Reset();
+            // Reset()은 파생 클래스에서 FullMax 설정 후 호출해야 함
         }
 
         private void OnValueChangeHandler(Value<int> sender, ValueChangeEventArgs<int> e)

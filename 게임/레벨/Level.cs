@@ -22,6 +22,11 @@ namespace inonego
 
         public Level(int lFullMax)
         {
+            if (lFullMax < 0)
+            {
+                throw new ArgumentException($"최대 레벨({lFullMax})은 0 이상이어야 합니다.");
+            }
+
             this.lFullMax = lFullMax;
 
             Reset();  

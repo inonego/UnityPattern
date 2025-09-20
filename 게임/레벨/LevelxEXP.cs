@@ -46,6 +46,11 @@ namespace inonego
             { 
                 int newEXP = value;
 
+                if (newEXP < 0)
+                {
+                    throw new ArgumentException($"경험치({newEXP})는 0 이상이어야 합니다.");
+                }
+
                 // 레벨업 처리
                 while (CanLevelUp)
                 {
@@ -99,6 +104,22 @@ namespace inonego
 
         public LevelxEXP(int[] requiredEXPToLevelUpArray)
         {
+            // ------------------------------------------------------------
+            // 경험치 테이블 유효성 검사
+            // ------------------------------------------------------------
+            if (requiredEXPToLevelUpArray == null)
+            {
+                throw new ArgumentNullException("경험치 테이블은 null일 수 없습니다.");
+            }
+
+            for (int i = 0; i < requiredEXPToLevelUpArray.Length; i++)
+            {
+                if (requiredEXPToLevelUpArray[i] < 0)
+                {
+                    throw new ArgumentException($"경험치 테이블의 {i}번째 값({requiredEXPToLevelUpArray[i]})이 음수입니다. 모든 경험치 값은 0 이상이어야 합니다.");
+                }
+            }
+
             this.requiredEXPToLevelUpArray = requiredEXPToLevelUpArray;
             
             Reset();

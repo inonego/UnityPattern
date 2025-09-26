@@ -111,7 +111,8 @@ namespace inonego
         // ------------------------------------------------------------
         protected virtual void ProcessRange(in MinMax<T> prev, ref MinMax<T> next)
         {  
-            if (range.Min.CompareTo(range.Max) > 0)
+            // prev는 이미 완전무결하다고 가정하고 next만 처리합니다.
+            if (next.Min.CompareTo(next.Max) > 0)
             {
                 throw new ArgumentException("최소값이 최대값보다 클 수 없습니다.");
             }

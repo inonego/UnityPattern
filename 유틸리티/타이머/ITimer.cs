@@ -13,7 +13,7 @@ namespace inonego
 
     #region 상태
 
-        public bool IsWorking { get; }
+        public bool IsRunning { get; }
         public bool IsPaused { get; }
     
         public TimerState Current { get; }
@@ -22,7 +22,7 @@ namespace inonego
 
     #region 시간
 
-        public TValue Duration { get; }
+        public TValue Duration { get; set; }
 
         // ---------------------------------------------------------------------
         /// <summary>
@@ -31,7 +31,7 @@ namespace inonego
         /// <br/><see cref="Start"/>을 통해 새로 시작하기 전까지 값이 유지됩니다.
         /// </summary>
         // ---------------------------------------------------------------------
-        public TValue ElapsedTime { get; }
+        public TValue ElapsedTime { get; set; }
 
         // ---------------------------------------------------------------------
         /// <summary>
@@ -40,7 +40,7 @@ namespace inonego
         /// <br/><see cref="Start"/>을 통해 새로 시작하기 전까지 값이 유지됩니다.
         /// </summary>
         // ---------------------------------------------------------------------
-        public TValue RemainingTime { get; }
+        public TValue RemainingTime { get; set; }
         
         public TValue ElapsedTime01 { get; }
         public TValue RemainingTime01 { get; }

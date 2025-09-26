@@ -6,7 +6,7 @@ using TValue = System.Single;
 
 namespace inonego
 {
-    public enum TimerState { Ready, Work, Pause }
+    public enum TimerState { Ready, Run, Pause }
 
     public delegate void TimerEndEvent<in TSender>(TSender sender, TimerEndEventArgs e);
 
@@ -54,10 +54,70 @@ namespace inonego
         [SerializeField] private TValue duration = default;
         [SerializeField] private TValue elapsedTime = default;
 
-        public TValue Duration => duration;
+        public TValue Duration 
+        { 
+            get => duration; 
+            set 
+            {
+                var next = value;
 
-        public TValue ElapsedTime => Mathf.Min(duration, elapsedTime);
-        public TValue RemainingTime => Mathf.Max(duration - elapsedTime, 0.0f);
+                if (!IsRunning && !IsPaused)
+                {
+                    throw new InvalidOperationException("Duration은 Run 또는 Pause 상태일 때만 변경할 수 있습니다.");
+                }
+                
+                if (next < 0.0f)
+                {
+                    throw new InvalidTimeException("Duration은 0 이상이어야 합니다.");
+                }
+                
+                duration = next;
+                
+                elapsedTime = Mathf.Clamp(elapsedTime, 0.0f, duration);
+            }
+        }
+
+        public TValue ElapsedTime 
+        { 
+            get => elapsedTime;
+            set
+            {
+                var next = value;
+                
+                if (!IsRunning && !IsPaused)
+                {
+                    throw new InvalidOperationException("ElapsedTime은 Run 또는 Pause 상태일 때만 변경할 수 있습니다.");
+                }
+
+                if (next < 0.0f)
+                {
+                    throw new InvalidTimeException("ElapsedTime은 0 이상이어야 합니다.");
+                }
+                
+                elapsedTime = Mathf.Clamp(next, 0.0f, duration);
+            }
+        }
+        
+        public TValue RemainingTime 
+        { 
+            get => duration - elapsedTime;
+            set
+            {
+                var next = value;
+
+                if (!IsRunning && !IsPaused)
+                {
+                    throw new InvalidOperationException("RemainingTime은 Run 또는 Pause 상태일 때만 변경할 수 있습니다.");
+                }
+
+                if (next < 0.0f)
+                {
+                    throw new InvalidTimeException("RemainingTime은 0 이상이어야 합니다.");
+                }
+                
+                elapsedTime = Mathf.Clamp(duration - next, 0.0f, duration);
+            }
+        }
 
         public TValue ElapsedTime01  => ElapsedTime / duration;
         public TValue RemainingTime01 => RemainingTime / duration;
@@ -85,7 +145,7 @@ namespace inonego
             }
         }
         
-        public bool IsWorking => current == TimerState.Work;
+        public bool IsRunning => current == TimerState.Run;
         public bool IsPaused => current == TimerState.Pause;
 
     #endregion
@@ -116,14 +176,9 @@ namespace inonego
         // ------------------------------------------------------------
         public void Update(TValue deltaTime)
         {
-            if (IsWorking)
+            if (IsRunning)
             {
-                if (deltaTime < 0.0f)
-                {
-                    throw new InvalidDeltaTimeException();
-                }
-
-                elapsedTime += deltaTime;
+                elapsedTime = Mathf.Clamp(elapsedTime + deltaTime, 0.0f, duration);
                 
                 // 타이머의 시간이 목표 시간을 초과하면 타이머를 종료합니다.
                 if (elapsedTime >= duration)
@@ -157,19 +212,23 @@ namespace inonego
         // ------------------------------------------------------------
         public void Start(TValue duration)
         {
-            if (IsWorking || IsPaused)
+            if (IsRunning || IsPaused)
             {
                 throw new AlreadyRunningException();
             }
+            
+            Current = TimerState.Run;
 
-            if (duration < 0.0f)
+            try
             {
-                throw new InvalidDurationException();
+                (Duration, ElapsedTime) = (duration, default);
             }
-
-            Current = TimerState.Work;
-
-            (this.duration, elapsedTime) = (duration, default);
+            catch (Exception e)
+            {
+                Current = TimerState.Ready;
+                
+                throw e;
+            }
         }
 
         // ------------------------------------------------------------
@@ -179,7 +238,7 @@ namespace inonego
         // ------------------------------------------------------------
         public void Stop()
         {
-            if (IsWorking || IsPaused)
+            if (IsRunning || IsPaused)
             {
                 Current = TimerState.Ready;
             }
@@ -192,7 +251,7 @@ namespace inonego
         // ------------------------------------------------------------
         public void Pause()
         {
-            if (IsWorking)
+            if (IsRunning)
             {
                 Current = TimerState.Pause;
             }
@@ -207,7 +266,7 @@ namespace inonego
         {
             if (IsPaused)
             {
-                Current = TimerState.Work;
+                Current = TimerState.Run;
             }
         }
 
@@ -218,12 +277,12 @@ namespace inonego
         // ------------------------------------------------------------
         public void Reset()
         {
-            if (IsWorking || IsPaused)
+            if (IsRunning || IsPaused)
             {
                 throw new FailedToResetException();
             }
 
-            (this.duration, elapsedTime) = (default, default);
+            (duration, elapsedTime) = (default, default);
         }
 
     #endregion

@@ -12,7 +12,7 @@ namespace inonego
 
     #region 상태
 
-        public bool IsWorking { get; }
+        public bool IsRunning { get; }
         public bool IsPaused { get; }
     
         public TimerState Current { get; }

@@ -48,26 +48,15 @@ namespace inonego
 
         // ==================================================================
         /// <summary>
-        /// 음수 지속 시간을 설정할 때 발생하는 예외입니다.
+        /// 유효하지 않은 시간 값을 설정할 때 발생하는 예외입니다.
         /// </summary>
         // ==================================================================
         [Serializable]
-        public class InvalidDurationException : Exception
+        public class InvalidTimeException : Exception
         {
-            public InvalidDurationException() : base("지속 시간은 0 이상이어야 합니다.") { }
-            public InvalidDurationException(string message) : base(message) { }
+            public InvalidTimeException() : base("시간 값은 0 이상이어야 합니다.") { }
+            public InvalidTimeException(string message) : base(message) { }
         }
 
-        // ==================================================================
-        /// <summary>
-        /// 음수 델타 시간을 전달할 때 발생하는 예외입니다.
-        /// </summary>
-        // ==================================================================
-        [Serializable]
-        public class InvalidDeltaTimeException : Exception
-        {
-            public InvalidDeltaTimeException() : base("델타 시간은 0 이상이어야 합니다.") { }
-            public InvalidDeltaTimeException(string message) : base(message) { }
-        }
     }
 }

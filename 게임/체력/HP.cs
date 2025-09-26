@@ -198,14 +198,7 @@ public class HP
         var (prev, next) = (this.value, Math.Clamp(value, 0, maxValue));
 
         if (prev == next) return;
-
-        this.value = next;
-
-        if (InvokeEvent)
-        {
-            OnValueChange?.Invoke(this, new ValueChangeEventArgs<int> { Previous = prev, Current = next });
-        }
-
+        
         if (autoChangeState)
         {
             // 체력이 0 이하로 떨어지면 자동으로 죽음 상태로 변경
@@ -218,6 +211,13 @@ public class HP
             {
                 MakeAlive();
             }
+        }
+
+        this.value = next;
+
+        if (InvokeEvent)
+        {
+            OnValueChange?.Invoke(this, new ValueChangeEventArgs<int> { Previous = prev, Current = next });
         }
     }
 

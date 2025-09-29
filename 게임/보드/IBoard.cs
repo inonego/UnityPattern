@@ -31,7 +31,7 @@ namespace inonego
     /// </summary>
     // ============================================================
     public interface IBoard<TPoint, TBoardSpace, TPlaceable>
-    where TPoint : struct, IEquatable<TPoint> 
+    where TPoint : struct
     where TBoardSpace : class, IBoardSpace<TPlaceable>, new()
     where TPlaceable : class, new()
     {

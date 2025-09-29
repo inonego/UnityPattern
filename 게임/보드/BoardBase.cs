@@ -36,7 +36,7 @@ namespace inonego
     // ============================================================
     [Serializable]
     public abstract class BoardBase<TPoint, TBoardSpace, TPlaceable> : IBoard<TPoint, TBoardSpace, TPlaceable>, IEnumerable<TBoardSpace>, IEnumerable
-    where TPoint : struct, IEquatable<TPoint>
+    where TPoint : struct
     where TBoardSpace : BoardSpace<TPlaceable>, new()
     where TPlaceable : class, new()
     {
@@ -49,6 +49,8 @@ namespace inonego
         [SerializeField]
         protected XDictionary<SerializeReferenceWrapper<TPlaceable>, TPoint> pointMap = new();
 
+        protected virtual bool IsValidPoint(TPoint point) => true;
+
         //------------------------------------------------------------
         /// <summary>
         /// 지정된 좌표에 있는 공간을 반환합니다.
@@ -58,6 +60,8 @@ namespace inonego
         {
             get
             {
+                if (!IsValidPoint(point)) return null;
+
                 return spaceMap.TryGetValue(point, out var space) ? space : null;
             }
         }
@@ -105,7 +109,59 @@ namespace inonego
 
     #endregion
 
-    #region 메서드
+    #region 공간 생성 및 제거 메서드
+
+        // ---------------------------------------------------------------
+        /// <summary>
+        /// 공간을 생성합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public virtual TBoardSpace CreateSpace() => new TBoardSpace();
+
+        // ---------------------------------------------------------------
+        /// <summary>
+        /// 지정된 위치에 공간을 추가합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void AddSpace(TPoint point)
+        {
+            if (!IsValidPoint(point)) return;
+
+            // 이미 공간이 존재하면 중복 생성하지 않습니다.
+            if (spaceMap.ContainsKey(point))
+            {
+                throw new InvalidOperationException($"이미 '{point}'에 공간이 존재합니다.");
+            }
+
+            spaceMap[point] = CreateSpace();
+        }
+
+        // ---------------------------------------------------------------
+        /// <summary>
+        /// 지정된 위치의 공간을 제거합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void RemoveSpace(TPoint point)
+        {
+            if (!IsValidPoint(point)) return;
+
+            if (!spaceMap.TryGetValue(point, out var space)) return;
+
+            spaceMap.Remove(point);
+
+            // 공간을 제거하기 전에 해당 위치의 객체가 있다면
+            // 객체 -> 포인트 인덱스 맵에서도 제거합니다.
+            var placed = space.Placed;
+
+            if (placed != null)
+            {
+                pointMap.Remove(placed);
+            }
+        }
+
+    #endregion
+
+    #region 배치 및 제거 메서드
 
         /// ---------------------------------------------------------------
         /// <summary>
@@ -127,23 +183,22 @@ namespace inonego
         // ------------------------------------------------------------
         public void Place(TPoint point, TPlaceable placeable)
         {    
-            if (placeable == null) return;
+            if (placeable == null) throw new ArgumentNullException("배치할 객체를 설정해주세요.");
+
+            TBoardSpace space = this[point];
+            
+            if (space == null) 
+            {
+                throw new InvalidOperationException($"먼저 '{point}'에 공간을 생성해주세요.");
+            }
 
             if (!CanPlace(point, placeable))
             {
-                #if UNITY_EDITOR
-                    Debug.LogError($"보드 기물을 '{point}'에 배치할 수 없습니다. 유효한 위치를 설정하거나 먼저 배치된 기물을 제거해주세요.");
-                #endif
-                    
-                return; 
+                throw new InvalidOperationException($"객체를 '{point}'에 배치할 수 없습니다. 유효한 위치를 설정하거나 먼저 배치된 객체를 제거해주세요.");
             }
 
-            // 원래 위치에서 기물을 제거합니다.
+            // 원래 위치에서 객체를 제거합니다.
             Remove(placeable);
-
-            TBoardSpace space = this[point];
-
-            if (space == null) return;
 
             space.Placed = placeable;
             pointMap[placeable] = point;
@@ -157,11 +212,9 @@ namespace inonego
         public void Remove(TPoint point)
         {
             TBoardSpace space = this[point];
-
             if (space == null) return;
 
             var placeable = space.Placed;
-            
             if (placeable == null) return;
 
             space.Placed = null;
@@ -170,7 +223,7 @@ namespace inonego
 
         /// ---------------------------------------------------------------
         /// <summary>
-        /// 지정된 기물을 제거합니다.
+        /// 지정된 객체를 제거합니다.
         /// </summary>
         // ------------------------------------------------------------
         public void Remove(TPlaceable placeable)
@@ -182,6 +235,19 @@ namespace inonego
             if (point.HasValue)
             {
                 Remove(point.Value);
+            }
+        }
+
+        /// ---------------------------------------------------------------
+        /// <summary>
+        /// 모든 객체를 제거합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void RemoveAll()
+        {
+            foreach (var point in spaceMap.Keys)
+            {
+                Remove(point);
             }
         }
         

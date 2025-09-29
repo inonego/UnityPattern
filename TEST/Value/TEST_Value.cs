@@ -1,6 +1,7 @@
 using System;
 
 using NUnit.Framework;
+using UnityEngine;
 
 using inonego;
 
@@ -162,6 +163,36 @@ public class TEST_Value
             // 값에 2를 곱하고, 음수는 0으로 처리
             next = Math.Max(0, next * 2);
         }
+    }
+
+#endregion
+
+#region Value 직렬화 테스트
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Value 클래스의 JSON 직렬화/역직렬화를 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Value_06_JSON_직렬화_테스트()
+    {
+        // Arrange - 커스텀 Value 클래스 (ProcessValue 오버라이드)
+        var originalValue = new CustomValue();
+        originalValue.Current = 5; // ProcessValue에서 2배로 처리되어 10이 됨
+        originalValue.InvokeEvent = false; // 직렬화 시 이벤트는 무시
+
+        // Act - 직렬화/역직렬화
+        string json = JsonUtility.ToJson(originalValue);
+        var deserializedValue = JsonUtility.FromJson<CustomValue>(json);
+
+        // Assert - 상태 복원 확인
+        Assert.AreEqual(originalValue.Current, deserializedValue.Current, "현재 값이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalValue.InvokeEvent, deserializedValue.InvokeEvent, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
+        
+        // ProcessValue 동작 확인
+        deserializedValue.Current = 3; // 3 * 2 = 6
+        Assert.AreEqual(6, deserializedValue.Current, "ProcessValue 오버라이드가 올바르게 동작해야 합니다");
     }
 
 #endregion

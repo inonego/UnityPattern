@@ -2,6 +2,8 @@ using System;
 
 using NUnit.Framework;
 
+using UnityEngine;
+
 using inonego;
 
 // ============================================================================
@@ -161,6 +163,33 @@ public class TEST_Level
     {
         // Act & Assert
         Assert.Throws<Level.InvalidMaxLevelException>(() => new Level(-1));
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Level 클래스의 JSON 직렬화/역직렬화를 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Level_08_JSON_직렬화_테스트()
+    {
+        // Arrange - 레벨업된 상태
+        var originalLevel = new Level(10);
+        originalLevel.LevelUp(3); // 레벨 3으로 설정
+        originalLevel.LimitMax = 5;
+        originalLevel.InvokeEvent = false; // 직렬화 시 이벤트는 무시
+
+        // Act - 직렬화/역직렬화
+        string json = JsonUtility.ToJson(originalLevel);
+        var deserializedLevel = JsonUtility.FromJson<Level>(json);
+
+        // Assert - 상태 복원 확인
+        Assert.AreEqual(originalLevel.Value, deserializedLevel.Value, "레벨 값이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalLevel.Min, deserializedLevel.Min, "최소 레벨이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalLevel.Max, deserializedLevel.Max, "최대 레벨이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalLevel.FullMax, deserializedLevel.FullMax, "FullMax가 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalLevel.LimitMax, deserializedLevel.LimitMax, "LimitMax가 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalLevel.InvokeEvent, deserializedLevel.InvokeEvent, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
     }
 
 #endregion
@@ -441,6 +470,43 @@ public class TEST_Level
 
         // Act & Assert
         Assert.Throws<LevelxEXP.InvalidEXPTableException>(() => new LevelxEXP(expTable));
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// LevelxEXP 클래스의 JSON 직렬화/역직렬화를 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void LevelxEXP_14_JSON_직렬화_테스트()
+    {
+        // Arrange - 경험치가 설정된 상태
+        var expTable = new int[] { 10, 20, 30, 40, 50 };
+        var originalLevelxEXP = new LevelxEXP(expTable);
+        originalLevelxEXP.EXP = 25; // 레벨 2, 경험치 5 상태
+        originalLevelxEXP.LimitMax = 3;
+        originalLevelxEXP.InvokeEvent = false; // 직렬화 시 이벤트는 무시
+
+        // Act - 직렬화/역직렬화
+        string json = JsonUtility.ToJson(originalLevelxEXP);
+        var deserializedLevelxEXP = JsonUtility.FromJson<LevelxEXP>(json);
+
+        // Assert - 상태 복원 확인
+        Assert.AreEqual(originalLevelxEXP.Value, deserializedLevelxEXP.Value, "레벨 값이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalLevelxEXP.EXP, deserializedLevelxEXP.EXP, "경험치가 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalLevelxEXP.MaxEXP, deserializedLevelxEXP.MaxEXP, "최대 경험치가 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalLevelxEXP.FullMax, deserializedLevelxEXP.FullMax, "FullMax가 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalLevelxEXP.LimitMax, deserializedLevelxEXP.LimitMax, "LimitMax가 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalLevelxEXP.InvokeEvent, deserializedLevelxEXP.InvokeEvent, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
+        
+        // Assert - expTable 직렬화 확인
+        Assert.IsNotNull(deserializedLevelxEXP.RequiredEXPToLevelUpArray, "경험치 테이블이 직렬화되어야 합니다");
+        var deserializedExpTable = deserializedLevelxEXP.RequiredEXPToLevelUpArray;
+        Assert.AreEqual(expTable.Length, deserializedExpTable.Count, "경험치 테이블 길이가 올바르게 복원되어야 합니다");
+        for (int i = 0; i < expTable.Length; i++)
+        {
+            Assert.AreEqual(expTable[i], deserializedExpTable[i], $"경험치 테이블[{i}] 값이 올바르게 복원되어야 합니다");
+        }
     }
 
 #endregion

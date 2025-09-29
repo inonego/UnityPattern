@@ -1,6 +1,7 @@
 using System;
 
 using NUnit.Framework;
+using UnityEngine;
 
 using inonego;
 
@@ -379,6 +380,36 @@ public class TEST_Timer
 
         timer.Update(1.0f); // 완료
         Assert.IsTrue(endEventFired, "InvokeEvent가 true일 때 OnEnd 이벤트가 발생해야 합니다");
+    }
+
+#endregion
+
+#region Timer 직렬화 테스트
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Timer 클래스의 JSON 직렬화/역직렬화를 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Timer_12_JSON_직렬화_테스트()
+    {
+        // Arrange - 실행 중인 타이머 상태
+        var originalTimer = new Timer();
+        originalTimer.Start(10.0f);
+        originalTimer.Update(3.0f); // 3초 경과
+        originalTimer.InvokeEvent = false; // 직렬화 시 이벤트는 무시
+
+        // Act - 직렬화/역직렬화
+        string json = JsonUtility.ToJson(originalTimer);
+        var deserializedTimer = JsonUtility.FromJson<Timer>(json);
+
+        // Assert - 상태 복원 확인
+        Assert.AreEqual(originalTimer.Duration, deserializedTimer.Duration, "Duration이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalTimer.ElapsedTime, deserializedTimer.ElapsedTime, "ElapsedTime이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalTimer.RemainingTime, deserializedTimer.RemainingTime, "RemainingTime이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalTimer.Current, deserializedTimer.Current, "현재 상태가 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalTimer.InvokeEvent, deserializedTimer.InvokeEvent, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
     }
 
 #endregion

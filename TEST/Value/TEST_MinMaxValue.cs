@@ -2,6 +2,8 @@ using System;
 
 using NUnit.Framework;
 
+using UnityEngine;
+
 using inonego;
 
 // ============================================================================
@@ -217,6 +219,36 @@ public class TEST_MinMaxValue
         minMaxValue.Current = 40;
         Assert.IsTrue(rangeChangeEventFired, "InvokeEvent가 true일 때 범위 변경 이벤트가 발생해야 합니다");
         Assert.IsTrue(valueChangeEventFired, "InvokeEvent가 true일 때 값 변경 이벤트가 발생해야 합니다");
+    }
+
+#endregion
+
+#region MinMaxValue 직렬화 테스트
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// MinMaxValue 클래스의 JSON 직렬화/역직렬화를 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void MinMaxValue_08_JSON_직렬화_테스트()
+    {
+        // Arrange - 범위와 값이 설정된 상태
+        var originalMinMaxValue = new MinMaxValue<int>();
+        originalMinMaxValue.Range = new MinMax<int>(10, 100);
+        originalMinMaxValue.Current = 50;
+        originalMinMaxValue.InvokeEvent = false; // 직렬화 시 이벤트는 무시
+
+        // Act - 직렬화/역직렬화
+        string json = JsonUtility.ToJson(originalMinMaxValue);
+        var deserializedMinMaxValue = JsonUtility.FromJson<MinMaxValue<int>>(json);
+
+        // Assert - 상태 복원 확인
+        Assert.AreEqual(originalMinMaxValue.Current, deserializedMinMaxValue.Current, "현재 값이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalMinMaxValue.Min, deserializedMinMaxValue.Min, "최소값이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalMinMaxValue.Max, deserializedMinMaxValue.Max, "최대값이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalMinMaxValue.Range, deserializedMinMaxValue.Range, "범위가 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalMinMaxValue.InvokeEvent, deserializedMinMaxValue.InvokeEvent, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
     }
 
 #endregion

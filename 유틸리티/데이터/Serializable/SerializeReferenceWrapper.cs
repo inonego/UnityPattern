@@ -22,5 +22,21 @@ namespace inonego.Serializable
 
         public static implicit operator T(SerializeReferenceWrapper<T> wrapper) => wrapper.Value;
         public static implicit operator SerializeReferenceWrapper<T>(T value) => new(value);
+
+        public static bool operator ==(SerializeReferenceWrapper<T> left, SerializeReferenceWrapper<T> right) => Equals(left, right);
+        public static bool operator !=(SerializeReferenceWrapper<T> left, SerializeReferenceWrapper<T> right) => !Equals(left, right);
+        
+        public override bool Equals(object obj)
+        {
+            if (obj is SerializeReferenceWrapper<T> other)
+                return Equals(Value, other.Value);
+            if (obj is T directValue)
+                return Equals(Value, directValue);
+            return false;
+        }
+
+        public override int GetHashCode() => Value.GetHashCode();
+
+        public override string ToString() => Value.ToString();
     }
 }

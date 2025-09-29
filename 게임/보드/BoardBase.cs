@@ -29,13 +29,19 @@ namespace inonego
         public bool IsFull => Placed != null;
     }
 
+    [Serializable]
+    public abstract partial class BoardBase
+    {
+        public BoardBase() {}
+    }
+
     // ============================================================
     /// <summary>
     /// 보드를 표현하기 위한 추상 클래스입니다.
     /// </summary>
     // ============================================================
     [Serializable]
-    public abstract class BoardBase<TPoint, TBoardSpace, TPlaceable> : IBoard<TPoint, TBoardSpace, TPlaceable>, IEnumerable<TBoardSpace>, IEnumerable
+    public abstract class BoardBase<TPoint, TBoardSpace, TPlaceable> : BoardBase, IBoard<TPoint, TBoardSpace, TPlaceable>, IEnumerable<TBoardSpace>, IEnumerable
     where TPoint : struct
     where TBoardSpace : BoardSpace<TPlaceable>, new()
     where TPlaceable : class, new()
@@ -130,7 +136,7 @@ namespace inonego
             // 이미 공간이 존재하면 중복 생성하지 않습니다.
             if (spaceMap.ContainsKey(point))
             {
-                throw new InvalidOperationException($"이미 '{point}'에 공간이 존재합니다.");
+                throw new SpaceAlreadyExistsException();
             }
 
             spaceMap[point] = CreateSpace();
@@ -189,12 +195,12 @@ namespace inonego
             
             if (space == null) 
             {
-                throw new InvalidOperationException($"먼저 '{point}'에 공간을 생성해주세요.");
+                throw new SpaceNotFoundException();
             }
 
             if (!CanPlace(point, placeable))
             {
-                throw new InvalidOperationException($"객체를 '{point}'에 배치할 수 없습니다. 유효한 위치를 설정하거나 먼저 배치된 객체를 제거해주세요.");
+                throw new InvalidPlacementException();
             }
 
             // 원래 위치에서 객체를 제거합니다.

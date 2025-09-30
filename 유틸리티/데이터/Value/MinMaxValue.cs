@@ -45,7 +45,7 @@ namespace inonego
 
                 if (InvokeEvent)
                 {
-                    OnRangeChange?.Invoke(this, new ValueChangeEventArgs<MinMax<T>> { Previous = prev, Current = next });
+                    OnRangeChange?.Invoke(this, new() { Previous = prev, Current = next });
                 }
 
                 // 값이 범위를 벗어나면 조정될 수 있도록 재설정 합니다.

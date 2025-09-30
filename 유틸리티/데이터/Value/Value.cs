@@ -44,7 +44,7 @@ namespace inonego
 
                 if (InvokeEvent)
                 {
-                    OnValueChange?.Invoke(this, new ValueChangeEventArgs<T> { Previous = prev, Current = next } );
+                    OnValueChange?.Invoke(this, new() { Previous = prev, Current = next } );
                 }
             }
         }

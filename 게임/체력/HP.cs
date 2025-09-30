@@ -103,7 +103,7 @@ public class HP
       
             if (InvokeEvent)
             {
-                OnStateChange?.Invoke(this, new ValueChangeEventArgs<State> { Previous = prev, Current = next });
+                OnStateChange?.Invoke(this, new() { Previous = prev, Current = next });
             }
         }
     }
@@ -217,7 +217,7 @@ public class HP
 
         if (InvokeEvent)
         {
-            OnValueChange?.Invoke(this, new ValueChangeEventArgs<int> { Previous = prev, Current = next });
+            OnValueChange?.Invoke(this, new() { Previous = prev, Current = next });
         }
     }
 
@@ -242,7 +242,7 @@ public class HP
 
         if (InvokeEvent)
         {
-            OnMaxValueChange?.Invoke(this, new ValueChangeEventArgs<int> { Previous = prev, Current = next });
+            OnMaxValueChange?.Invoke(this, new() { Previous = prev, Current = next });
         }
     }
 
@@ -267,7 +267,7 @@ public class HP
 
         Set(value + amount);
 
-        OnHeal?.Invoke(this, new ApplyEventArgs { Amount = amount });
+        OnHeal?.Invoke(this, new() { Amount = amount });
     }
 
     // ------------------------------------------------------------
@@ -291,7 +291,7 @@ public class HP
 
         Set(value - amount);
 
-        OnDamage?.Invoke(this, new ApplyEventArgs { Amount = amount });
+        OnDamage?.Invoke(this, new() { Amount = amount });
     }
 
     // ------------------------------------------------------------

@@ -140,7 +140,7 @@ namespace inonego
 
                 if (InvokeEvent)
                 {
-                    OnStateChange?.Invoke(this, new ValueChangeEventArgs<TimerState> { Previous = prev, Current = next });
+                    OnStateChange?.Invoke(this, new() { Previous = prev, Current = next });
                 }
             }
         }
@@ -185,7 +185,7 @@ namespace inonego
                 {
                     if (InvokeEvent)
                     {
-                        OnEnd?.Invoke(this, new TimerEndEventArgs { });
+                        OnEnd?.Invoke(this, new() { });
                     }
 
                     Stop();

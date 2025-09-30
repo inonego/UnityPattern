@@ -143,7 +143,7 @@ namespace inonego
 
                     if (InvokeEvent)
                     {
-                        OnLevelUp?.Invoke(this, new LevelUpEventArgs { Level = Value });
+                        OnLevelUp?.Invoke(this, new() { Level = Value });
                     }
                 }
                 else

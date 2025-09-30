@@ -8,7 +8,7 @@ using UnityEngine;
 namespace inonego
 {
     using Serializable;
-    
+
     // ============================================================
     /// <summary>
     /// 보드 공간을 표현하기 위한 추상 클래스입니다.
@@ -91,6 +91,13 @@ namespace inonego
         /// </summary>
         //------------------------------------------------------------
         public bool IsAllSpaceFull => spaceMap.Values.All(space => space.IsFull);
+
+    #endregion
+
+    #region 이벤트
+
+        public event Action<TPoint, TBoardSpace, TPlaceable> OnPlace = null;
+        public event Action<TPoint, TBoardSpace, TPlaceable> OnRemove = null;
 
     #endregion
 
@@ -208,6 +215,8 @@ namespace inonego
 
             space.Placed = placeable;
             pointMap[placeable] = point;
+
+            OnPlace?.Invoke(point, space, placeable);
         }
 
         // ------------------------------------------------------------
@@ -225,6 +234,8 @@ namespace inonego
 
             space.Placed = null;
             pointMap.Remove(placeable);
+
+            OnRemove?.Invoke(point, space, placeable);
         }
 
         /// ---------------------------------------------------------------

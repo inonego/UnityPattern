@@ -17,10 +17,10 @@ namespace inonego
     where TPlaceable : class, new()
     {
         [SerializeField]
-        private int width;
+        protected int width;
 
         [SerializeField]
-        private int height;
+        protected int height;
 
         // ------------------------------------------------------------
         /// <summary>
@@ -71,7 +71,7 @@ namespace inonego
         /// 보드의 모든 유효 좌표에 대해 공간을 초기화합니다.
         /// </summary>
         // ------------------------------------------------------------
-        private void Initialize()
+        protected void Initialize()
         {
             spaceMap.Clear();
 
@@ -80,7 +80,7 @@ namespace inonego
                 for (int x = 0; x < width; x++)
                 {
                     var p = new Vector2Int(x, y);
-                    
+
                     AddSpace(p);
                 }
             }

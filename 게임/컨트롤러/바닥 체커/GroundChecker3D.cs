@@ -54,7 +54,7 @@ namespace inonego
         {
             if (rigid == null)
             {
-                throw new ArgumentNullException(nameof(rigid));
+                throw new ArgumentNullException("Rigidbody가 null입니다. 생성자에서 초기화해주세요.");
             }
 
             this.rigid = rigid;

@@ -22,8 +22,11 @@ namespace inonego
         protected GameObject ground = null;
         public GameObject Ground => ground;
 
+        public abstract Vector3 Velocity { get; }
         public abstract Vector3 GroundVelocity { get; }
         public abstract Vector3 Gravity { get; }
+
+        public abstract GameObject GameObject { get; }
 
         public bool IsOnGround => ground != null;
 
@@ -43,9 +46,9 @@ namespace inonego
         /// 바닥을 감지하고 변경 및 이벤트를 발생시킵니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void Check()
+        public void Check(float deltaTime)
         {
-            var detected = Detect();
+            var detected = Detect(deltaTime);
 
             Process(detected);
         }
@@ -55,7 +58,7 @@ namespace inonego
         /// 레이캐스트 등의 방법을 통해 바닥을 감지합니다.
         /// </summary>
         // ------------------------------------------------------------
-        protected abstract GameObject Detect();
+        protected abstract GameObject Detect(float deltaTime);
 
         // ------------------------------------------------------------
         /// <summary>
@@ -64,7 +67,9 @@ namespace inonego
         // ------------------------------------------------------------
         protected static bool IsHeadingToGround(Vector3 velocity, Vector3 groundVelocity, Vector3 gravity)
         {
-            return Vector3.Dot(velocity - groundVelocity, gravity) > 0f;
+            var delta = velocity - groundVelocity;
+
+            return Vector3.Dot(delta.normalized, gravity.normalized) > -0.001f;
         }
 
         protected abstract void ProcessGround(GameObject prev, ref GameObject next);

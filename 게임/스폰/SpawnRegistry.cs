@@ -35,7 +35,7 @@ namespace inonego
         public bool InvokeEvent => invokeEvent;
 
         [SerializeReference]
-        private IPool<T> pool = new Pool<T>();
+        private IPool<T> pool = null;
 
         public IReadOnlyCollection<T> Spawned => pool.Acquired;
         public IReadOnlyCollection<T> Despawned => pool.Released;
@@ -46,6 +46,25 @@ namespace inonego
 
         public event Action<SpawnRegistry<T>, T> OnSpawn = null;
         public event Action<SpawnRegistry<T>, T> OnDespawn = null;
+
+    #endregion
+
+    #region 생성자 및 초기화
+
+        public SpawnRegistry()
+        {
+            pool = new Pool<T>();
+        }
+
+        public SpawnRegistry(IPool<T> pool)
+        {
+            if (pool == null)
+            {
+                throw new ArgumentNullException("Pool은 반드시 초기화되어야 합니다. 생성자에서 초기화해주세요.");
+            }
+
+            this.pool = pool;
+        }
 
     #endregion
 

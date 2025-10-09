@@ -7,10 +7,30 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
+
 using inonego;
 
 public class TEST_GroundChecker2D
 {
+    // ----------------------------------------------------------
+    /// <summary>
+    /// Space키 입력을 체크합니다.
+    /// </summary>
+    // ----------------------------------------------------------
+    private bool IsSpaceKeyPressed()
+    {
+    
+    #if ENABLE_INPUT_SYSTEM
+        return Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
+    #else
+        return Input.GetKeyDown(KeyCode.Space);
+    #endif
+    
+    }
+
     private Sprite CreateSprite()
     {
         return Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
@@ -196,7 +216,7 @@ public class TEST_GroundChecker2D
                     groundChecker.Check(Time.fixedDeltaTime);
                 }
 
-                if (Input.GetKeyDown(KeyCode.Space))
+                if (IsSpaceKeyPressed())
                 {
                     break;
                 }
@@ -431,7 +451,7 @@ public class TEST_GroundChecker2D
         Debug.Log("테스트 성공! Space바를 눌러서 종료하세요.");
         while (true)
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (IsSpaceKeyPressed())
             {
                 Debug.Log("테스트 완료!");
                 break;

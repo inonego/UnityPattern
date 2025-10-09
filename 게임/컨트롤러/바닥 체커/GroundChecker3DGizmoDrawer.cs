@@ -27,7 +27,7 @@ namespace inonego
         
         private void OnDrawGizmos()
         {
-            if (groundChecker == null) return;
+            if (groundChecker == null || groundChecker.GameObject == null) return;
             
             // IsOnGround 상태에 따라 색상 결정
             var color = groundChecker.IsOnGround ? Color.green : Color.red;

@@ -1,0 +1,417 @@
+using System;
+
+using NUnit.Framework;
+using UnityEngine;
+
+using inonego;
+
+// ============================================================================
+/// <summary>
+/// Timer 시스템의 핵심 기능 테스트 클래스입니다.
+/// </summary>
+// ============================================================================
+public class TEST_Timer
+{
+
+#region Timer 기본 기능 테스트
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Timer의 기본 생성 및 초기값을 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Timer_01_기본_생성_테스트()
+    {
+        // Arrange & Act
+        var timer = new Timer();
+
+        // Assert
+        Assert.AreEqual(0.0f, timer.Duration);
+        Assert.AreEqual(0.0f, timer.ElapsedTime);
+        Assert.AreEqual(0.0f, timer.RemainingTime);
+        Assert.AreEqual(TimerState.Ready, timer.Current);
+        Assert.IsFalse(timer.IsRunning);
+        Assert.IsFalse(timer.IsPaused);
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Timer의 시작, 중지, 일시정지, 재개 기능을 통합 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Timer_02_상태_변경_통합_테스트()
+    {
+        // Arrange
+        var timer = new Timer();
+        float duration = 5.0f;
+
+        // Act & Assert - 시작
+        timer.Start(duration);
+        Assert.AreEqual(duration, timer.Duration);
+        Assert.AreEqual(0.0f, timer.ElapsedTime);
+        Assert.AreEqual(duration, timer.RemainingTime);
+        Assert.AreEqual(TimerState.Run, timer.Current);
+        Assert.IsTrue(timer.IsRunning);
+
+        // Act & Assert - 일시정지
+        timer.Pause();
+        Assert.AreEqual(TimerState.Pause, timer.Current);
+        Assert.IsFalse(timer.IsRunning);
+        Assert.IsTrue(timer.IsPaused);
+
+        // Act & Assert - 재개
+        timer.Resume();
+        Assert.AreEqual(TimerState.Run, timer.Current);
+        Assert.IsTrue(timer.IsRunning);
+        Assert.IsFalse(timer.IsPaused);
+
+        // Act & Assert - 중지
+        timer.Stop();
+        Assert.AreEqual(TimerState.Ready, timer.Current);
+        Assert.IsFalse(timer.IsRunning);
+        Assert.IsFalse(timer.IsPaused);
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Timer의 업데이트 및 완료 기능을 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Timer_03_업데이트_및_완료_테스트()
+    {
+        // Arrange
+        var timer = new Timer();
+        timer.Start(3.0f);
+
+        // Act & Assert - 업데이트
+        timer.Update(1.0f);
+        Assert.AreEqual(1.0f, timer.ElapsedTime);
+        Assert.AreEqual(2.0f, timer.RemainingTime);
+        Assert.IsTrue(timer.IsRunning);
+
+        timer.Update(1.0f);
+        Assert.AreEqual(2.0f, timer.ElapsedTime);
+        Assert.AreEqual(1.0f, timer.RemainingTime);
+        Assert.IsTrue(timer.IsRunning);
+
+        // Act & Assert - 완료
+        timer.Update(1.0f);
+        Assert.AreEqual(3.0f, timer.ElapsedTime);
+        Assert.AreEqual(0.0f, timer.RemainingTime);
+        Assert.AreEqual(TimerState.Ready, timer.Current);
+        Assert.IsFalse(timer.IsRunning);
+
+        // Act & Assert - 오버플로우 테스트 (Duration 초과)
+        timer.Start(2.0f);
+        timer.Update(5.0f); // Duration(2.0f)를 크게 초과하는 deltaTime
+        Assert.AreEqual(2.0f, timer.ElapsedTime, "ElapsedTime은 Duration으로 clamp되어야 합니다");
+        Assert.AreEqual(0.0f, timer.RemainingTime, "RemainingTime은 0이 되어야 합니다");
+        Assert.AreEqual(TimerState.Ready, timer.Current, "오버플로우 시 타이머가 완료되어야 합니다");
+        Assert.IsFalse(timer.IsRunning, "오버플로우 시 타이머가 중지되어야 합니다");
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Timer의 리셋 기능을 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Timer_04_리셋_테스트()
+    {
+        // Arrange
+        var timer = new Timer();
+        timer.Start(5.0f);
+        timer.Update(2.0f);
+        timer.Stop();
+
+        // Act
+        timer.Reset();
+
+        // Assert
+        Assert.AreEqual(0.0f, timer.Duration);
+        Assert.AreEqual(0.0f, timer.ElapsedTime);
+        Assert.AreEqual(0.0f, timer.RemainingTime);
+        Assert.AreEqual(TimerState.Ready, timer.Current);
+    }
+
+#endregion
+
+#region Timer 예외 처리 테스트
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Timer의 예외 상황들을 통합 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Timer_05_예외_처리_통합_테스트()
+    {
+        var timer = new Timer();
+
+        // 음수 Duration으로 Start 시도
+        Assert.Throws<Timer.InvalidTimeException>(() => timer.Start(-1.0f));
+
+        // 이미 실행 중일 때 Start 시도
+        timer.Start(5.0f);
+        Assert.Throws<Timer.AlreadyRunningException>(() => timer.Start(3.0f));
+
+        // 실행 중일 때 Reset 시도
+        Assert.Throws<Timer.FailedToResetException>(() => timer.Reset());
+
+        // 중지 후 Reset
+        timer.Stop();
+        timer.Reset(); // 정상 동작해야 함
+    }
+
+#endregion
+
+#region Timer Setter 테스트
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Timer의 setter 기능들을 통합 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Timer_06_Setter_통합_테스트()
+    {
+        var timer = new Timer();
+        timer.Start(10.0f);
+
+        // Duration setter 테스트
+        timer.Duration = 15.0f;
+        Assert.AreEqual(15.0f, timer.Duration);
+        Assert.AreEqual(0.0f, timer.ElapsedTime);
+        Assert.AreEqual(15.0f, timer.RemainingTime);
+
+        // ElapsedTime setter 테스트
+        timer.ElapsedTime = 5.0f;
+        Assert.AreEqual(5.0f, timer.ElapsedTime);
+        Assert.AreEqual(10.0f, timer.RemainingTime);
+
+        // ElapsedTime clamp 테스트 (Duration 초과)
+        timer.ElapsedTime = 20.0f;
+        Assert.AreEqual(15.0f, timer.ElapsedTime);
+        Assert.AreEqual(0.0f, timer.RemainingTime);
+
+        // RemainingTime setter 테스트
+        timer.RemainingTime = 8.0f;
+        Assert.AreEqual(8.0f, timer.RemainingTime);
+        Assert.AreEqual(7.0f, timer.ElapsedTime);
+
+        // RemainingTime clamp 테스트 (Duration 초과)
+        timer.RemainingTime = 20.0f;
+        Assert.AreEqual(15.0f, timer.RemainingTime);
+        Assert.AreEqual(0.0f, timer.ElapsedTime);
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Timer setter의 상태 검증을 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Timer_07_Setter_상태_검증_테스트()
+    {
+        var timer = new Timer();
+
+        // Ready 상태에서 setter 호출 시 예외
+        Assert.Throws<InvalidOperationException>(() => timer.Duration = 5.0f);
+        Assert.Throws<InvalidOperationException>(() => timer.ElapsedTime = 2.0f);
+        Assert.Throws<InvalidOperationException>(() => timer.RemainingTime = 3.0f);
+
+        // Pause 상태에서 setter 호출 시 정상 동작
+        timer.Start(5.0f);
+        timer.Pause();
+        timer.Duration = 10.0f; // 정상 동작해야 함
+        timer.ElapsedTime = 2.0f; // 정상 동작해야 함
+        timer.RemainingTime = 3.0f; // 정상 동작해야 함
+        Assert.AreEqual(10.0f, timer.Duration);
+        Assert.AreEqual(7.0f, timer.ElapsedTime);
+        Assert.AreEqual(3.0f, timer.RemainingTime);
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Timer setter의 값 검증을 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Timer_08_Setter_값_검증_테스트()
+    {
+        var timer = new Timer();
+        timer.Start(5.0f);
+
+        // 음수 값으로 setter 호출 시 예외
+        Assert.Throws<Timer.InvalidTimeException>(() => timer.Duration = -1.0f);
+        Assert.Throws<Timer.InvalidTimeException>(() => timer.ElapsedTime = -1.0f);
+        Assert.Throws<Timer.InvalidTimeException>(() => timer.RemainingTime = -1.0f);
+    }
+
+#endregion
+
+#region Timer 이벤트 테스트
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Timer의 OnEnd 이벤트 발생을 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Timer_09_OnEnd_이벤트_테스트()
+    {
+        // Arrange
+        var timer = new Timer();
+        bool endEventFired = false;
+        Timer endEventSender = null;
+        TimerEndEventArgs endEventArgs = default;
+
+        timer.OnEnd += (sender, e) => 
+        {
+            endEventFired = true;
+            endEventSender = sender;
+            endEventArgs = e;
+        };
+
+        // Act - 타이머 시작 후 완료까지 업데이트
+        timer.Start(2.0f);
+        timer.Update(1.0f); // 아직 완료되지 않음
+        Assert.IsFalse(endEventFired, "아직 완료되지 않았으므로 이벤트가 발생하지 않아야 합니다");
+
+        timer.Update(1.0f); // 완료
+
+        // Assert
+        Assert.IsTrue(endEventFired, "타이머 완료 시 OnEnd 이벤트가 발생해야 합니다");
+        Assert.AreEqual(timer, endEventSender, "이벤트 발신자는 타이머 자신이어야 합니다");
+        Assert.AreEqual(TimerState.Ready, timer.Current, "완료 후 상태는 Ready여야 합니다");
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Timer의 OnStateChange 이벤트 발생을 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Timer_10_OnStateChange_이벤트_테스트()
+    {
+        // Arrange
+        var timer = new Timer();
+        bool stateChangeEventFired = false;
+        Timer stateChangeSender = null;
+        ValueChangeEventArgs<TimerState> stateChangeEventArgs = default;
+
+        timer.OnStateChange += (sender, e) => 
+        {
+            stateChangeEventFired = true;
+            stateChangeSender = sender;
+            stateChangeEventArgs = e;
+        };
+
+        // Act & Assert - 시작
+        timer.Start(5.0f);
+        Assert.IsTrue(stateChangeEventFired, "시작 시 OnStateChange 이벤트가 발생해야 합니다");
+        Assert.AreEqual(timer, stateChangeSender, "이벤트 발신자는 타이머 자신이어야 합니다");
+        Assert.AreEqual(TimerState.Ready, stateChangeEventArgs.Previous, "이전 상태는 Ready여야 합니다");
+        Assert.AreEqual(TimerState.Run, stateChangeEventArgs.Current, "현재 상태는 Run이어야 합니다");
+
+        // Reset for next test
+        stateChangeEventFired = false;
+
+        // Act & Assert - 일시정지
+        timer.Pause();
+        Assert.IsTrue(stateChangeEventFired, "일시정지 시 OnStateChange 이벤트가 발생해야 합니다");
+        Assert.AreEqual(TimerState.Run, stateChangeEventArgs.Previous, "이전 상태는 Run이어야 합니다");
+        Assert.AreEqual(TimerState.Pause, stateChangeEventArgs.Current, "현재 상태는 Pause여야 합니다");
+
+        // Reset for next test
+        stateChangeEventFired = false;
+
+        // Act & Assert - 재개
+        timer.Resume();
+        Assert.IsTrue(stateChangeEventFired, "재개 시 OnStateChange 이벤트가 발생해야 합니다");
+        Assert.AreEqual(TimerState.Pause, stateChangeEventArgs.Previous, "이전 상태는 Pause여야 합니다");
+        Assert.AreEqual(TimerState.Run, stateChangeEventArgs.Current, "현재 상태는 Run이어야 합니다");
+
+        // Reset for next test
+        stateChangeEventFired = false;
+
+        // Act & Assert - 중지
+        timer.Stop();
+        Assert.IsTrue(stateChangeEventFired, "중지 시 OnStateChange 이벤트가 발생해야 합니다");
+        Assert.AreEqual(TimerState.Run, stateChangeEventArgs.Previous, "이전 상태는 Run이어야 합니다");
+        Assert.AreEqual(TimerState.Ready, stateChangeEventArgs.Current, "현재 상태는 Ready여야 합니다");
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Timer의 InvokeEvent 설정에 따른 이벤트 발생을 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Timer_11_InvokeEvent_설정_테스트()
+    {
+        // Arrange
+        var timer = new Timer();
+        bool endEventFired = false;
+        bool stateChangeEventFired = false;
+
+        timer.OnEnd += (sender, e) => endEventFired = true;
+        timer.OnStateChange += (sender, e) => stateChangeEventFired = true;
+
+        // Act & Assert - InvokeEvent = false일 때
+        timer.InvokeEvent = false;
+        timer.Start(1.0f);
+        Assert.IsFalse(stateChangeEventFired, "InvokeEvent가 false일 때 OnStateChange 이벤트가 발생하지 않아야 합니다");
+
+        timer.Update(1.0f); // 완료
+        Assert.IsFalse(endEventFired, "InvokeEvent가 false일 때 OnEnd 이벤트가 발생하지 않아야 합니다");
+
+        // Reset
+        endEventFired = false;
+        stateChangeEventFired = false;
+
+        // Act & Assert - InvokeEvent = true일 때
+        timer.InvokeEvent = true;
+        timer.Start(1.0f);
+        Assert.IsTrue(stateChangeEventFired, "InvokeEvent가 true일 때 OnStateChange 이벤트가 발생해야 합니다");
+
+        timer.Update(1.0f); // 완료
+        Assert.IsTrue(endEventFired, "InvokeEvent가 true일 때 OnEnd 이벤트가 발생해야 합니다");
+    }
+
+#endregion
+
+#region Timer 직렬화 테스트
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// Timer 클래스의 JSON 직렬화/역직렬화를 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void Timer_12_JSON_직렬화_테스트()
+    {
+        // Arrange - 실행 중인 타이머 상태
+        var originalTimer = new Timer();
+        originalTimer.Start(10.0f);
+        originalTimer.Update(3.0f); // 3초 경과
+        originalTimer.InvokeEvent = false; // 직렬화 시 이벤트는 무시
+
+        // Act - 직렬화/역직렬화
+        string json = JsonUtility.ToJson(originalTimer);
+        var deserializedTimer = JsonUtility.FromJson<Timer>(json);
+
+        // Assert - 상태 복원 확인
+        Assert.AreEqual(originalTimer.Duration, deserializedTimer.Duration, "Duration이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalTimer.ElapsedTime, deserializedTimer.ElapsedTime, "ElapsedTime이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalTimer.RemainingTime, deserializedTimer.RemainingTime, "RemainingTime이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalTimer.Current, deserializedTimer.Current, "현재 상태가 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalTimer.InvokeEvent, deserializedTimer.InvokeEvent, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
+    }
+
+#endregion
+
+}

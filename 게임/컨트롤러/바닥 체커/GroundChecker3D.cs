@@ -81,7 +81,7 @@ namespace inonego
             // ------------------------------------------------------------
             // OverlapBox에서 감지되지 않으면 BoxCast 수행
             // ------------------------------------------------------------
-            if (Physics.BoxCast(center, size * 0.5f, info.Direction, out RaycastHit hit, orientation, info.Depth, Config.Layer))
+            if (Physics.BoxCast(center, size * 0.5f, info.Direction, out RaycastHit hit, orientation, info.Depth, Config.Layer, QueryTriggerInteraction.Ignore))
             {
                 return hit.collider.gameObject;
             }
@@ -112,7 +112,7 @@ namespace inonego
             // ------------------------------------------------------------
             // OverlapSphere에서 감지되지 않으면 SphereCast 수행
             // ------------------------------------------------------------
-            if (Physics.SphereCast(info.Center, info.Radius, info.Direction, out RaycastHit hit, info.Depth, Config.Layer))
+            if (Physics.SphereCast(info.Center, info.Radius, info.Direction, out RaycastHit hit, info.Depth, Config.Layer, QueryTriggerInteraction.Ignore))
             {
                 return hit.collider.gameObject;
             }
@@ -148,7 +148,7 @@ namespace inonego
                 // ------------------------------------------------------------
                 // OverlapSphere에서 감지되지 않으면 SphereCast 수행
                 // ------------------------------------------------------------
-                if (Physics.SphereCast(info.Center, info.Radius, info.Direction, out RaycastHit hit, info.Depth, Config.Layer))
+                if (Physics.SphereCast(info.Center, info.Radius, info.Direction, out RaycastHit hit, info.Depth, Config.Layer, QueryTriggerInteraction.Ignore))
                 {
                     return hit.collider.gameObject;
                 }

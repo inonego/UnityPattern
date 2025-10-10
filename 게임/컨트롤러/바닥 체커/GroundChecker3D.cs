@@ -20,7 +20,10 @@ namespace inonego
 
     #region 생성자
 
-        public GroundChecker3D(GameObject gameObject) : base(gameObject) {}
+        public override void Init(GameObject gameObject)
+        {
+            base.Init(gameObject);
+        }
 
     #endregion
 

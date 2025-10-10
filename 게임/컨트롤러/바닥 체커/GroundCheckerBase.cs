@@ -48,6 +48,8 @@ namespace inonego
         // ------------------------------------------------------------
         public void Check(float deltaTime)
         {
+            if (GameObject == null) return;
+
             var detected = Detect(deltaTime);
 
             Process(detected);

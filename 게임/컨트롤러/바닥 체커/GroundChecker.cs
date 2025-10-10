@@ -57,11 +57,11 @@ namespace inonego
         /// 생성자
         /// </summary>
         // -------------------------------------------------------------
-        public GroundChecker(GameObject gameObject)
+        public virtual void Init(GameObject gameObject)
         {
             if (gameObject == null)
             {
-                throw new ArgumentNullException("GameObject가 null입니다. 생성자에서 초기화해주세요.");
+                throw new ArgumentNullException("GameObject가 null입니다.");
             }
 
             this.gameObject = gameObject;
@@ -76,7 +76,7 @@ namespace inonego
 
             if (colliders == null || colliders.Length == 0)
             {
-                throw new ArgumentNullException($"{typeof(TCollider).Name}가 null입니다. GameObject에 {typeof(TCollider).Name} 컴포넌트가 필요합니다.");
+                throw new ArgumentNullException($"{typeof(TCollider).Name}가 null 또는 빈 배열입니다. GameObject에 {typeof(TCollider).Name} 컴포넌트가 필요합니다.");
             }
         }
 
@@ -122,6 +122,16 @@ namespace inonego
         // -------------------------------------------------------------
         protected override GameObject Detect(float deltaTime)
         {
+            if (rigid == null)
+            {
+                throw new ArgumentNullException($"{typeof(TRigidbody).Name}가 null입니다. Init 메서드를 통해 초기화해주세요.");
+            }
+
+            if (colliders == null || colliders.Length == 0)
+            {
+                throw new ArgumentNullException($"{typeof(TCollider).Name}가 null 또는 빈 배열입니다. Init 메서드를 통해 초기화해주세요.");
+            }
+
             foreach (var collider in Colliders)
             {
                 if (!CheckColliderAvailable(collider)) continue;

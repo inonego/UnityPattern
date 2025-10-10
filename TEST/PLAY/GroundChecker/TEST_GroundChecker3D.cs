@@ -187,12 +187,13 @@ public class TEST_GroundChecker3D
         // ----------------------------------------------------------
         foreach (var player in players)
         {
-            var groundChecker = new GroundChecker3D(player);
+            var groundChecker = new GroundChecker3D();
             groundChecker.Config = new GroundCheckerConfig { Layer = 1 << groundLayer, Depth = 0.1f };
+            groundChecker.Init(player);
             groundCheckers.Add(groundChecker);
             
             var gizmoDrawer = player.AddComponent<GroundChecker3DGizmoDrawer>();
-            gizmoDrawer.Initialize(groundChecker);
+            gizmoDrawer.Init(groundChecker);
             gizmoDrawers.Add(gizmoDrawer);
         }
 

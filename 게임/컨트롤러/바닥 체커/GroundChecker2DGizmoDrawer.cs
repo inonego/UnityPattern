@@ -15,7 +15,7 @@ namespace inonego
 
         private GroundChecker2D groundChecker;
         
-        public void Initialize(GroundChecker2D checker)
+        public void Init(GroundChecker2D checker)
         {
             groundChecker = checker;
         }

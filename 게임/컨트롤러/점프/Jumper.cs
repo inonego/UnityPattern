@@ -149,11 +149,11 @@ namespace inonego
 
     #region 생성자 및 초기화
 
-        public Jumper(IGroundChecker groundChecker)
+        public void Init(IGroundChecker groundChecker)
         {
             if (groundChecker == null)
             {
-                throw new ArgumentNullException("바닥 체커가 null입니다. 생성자에서 초기화해주세요.");
+                throw new ArgumentNullException("바닥 체커가 null입니다.");
             }
 
             this.groundChecker = groundChecker;
@@ -231,6 +231,11 @@ namespace inonego
         // ------------------------------------------------------------
         public void FixedUpdate(float fixedDeltaTime)
         {
+            if (groundChecker == null)
+            {
+                throw new NullReferenceException("바닥 체커가 null입니다. Init 메서드를 통해 초기화해주세요.");
+            }
+
             // 타이머 업데이트
             coyoteJumpTimer.Update(fixedDeltaTime);
 

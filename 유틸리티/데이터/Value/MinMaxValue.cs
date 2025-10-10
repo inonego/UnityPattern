@@ -11,7 +11,7 @@ namespace inonego
     /// </summary>
     // ============================================================
     [Serializable]
-    public class MinMaxValue<T> : Value<T>, IComparable<T> where T : struct, IComparable<T>
+    public class MinMaxValue<T> : Value<T>, IReadOnlyMinMaxValue<T>, IComparable<T> where T : struct, IComparable<T>
     {
         // ------------------------------------------------------------
         /// <summary>
@@ -19,6 +19,9 @@ namespace inonego
         /// </summary>
         // ------------------------------------------------------------
         public event ValueChangeEvent<MinMaxValue<T>, MinMax<T>> OnRangeChange = null;
+
+        event ValueChangeEvent<IReadOnlyMinMaxValue<T>, MinMax<T>> IReadOnlyMinMaxValue<T>.OnRangeChange
+        { add => OnRangeChange += value; remove => OnRangeChange -= value; }
 
     #region 필드
 
@@ -53,12 +56,22 @@ namespace inonego
             }
         }
 
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 최소값입니다.
+        /// </summary>
+        // ------------------------------------------------------------
         public T Min 
         {
             get => Range.Min;
             set => Range = new MinMax<T>(value, Max);
         }
 
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 최대값입니다.
+        /// </summary>
+        // ------------------------------------------------------------
         public T Max
         {
             get => Range.Max;

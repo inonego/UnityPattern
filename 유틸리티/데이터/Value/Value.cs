@@ -11,7 +11,7 @@ namespace inonego
     /// </summary>
     // ============================================================
     [Serializable]
-    public class Value<T> where T : struct
+    public class Value<T> : IReadOnlyValue<T> where T : struct
     {
         // ------------------------------------------------------------
         /// <summary>
@@ -26,6 +26,11 @@ namespace inonego
             set => invokeEvent = value;
         }
 
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 현재 값입니다.
+        /// </summary>
+        // ------------------------------------------------------------
         [SerializeField]
         protected T current;
         public T Current
@@ -57,6 +62,9 @@ namespace inonego
         /// </summary>
         // ------------------------------------------------------------
         public event ValueChangeEvent<Value<T>, T> OnValueChange = null;
+
+        event ValueChangeEvent<IReadOnlyValue<T>, T> IReadOnlyValue<T>.OnValueChange
+        { add => OnValueChange += value; remove => OnValueChange -= value; }
         
     #endregion
 

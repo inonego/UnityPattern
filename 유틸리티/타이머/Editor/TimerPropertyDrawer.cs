@@ -6,34 +6,38 @@ namespace inonego.Editor
     [CustomPropertyDrawer(typeof(Timer))]
     public class TimerPropertyDrawer : PropertyDrawer
     {
-        private GUIStyle compactButtonStyle;
+        private GUIStyle compactButtonStyle = null;
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// Timer 객체의 변경사항을 SerializedProperty에 적용합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        private void ApplyTimerChanges(SerializedProperty property, Timer timer)
+        {
+            property.boxedValue = timer;
+            property.serializedObject.ApplyModifiedProperties();
+            EditorUtility.SetDirty(property.serializedObject.targetObject);
+            GUI.changed = true;
+        }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             EditorGUI.BeginProperty(position, label, property);
 
-            // 컴팩트 버튼 스타일 초기화
             if (compactButtonStyle == null)
             {
-                compactButtonStyle = new GUIStyle(GUI.skin.button);
-                compactButtonStyle.padding = new RectOffset(0, 0, 0, 0);
-                compactButtonStyle.margin = new RectOffset(0, 0, 0, 0);
+                compactButtonStyle = new(GUI.skin.button)
+                {
+                    padding = new RectOffset(0, 0, 0, 0),
+                    margin = new RectOffset(0, 0, 0, 0)
+                };
             }
 
-            // Timer 객체 가져오기 (안전하게 처리)
-            Timer timer = null;
-            
-            try
-            {
-                timer = fieldInfo.GetValue(property.serializedObject.targetObject) as Timer;
-            }
-            catch (System.ArgumentException)
-            {
-                // 타입 불일치 등의 경우 기본 Inspector 표시
-                EditorGUI.PropertyField(position, property, label);
-                EditorGUI.EndProperty();
-                return;
-            }
+            // SerializedObject 최신 상태로 업데이트
+            property.serializedObject.Update();
+
+            Timer timer = property.boxedValue as Timer;
 
             if (timer == null)
             {
@@ -51,11 +55,11 @@ namespace inonego.Editor
             Rect stateBoxRect = new Rect(position.x, position.y + EditorGUIUtility.singleLineHeight + 2, 60, 20);
             
             // 컨트롤 영역 크기 계산
-            int buttonSize = 20; // 프로그레스바와 같은 높이
-            int buttonSpacing = 2;
-            int inputWidth = 45; // 입력칸 크기 줄임
-            int progressSpacing = 8; // 프로그레스바와의 여백
-            int rightMargin = 6;
+            int buttonSize = 20;        // 프로그레스바와 같은 높이
+            int buttonSpacing = 2;      // 버튼과 버튼 사이의 여백
+            int inputWidth = 45;        // 입력칸 크기 줄임
+            int progressSpacing = 8;    // 프로그레스바와의 여백
+            int rightMargin = 6;        // 오른쪽 여백
             int totalControlWidth = progressSpacing + inputWidth + buttonSize + buttonSpacing + buttonSize + rightMargin;
             
             // 프로그레스바는 컨트롤 요소들을 제외한 나머지 공간 사용
@@ -73,19 +77,18 @@ namespace inonego.Editor
                 Rect startButtonRect = new Rect(progressRect.x + progressRect.width + progressSpacing + inputWidth + buttonSpacing, progressRect.y, buttonSize, buttonSize);
                 Rect resetButtonRect = new Rect(progressRect.x + progressRect.width + progressSpacing + inputWidth + buttonSpacing + buttonSize + buttonSpacing, progressRect.y, buttonSize, buttonSize);
 
-                string durationKey = $"TimerDuration_{property.propertyPath}";
-                float duration = EditorPrefs.GetFloat(durationKey, 5.0f);
-                float newDuration = EditorGUI.FloatField(timeInputRect, duration);
-                if (newDuration != duration)
+                float newDuration = EditorGUI.FloatField(timeInputRect, timer.cachedStartDuration);
+                if (newDuration != timer.cachedStartDuration)
                 {
-                    EditorPrefs.SetFloat(durationKey, newDuration);
+                    timer.cachedStartDuration = newDuration;
+                    ApplyTimerChanges(property, timer);
                 }
 
-                GUI.enabled = newDuration > 0;
+                GUI.enabled = newDuration >= 0;
                 if (GUI.Button(startButtonRect, EditorGUIUtility.IconContent("d_PlayButton"), compactButtonStyle))
                 {
                     timer.Start(newDuration);
-                    EditorUtility.SetDirty(property.serializedObject.targetObject);
+                    ApplyTimerChanges(property, timer);
                 }
                 GUI.enabled = true;
 
@@ -94,7 +97,7 @@ namespace inonego.Editor
                 if (GUI.Button(resetButtonRect, EditorGUIUtility.IconContent("d_Refresh"), compactButtonStyle))
                 {
                     timer.Reset();
-                    EditorUtility.SetDirty(property.serializedObject.targetObject);
+                    ApplyTimerChanges(property, timer);
                 }
                 GUI.enabled = true;
             }
@@ -112,13 +115,13 @@ namespace inonego.Editor
                 if (GUI.Button(pauseButtonRect, EditorGUIUtility.IconContent("d_PauseButton"), compactButtonStyle))
                 {
                     timer.Pause();
-                    EditorUtility.SetDirty(property.serializedObject.targetObject);
+                    ApplyTimerChanges(property, timer);
                 }
 
                 if (GUI.Button(stopButtonRect, EditorGUIUtility.IconContent("d_PreMatQuad"), compactButtonStyle))
                 {
                     timer.Stop();
-                    EditorUtility.SetDirty(property.serializedObject.targetObject);
+                    ApplyTimerChanges(property, timer);
                 }
             }
             else if (timer.Current == TimerState.Pause)
@@ -135,13 +138,13 @@ namespace inonego.Editor
                 if (GUI.Button(resumeButtonRect, EditorGUIUtility.IconContent("d_PlayButton"), compactButtonStyle))
                 {
                     timer.Resume();
-                    EditorUtility.SetDirty(property.serializedObject.targetObject);
+                    ApplyTimerChanges(property, timer);
                 }
 
                 if (GUI.Button(stopButtonRect, EditorGUIUtility.IconContent("d_PreMatQuad"), compactButtonStyle))
                 {
                     timer.Stop();
-                    EditorUtility.SetDirty(property.serializedObject.targetObject);
+                    ApplyTimerChanges(property, timer);
                 }
             }
 
@@ -152,7 +155,6 @@ namespace inonego.Editor
         {
             return EditorGUIUtility.singleLineHeight + 26; // 정보 라인 + 프로그레스 바 + 여백
         }
-
 
         private void DrawStateBox(Rect stateRect, TimerState state)
         {

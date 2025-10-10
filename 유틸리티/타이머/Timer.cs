@@ -53,6 +53,9 @@ namespace inonego
 
         [SerializeField] private TValue duration = default;
         [SerializeField] private TValue elapsedTime = default;
+        
+        // --- Editor용 캐시된 시작 Duration ---
+        [SerializeField] internal TValue cachedStartDuration;
 
         public TValue Duration 
         { 
@@ -222,6 +225,8 @@ namespace inonego
             try
             {
                 (Duration, ElapsedTime) = (duration, default);
+
+                cachedStartDuration = duration;
             }
             catch (Exception e)
             {

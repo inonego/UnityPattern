@@ -20,8 +20,20 @@ namespace inonego.Editor
                 compactButtonStyle.margin = new RectOffset(0, 0, 0, 0);
             }
 
-            // Timer 객체 가져오기
-            Timer timer = fieldInfo.GetValue(property.serializedObject.targetObject) as Timer;
+            // Timer 객체 가져오기 (안전하게 처리)
+            Timer timer = null;
+            
+            try
+            {
+                timer = fieldInfo.GetValue(property.serializedObject.targetObject) as Timer;
+            }
+            catch (System.ArgumentException)
+            {
+                // 타입 불일치 등의 경우 기본 Inspector 표시
+                EditorGUI.PropertyField(position, property, label);
+                EditorGUI.EndProperty();
+                return;
+            }
 
             if (timer == null)
             {

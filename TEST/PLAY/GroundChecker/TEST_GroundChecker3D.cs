@@ -7,10 +7,30 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
+
 using inonego;
 
 public class TEST_GroundChecker3D
 {
+    // ----------------------------------------------------------
+    /// <summary>
+    /// Space키 입력을 체크합니다.
+    /// </summary>
+    // ----------------------------------------------------------
+    private bool IsSpaceKeyPressed()
+    {
+
+    #if ENABLE_INPUT_SYSTEM
+        return Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
+    #else
+        return Input.GetKeyDown(KeyCode.Space);
+    #endif
+    
+    }
+
     // ----------------------------------------------------------
     /// <summary>
     /// 바닥 오브젝트를 생성합니다.
@@ -56,7 +76,20 @@ public class TEST_GroundChecker3D
     // ----------------------------------------------------------
     private Material CreateMaterial(Color color = default)
     {
-        var material = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        // HDRP -> URP -> Standard 순서로 체크
+        Shader shader = Shader.Find("HDRP/Lit");
+
+        if (shader == null)
+        {
+            shader = Shader.Find("Universal Render Pipeline/Lit");
+        }
+        
+        if (shader == null)
+        {
+            shader = Shader.Find("Standard");
+        }
+
+        var material = new Material(shader);
         if (color == default) color = Color.white;
         material.color = color;
         return material;
@@ -154,12 +187,13 @@ public class TEST_GroundChecker3D
         // ----------------------------------------------------------
         foreach (var player in players)
         {
-            var groundChecker = new GroundChecker3D(player);
+            var groundChecker = new GroundChecker3D();
             groundChecker.Config = new GroundCheckerConfig { Layer = 1 << groundLayer, Depth = 0.1f };
+            groundChecker.Init(player);
             groundCheckers.Add(groundChecker);
             
             var gizmoDrawer = player.AddComponent<GroundChecker3DGizmoDrawer>();
-            gizmoDrawer.Initialize(groundChecker);
+            gizmoDrawer.Init(groundChecker);
             gizmoDrawers.Add(gizmoDrawer);
         }
 
@@ -195,7 +229,7 @@ public class TEST_GroundChecker3D
                     groundChecker.Check(Time.fixedDeltaTime);
                 }
 
-                if (Input.GetKeyDown(KeyCode.Space))
+                if (IsSpaceKeyPressed())
                 {
                     break;
                 }
@@ -430,12 +464,12 @@ public class TEST_GroundChecker3D
         Debug.Log("테스트 성공! Space바를 눌러서 종료하세요.");
         while (true)
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (IsSpaceKeyPressed())
             {
                 Debug.Log("테스트 완료!");
                 break;
             }
             yield return null;
         }
-     }
- }
+    }
+}

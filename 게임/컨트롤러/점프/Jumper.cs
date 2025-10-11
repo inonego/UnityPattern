@@ -1,4 +1,5 @@
 using System;
+
 using UnityEngine;
 
 namespace inonego
@@ -6,7 +7,8 @@ namespace inonego
     [Serializable]
     public struct JumpEventArgs
     {
-
+        public int MaxCount;
+        public int Count;
     }
 
     // ============================================================
@@ -32,6 +34,15 @@ namespace inonego
             get => invokeEvent;
             set => invokeEvent = value;
         }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 점프 중인지 여부를 가져옵니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        [SerializeField, ReadOnly]
+        private bool isJumping = false;
+        public bool IsJumping => isJumping;
 
         // ------------------------------------------------------------
         /// <summary>
@@ -138,17 +149,14 @@ namespace inonego
 
     #region 생성자 및 초기화
 
-        public Jumper(IGroundChecker groundChecker)
+        public void Init(IGroundChecker groundChecker)
         {
             if (groundChecker == null)
             {
-                throw new ArgumentNullException("바닥 체커가 null입니다. 생성자에서 초기화해주세요.");
+                throw new ArgumentNullException("바닥 체커가 null입니다.");
             }
 
             this.groundChecker = groundChecker;
-
-            groundChecker.OnLand += OnGroundLand;
-            groundChecker.OnLeave += OnGroundLeave;
 
             Reset();
         }
@@ -157,6 +165,18 @@ namespace inonego
 
     #region 메서드
 
+        private void StartCoyoteJumpTimer()
+        {
+            coyoteJumpTimer.Stop();
+            coyoteJumpTimer.Start(CoyoteJumpDuration);
+        }
+
+        private void StartJumpBufferTimer()
+        {
+            jumpBufferTimer.Stop();
+            jumpBufferTimer.Start(JumpBufferDuration);
+        }
+
         // ------------------------------------------------------------
         /// <summary>
         /// 점프를 실행하도록 트리거합니다.
@@ -164,29 +184,7 @@ namespace inonego
         // ------------------------------------------------------------
         public void Trigger()
         {
-            // 횟수 체크는 Jump() 메서드에서 진행합니다.
-
-            // ------------------------------------------------------------
-            // 코요테 점프 타이머가 작동 중이면 바로 점프 실행
-            // ------------------------------------------------------------
-            if (coyoteJumpTimer.IsRunning)
-            {
-                Jump();
-            }
-            else
-            {
-                // ------------------------------------------------------------
-                // 바닥에 닿아있으면 바로 점프 실행
-                // ------------------------------------------------------------
-                if (groundChecker.IsOnGround)
-                {
-                    Jump();
-                }
-                else
-                {
-                    jumpBufferTimer.Start(JumpBufferDuration);
-                }
-            }
+            StartJumpBufferTimer();
         }
 
         // ------------------------------------------------------------
@@ -196,19 +194,23 @@ namespace inonego
         // ------------------------------------------------------------
         private void Jump()
         {
-            coyoteJumpTimer.Stop();
-            jumpBufferTimer.Stop();
-
-            if (count <= 0)
+            if (Count <= 0)
             {
                 return;
             }
 
-            count--;
-            
+            jumpBufferTimer.Stop();
+            coyoteJumpTimer.Stop();
+
+            // 점프 카운트 감소
+            Count--;
+
+            // 점프 여부 설정
+            isJumping = true;
+
             if (InvokeEvent)
             {
-                OnJump?.Invoke(this, new JumpEventArgs());
+                OnJump?.Invoke(this, new JumpEventArgs { MaxCount = MaxCount, Count = Count });
             }
         }
 
@@ -217,9 +219,9 @@ namespace inonego
         /// 업데이트를 진행합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void Update()
+        public void FixedUpdate()
         {
-            Update(Time.deltaTime);
+            FixedUpdate(Time.fixedDeltaTime);
         }
 
         // ------------------------------------------------------------
@@ -227,53 +229,52 @@ namespace inonego
         /// 업데이트를 진행합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void Update(float deltaTime)
+        public void FixedUpdate(float fixedDeltaTime)
         {
-            coyoteJumpTimer.Update(deltaTime);
-            jumpBufferTimer.Update(deltaTime);
+            if (groundChecker == null)
+            {
+                throw new NullReferenceException("바닥 체커가 null입니다. Init 메서드를 통해 초기화해주세요.");
+            }
+
+            // 타이머 업데이트
+            coyoteJumpTimer.Update(fixedDeltaTime);
+
+            bool isTriggered = jumpBufferTimer.IsRunning;
+            bool isGrounded = groundChecker.IsOnGround;
+
+            // 점프를 했음에도 바닥에서 벗어나지 못하는 경우에 대비해
+            // 업데이트에서 횟수를 리셋합니다.
+            if (isGrounded)
+            {
+                Reset();
+
+                StartCoyoteJumpTimer();
+            }
+
+            bool canJump = coyoteJumpTimer.IsRunning || isJumping;
+
+            if (isTriggered && canJump)
+            {
+                Jump();
+            }
+
+            // 타이머 업데이트
+            jumpBufferTimer.Update(fixedDeltaTime);
         }
 
         // ------------------------------------------------------------
         /// <summary>
-        /// 점프 카운트를 초기화합니다.
+        /// 점프 상태와 카운트를 초기화합니다.
         /// </summary>
         // ------------------------------------------------------------
         public void Reset()
         {
+            isJumping = false;
+
             Count = MaxCount;
         }
 
     #endregion
 
-    #region 이벤트 핸들러
-
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 바닥에 착지했을 때 호출됩니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        private void OnGroundLand(IGroundChecker sender, ValueChangeEventArgs<GameObject> args)
-        {
-            Reset();
-
-            // 점프 버퍼 타이머가 작동 중이면 바로 점프 실행
-            if (jumpBufferTimer.IsRunning)
-            {
-                Jump();
-            }
-        }
-
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 바닥을 벗어났을 때 호출됩니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        private void OnGroundLeave(IGroundChecker sender, ValueChangeEventArgs<GameObject> args)
-        {
-            coyoteJumpTimer.Start(CoyoteJumpDuration);
-        }
-
-    #endregion
-    
     }
 }

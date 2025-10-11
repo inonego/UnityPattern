@@ -69,14 +69,14 @@ namespace inonego
         /// 업데이트를 진행합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void Update();
+        public void FixedUpdate();
 
         // ------------------------------------------------------------
         /// <summary>
         /// 업데이트를 진행합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void Update(float deltaTime);
+        public void FixedUpdate(float fixedDeltaTime);
 
         // ------------------------------------------------------------
         /// <summary>

@@ -63,7 +63,7 @@ namespace inonego
             this.width = Math.Max(0, width);
             this.height = Math.Max(0, height);
 
-            Initialize();
+            Init();
         }
 
         // ------------------------------------------------------------
@@ -71,7 +71,7 @@ namespace inonego
         /// 보드의 모든 유효 좌표에 대해 공간을 초기화합니다.
         /// </summary>
         // ------------------------------------------------------------
-        protected void Initialize()
+        protected void Init()
         {
             spaceMap.Clear();
 

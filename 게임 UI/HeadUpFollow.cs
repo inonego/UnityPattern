@@ -10,12 +10,12 @@ namespace inonego
         
     #region 필드
 
+        [Header("기준 트랜스폼")]
         // --------------------------------------------------------
         /// <summary>
         /// 이동시킬 루트 게임 오브젝트의 트랜스폼입니다.
         /// </summary>
         // --------------------------------------------------------
-        [Tooltip("이동시킬 루트 게임 오브젝트의 트랜스폼입니다.")]
         [SerializeField]
         private Transform root;
         public Transform Root => root;
@@ -25,7 +25,7 @@ namespace inonego
         /// 머리 부분을 찾기 위한 기준이 되는 트랜스폼입니다.
         /// </summary>
         // --------------------------------------------------------
-        [Tooltip("머리 부분을 찾기 위한 기준이 되는 트랜스폼입니다.\n하위에서 'Head'가 포함된 이름으로 찾습니다.\n모델링의 게임오브젝트를 드래그해서 넣어주세요.")]
+        [HelpBox("머리 부분을 찾기 위한 기준이 되는 트랜스폼입니다.\n하위에서 'Head'가 포함된 이름으로 찾습니다.\n모델링의 게임오브젝트를 드래그해서 넣어주세요.")]
         [SerializeField]
         private Transform reference;
         public Transform Reference => reference;
@@ -35,7 +35,7 @@ namespace inonego
         /// 머리 부분에 대한 트랜스폼입니다.
         /// </summary>
         // --------------------------------------------------------
-        [Tooltip("머리 부분에 대한 트랜스폼입니다.\n미리 할당하지 않는 경우 자동으로 검색합니다.")]
+        [HelpBox("머리 부분에 대한 트랜스폼입니다.\n미리 할당하지 않는 경우 자동으로 검색합니다.")]
         [SerializeField]
         private Transform headTransform;
         public Transform HeadTransform
@@ -44,6 +44,7 @@ namespace inonego
             set => headTransform = value;
         }
 
+        [Header("설정")]
         // --------------------------------------------------------
         /// <summary>
         /// 위치에 대한 오프셋입니다.

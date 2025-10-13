@@ -8,7 +8,7 @@ namespace inonego
 {
 
     [Serializable]
-    public abstract partial class Entity : ISpawnable
+    public abstract partial class Entity : ISpawnable, IDespawnable
     {
 
     #region 필드
@@ -27,13 +27,13 @@ namespace inonego
     
     #endregion
 
-    #region ISpawnable 인터페이스 구현
+    #region 인터페이스 구현
 
-        Action ISpawnable.DespawnFromRegistry { get; set; }
+        bool ICanSpawnFromRegistry.IsSpawned { get => isSpawned; set => isSpawned = value; }
 
-        bool ISpawnable.IsSpawned { get => isSpawned; set => isSpawned = value; }
+        Action IDespawnable.DespawnFromRegistry { get; set; }
 
-        void ISpawnable.OnSpawn()
+        public void OnSpawn()
         {
             hp.OnStateChange += OnHPStateChange;
 
@@ -43,7 +43,7 @@ namespace inonego
             }
         }
 
-        void ISpawnable.OnDespawn()
+        public void OnDespawn()
         {
             if (hp.IsAlive) 
             {
@@ -72,12 +72,12 @@ namespace inonego
 
     #region 메서드
 
-        public void GiveDamage(int damage)
+        public void ApplyDamage(int damage)
         {
             hp.ApplyDamage(damage);
         }
 
-        public void Heal(int amount)
+        public void ApplyHeal(int amount)
         {
             hp.ApplyHeal(amount);
         }

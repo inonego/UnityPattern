@@ -9,8 +9,8 @@ namespace inonego
     using Serializable;
 
     [Serializable]
-    public class SpawnedDictionary<T> : XDictionary<string, SerializeReferenceWrapper<T>>, ISpawnedDictionary<T> where T : class, ISpawnable { }
-    public interface ISpawnedDictionary<T> : IReadOnlyDictionary<string, SerializeReferenceWrapper<T>> where T : class, ISpawnable { }
+    public class SpawnedDictionary<T> : XDictionary<string, SerializeReferenceWrapper<T>>, ISpawnedDictionary<T> where T : class, ICanSpawnFromRegistry {}
+    public interface ISpawnedDictionary<T> : IReadOnlyDictionary<string, SerializeReferenceWrapper<T>> where T : class, ICanSpawnFromRegistry {}
     
     public static class SpawnRegistryUtility
     {
@@ -19,27 +19,30 @@ namespace inonego
         /// 객체를 디스폰합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public static void Despawn(this ISpawnable spawnable)
+        public static void Despawn(this IDespawnable despawnable)
         {
-            if (spawnable != null)
+            if (despawnable != null)
             {
-                if (!spawnable.IsSpawned)
+                if (!despawnable.IsSpawned)
                 {
                     throw new InvalidOperationException("스폰되지 않은 객체를 디스폰할 수 없습니다.");
                 }
 
-                spawnable.DespawnFromRegistry?.Invoke();
+                if (despawnable.DespawnFromRegistry != null)
+                {
+                    despawnable.DespawnFromRegistry.Invoke();
+                }
             }
         }
     }
 
     // ========================================================================
     /// <summary>
-    /// 스폰 등록을 관리하기 위한 클래스입니다.
+    /// 스폰을 관리하기 위한 클래스입니다.
     /// </summary>
     // ========================================================================
     [Serializable]
-    public abstract class SpawnRegistry<T> where T : class, ISpawnable
+    public abstract class SpawnRegistryBase<T> where T : class, IDespawnable
     {
 
     #region 필드
@@ -61,8 +64,8 @@ namespace inonego
 
     #region 이벤트
 
-        public event Action<SpawnRegistry<T>, T> OnSpawn = null;
-        public event Action<SpawnRegistry<T>, T> OnDespawn = null;
+        public event Action<SpawnRegistryBase<T>, T> OnSpawn = null;
+        public event Action<SpawnRegistryBase<T>, T> OnDespawn = null;
 
     #endregion
 
@@ -77,21 +80,24 @@ namespace inonego
 
         // ------------------------------------------------------------
         /// <summary>
-        /// 객체를 스폰합니다.
+        /// 공통 스폰 등록 로직을 수행합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public T Spawn()
+        protected T RegisterAndSpawn(T spawnable, Action<T> invokeSpawnable)
         {
-            var spawnable = Acquire();
-
             if (spawnable == null)
             {
-                throw new NullReferenceException("스폰을 진행하는 중에 객체를 가져올 수 없습니다.");
+                throw new ArgumentNullException("스폰할 객체를 설정해주세요.");
             }
             
             if (spawnable.IsSpawned)
             {
                 throw new InvalidOperationException("이미 스폰된 객체입니다.");
+            }
+
+            if (string.IsNullOrEmpty(spawnable.Key))
+            {
+                throw new InvalidOperationException("스폰될 객체의 키가 설정되어 있지 않습니다.");
             }
 
             if (spawned.ContainsKey(spawnable.Key))
@@ -107,8 +113,18 @@ namespace inonego
             spawnable.IsSpawned = true;
             spawnable.DespawnFromRegistry = DoDespawn;
 
-            spawnable.OnSpawn();
-            
+            try
+            {
+                invokeSpawnable?.Invoke(spawnable);
+            }
+            catch (Exception)
+            {
+                // 스폰 중에 예외가 발생하면 객체를 디스폰합니다.
+                DespawnInternal(spawnable);
+
+                throw;
+            }
+
             if (InvokeEvent)
             {
                 OnSpawn?.Invoke(this, spawnable);
@@ -117,37 +133,106 @@ namespace inonego
             return spawnable;
         }
 
-        private void Despawn(T spawnable)
+        private void Despawn(T despawnable)
         {
-            if (spawnable == null)
+            if (despawnable == null)
             {
                 throw new ArgumentNullException("디스폰할 객체를 설정해주세요.");
             }
 
-            if (!spawnable.IsSpawned)
+            if (!despawnable.IsSpawned)
             {
                 throw new InvalidOperationException("스폰되지 않은 객체를 디스폰할 수 없습니다.");
             }
 
-            if (!spawned.ContainsKey(spawnable.Key))
+            if (string.IsNullOrEmpty(despawnable.Key))
             {
-                throw new InvalidOperationException($"등록되지 않은 키({spawnable.Key})에 해당하는 객체를 디스폰할 수 없습니다.");
+                throw new InvalidOperationException("디스폰할 객체의 키가 설정되어 있지 않습니다.");
             }
 
-            spawned.Remove(spawnable.Key);
+            if (!spawned.ContainsKey(despawnable.Key))
+            {
+                throw new KeyNotFoundException($"등록되지 않은 키({despawnable.Key})에 해당하는 객체를 디스폰할 수 없습니다.");
+            }
 
-            spawnable.IsSpawned = false;
-            spawnable.DespawnFromRegistry = null;
-
-            spawnable.OnDespawn();
+            DespawnInternal(despawnable);
 
             if (InvokeEvent)
             {
-                OnDespawn?.Invoke(this, spawnable);
+                OnDespawn?.Invoke(this, despawnable);
             }
+        }
+
+        private void DespawnInternal(T despawnable)
+        {
+            spawned.Remove(despawnable.Key);
+
+            despawnable.IsSpawned = false;
+            despawnable.DespawnFromRegistry = null;
+
+            despawnable.OnDespawn();
         }
 
     #endregion
 
+    }
+    
+    // ========================================================================
+    /// <summary>
+    /// 스폰을 관리하기 위한 클래스입니다.
+    /// </summary>
+    /// <typeparam name="T">스폰 가능한 객체의 타입입니다.</typeparam>
+    // ========================================================================
+    [Serializable]
+    public abstract class SpawnRegistry<T> : SpawnRegistryBase<T> where T : class, ISpawnable, IDespawnable
+    {
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 객체를 스폰합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public T Spawn()
+        {
+            var spawnable = Acquire();
+
+            if (spawnable == null)
+            {
+                throw new InvalidOperationException("스폰할 객체를 가져올 수 없습니다.");
+            }
+
+            void OnSpawn(T spawnable) => spawnable.OnSpawn();
+
+            return RegisterAndSpawn(spawnable, OnSpawn);
+        }
+    }
+
+    // ========================================================================
+    /// <summary>
+    /// 스폰을 관리하기 위한 클래스입니다.
+    /// </summary>
+    /// <typeparam name="T">스폰 가능한 객체의 타입입니다.</typeparam>
+    /// <typeparam name="TParam">스폰 시 전달할 매개변수의 타입입니다.</typeparam>
+    // ========================================================================
+    [Serializable]
+    public abstract class SpawnRegistry<T, TParam> : SpawnRegistryBase<T> where T : class, ISpawnable<TParam>, IDespawnable
+    {
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 객체를 스폰합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public T Spawn(TParam param)
+        {
+            var spawnable = Acquire();
+
+            if (spawnable == null)
+            {
+                throw new InvalidOperationException("스폰할 객체를 가져올 수 없습니다.");
+            }
+
+            void OnSpawn(T spawnable) => spawnable.OnSpawn(param);
+
+            return RegisterAndSpawn(spawnable, OnSpawn);
+        }
     }
 }

@@ -8,20 +8,40 @@ namespace inonego
 {
 
     [Serializable]
-    public abstract partial class MonoEntity : MonoBehaviour, ISpawnable
+    public abstract partial class MonoEntity : MonoBehaviour, ISpawnable<Entity>, IDespawnable
     {
+        
+    #region 필드
+
+        public string Key => entity != null ? entity.Key : null;
+
+        [SerializeField, ReadOnly]
+        private bool isSpawned = false;
+        public bool IsSpawned => isSpawned;
+
         [SerializeReference]
         private Entity entity;
         public Entity Entity => entity;
         
-        public void Init(Entity entity)
+    #endregion
+
+    #region 인터페이스 구현
+        
+        bool ICanSpawnFromRegistry.IsSpawned { get => isSpawned; set => isSpawned = value; }
+
+        Action IDespawnable.DespawnFromRegistry { get; set; }
+        
+        public void OnSpawn(Entity entity)
         {
             this.entity = entity;
         }
 
-        public void Release()
+        public void OnDespawn()
         {
-            entity = null;
+            this.entity = null;
         }
+
+    #endregion
+
     }
 }

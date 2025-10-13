@@ -6,6 +6,12 @@ using UnityEngine;
 
 namespace inonego
 {
+    using Serializable;
+
+    [Serializable]
+    public class SpawnedDictionary<T> : XDictionary<string, SerializeReferenceWrapper<T>>, ISpawnedDictionary<T> where T : class, ISpawnable { }
+    public interface ISpawnedDictionary<T> : IReadOnlyDictionary<string, SerializeReferenceWrapper<T>> where T : class, ISpawnable { }
+    
     public static class SpawnRegistryUtility
     {
         // ------------------------------------------------------------
@@ -15,12 +21,25 @@ namespace inonego
         // ------------------------------------------------------------
         public static void Despawn(this ISpawnable spawnable)
         {
-            spawnable?.DespawnFromRegistry?.Invoke();
+            if (spawnable != null)
+            {
+                if (!spawnable.IsSpawned)
+                {
+                    throw new InvalidOperationException("스폰되지 않은 객체를 디스폰할 수 없습니다.");
+                }
+
+                spawnable.DespawnFromRegistry?.Invoke();
+            }
         }
     }
 
+    // ========================================================================
+    /// <summary>
+    /// 스폰 등록을 관리하기 위한 클래스입니다.
+    /// </summary>
+    // ========================================================================
     [Serializable]
-    public class SpawnRegistry<T> where T : class, ISpawnable
+    public abstract class SpawnRegistry<T> where T : class, ISpawnable
     {
 
     #region 필드
@@ -34,11 +53,9 @@ namespace inonego
         private bool invokeEvent = true;
         public bool InvokeEvent => invokeEvent;
 
-        [SerializeReference]
-        private IPool<T> pool = null;
-
-        public IReadOnlyCollection<T> Spawned => pool.Acquired;
-        public IReadOnlyCollection<T> Despawned => pool.Released;
+        [SerializeField]
+        private SpawnedDictionary<T> spawned = new();
+        public ISpawnedDictionary<T> Spawned => spawned;
 
     #endregion
 
@@ -49,26 +66,14 @@ namespace inonego
 
     #endregion
 
-    #region 생성자 및 초기화
-
-        public SpawnRegistry()
-        {
-            pool = new Pool<T>();
-        }
-
-        public SpawnRegistry(IPool<T> pool)
-        {
-            if (pool == null)
-            {
-                throw new ArgumentNullException("Pool은 반드시 초기화되어야 합니다. 생성자에서 초기화해주세요.");
-            }
-
-            this.pool = pool;
-        }
-
-    #endregion
-
     #region 메서드
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 새로운 객체를 가져옵니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        protected abstract T Acquire();
 
         // ------------------------------------------------------------
         /// <summary>
@@ -77,12 +82,31 @@ namespace inonego
         // ------------------------------------------------------------
         public T Spawn()
         {
-            var spawnable = pool.Acquire();
+            var spawnable = Acquire();
+
+            if (spawnable == null)
+            {
+                throw new NullReferenceException("스폰을 진행하는 중에 객체를 가져올 수 없습니다.");
+            }
+            
+            if (spawnable.IsSpawned)
+            {
+                throw new InvalidOperationException("이미 스폰된 객체입니다.");
+            }
+
+            if (spawned.ContainsKey(spawnable.Key))
+            {
+                throw new InvalidOperationException($"이미 동일 키({spawnable.Key})가 등록되어 있습니다.");
+            }
 
             // 디스폰 메서드
             void DoDespawn() => Despawn(spawnable);
 
+            spawned.Add(spawnable.Key, spawnable);
+
+            spawnable.IsSpawned = true;
             spawnable.DespawnFromRegistry = DoDespawn;
+
             spawnable.OnSpawn();
             
             if (InvokeEvent)
@@ -97,18 +121,30 @@ namespace inonego
         {
             if (spawnable == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("디스폰할 객체를 설정해주세요.");
             }
+
+            if (!spawnable.IsSpawned)
+            {
+                throw new InvalidOperationException("스폰되지 않은 객체를 디스폰할 수 없습니다.");
+            }
+
+            if (!spawned.ContainsKey(spawnable.Key))
+            {
+                throw new InvalidOperationException($"등록되지 않은 키({spawnable.Key})에 해당하는 객체를 디스폰할 수 없습니다.");
+            }
+
+            spawned.Remove(spawnable.Key);
+
+            spawnable.IsSpawned = false;
+            spawnable.DespawnFromRegistry = null;
+
+            spawnable.OnDespawn();
 
             if (InvokeEvent)
             {
                 OnDespawn?.Invoke(this, spawnable);
             }
-
-            spawnable.OnDespawn();
-            spawnable.DespawnFromRegistry = null;
-
-            pool.Release(spawnable);
         }
 
     #endregion

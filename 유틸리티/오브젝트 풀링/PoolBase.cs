@@ -11,13 +11,13 @@ namespace inonego.Pool
     // ============================================================
     [Serializable]
     public abstract class PoolBase<T> : IPool<T> where T : class
-    { 
+    {
         // ------------------------------------------------------------
         /// <summary>
         /// 풀에 남아있는 오브젝트 목록입니다.
         /// </summary>
         // ------------------------------------------------------------        
-        private Queue<T> released = new Queue<T>();
+        protected Queue<T> released = new Queue<T>();
         public IReadOnlyCollection<T> Released => released;
         
         // ------------------------------------------------------------
@@ -25,7 +25,7 @@ namespace inonego.Pool
         /// 풀에 사용중인 오브젝트 목록입니다.
         /// </summary>  
         // ------------------------------------------------------------
-        private List<T> acquired = new List<T>();
+        protected List<T> acquired = new List<T>();
         public IReadOnlyCollection<T> Acquired => acquired;
         
         protected virtual void OnAcquire(T item) {}
@@ -36,7 +36,7 @@ namespace inonego.Pool
         /// 새로운 오브젝트를 생성합니다.
         /// </summary>
         // ------------------------------------------------------------
-        protected abstract T Create();
+        protected abstract T AcquireNew();
 
         public T Acquire()
         {
@@ -51,7 +51,7 @@ namespace inonego.Pool
             else
             {
                 // 새로운 오브젝트를 생성합니다.
-                item = Create();
+                item = AcquireNew();
             }
 
             // 사용중인 오브젝트 목록에 추가합니다.
@@ -62,47 +62,50 @@ namespace inonego.Pool
             return item;
         }
 
-        private void _Release(T item)
+        public void Release(T item)
         {
-            OnRelease(item);
+            ReleaseInternal(item);
+        }
+
+        private void ReleaseInternal(T item)
+        {
+            if (!acquired.Contains(item))
+            {
+                throw new Exception($"풀에 존재하지 않는 아이템 '{item}'을 반환하려고 했습니다.");
+            }
 
             // 사용중인 오브젝트 목록에서 제거합니다.
             acquired.Remove(item);
 
             // 풀에 남아있는 오브젝트 목록에 추가합니다.
             released.Enqueue(item);
-        }
-
-        private void _Release(int index)
-        {
-            var item = acquired[index];
 
             OnRelease(item);
+        }
+
+        private void ReleaseInternal(int index)
+        {
+            if (index < 0 || index >= acquired.Count)
+            {
+                throw new IndexOutOfRangeException($"인덱스 '{index}'이(가) 범위를 벗어났습니다.");
+            }
+
+            var item = acquired[index];
 
             // 사용중인 오브젝트 목록에서 제거합니다.
             acquired.RemoveAt(index);
 
             // 풀에 남아있는 오브젝트 목록에 추가합니다.
             released.Enqueue(item);
-        }
 
-        public void Release(T item)
-        {
-            if (acquired.Contains(item))
-            {
-                _Release(item);
-            }
-            else
-            {
-                throw new Exception($"풀에 존재하지 않는 아이템 '{item}'을 반환하려고 했습니다.");
-            }
+            OnRelease(item);
         }
-
+        
         public void ReleaseAll()
         {
             for (int i = acquired.Count - 1; i >= 0; i--)
             {
-                _Release(i);
+                ReleaseInternal(i);
             }
         }
     }

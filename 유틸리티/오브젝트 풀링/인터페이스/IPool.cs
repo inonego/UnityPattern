@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace inonego
+namespace inonego.Pool
 {
     // ============================================================
     /// <summary>

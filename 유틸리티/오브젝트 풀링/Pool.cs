@@ -15,7 +15,7 @@ namespace inonego.Pool
         /// 새로운 오브젝트를 생성합니다.
         /// </summary>
         // ------------------------------------------------------------
-        protected override T Create()
+        protected override T AcquireNew()
         {
             return new T();
         }

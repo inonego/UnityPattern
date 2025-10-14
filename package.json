@@ -6,5 +6,8 @@
   "author": {
     "name": "inonego",
     "email": "hmud0721@naver.com"
+  },
+  "dependencies": {
+    "com.unity.addressables": "2.7.4"
   }
 }

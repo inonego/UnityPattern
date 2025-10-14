@@ -2,16 +2,15 @@ using System;
 
 using UnityEngine;
 
-namespace inonego
+namespace inonego.Pool
 {
-    // ===============================================================================
+    // ============================================================
     /// <summary>
-    /// <br/>유니티에서 사용하는 컴포넌트에 사용 가능한 풀입니다.
-    /// <br/>컴포넌트를 풀링하기 위해서는 해당 T 컴포넌트가 최상단에 포함된 프리팹이 필요합니다.
+    /// 게임 오브젝트를 생성하는 오브젝트 풀링을 위한 추상 클래스입니다.
     /// </summary>
-    // ===============================================================================
+    // ============================================================
     [Serializable]
-    public class ComponentPool<T> : Pool<T> where T : Component
+    public abstract class GOPoolBase<T> : PoolBase<T> where T : class
     {
         // ------------------------------------------------------------
         /// <summary>
@@ -19,7 +18,7 @@ namespace inonego
         /// </summary>
         // ------------------------------------------------------------
         [HelpBox("Acquire되는 경우 오브젝트의 위치를 유지할지에 대한 여부입니다.")]
-        [SerializeField] private bool worldPositionStays = false;
+        [SerializeField] protected bool worldPositionStays = false;
 
         // ------------------------------------------------------------
         /// <summary>
@@ -28,39 +27,24 @@ namespace inonego
         // ------------------------------------------------------------
         [Header("프리팹")]
         [HelpBox("풀에 사용할 프리팹입니다.")]
-        [SerializeField] private GameObject prefab = null;
+        [SerializeField] protected GameObject prefab = null;
 
+        [Header("부모 트랜스폼")]
         [HelpBox("Release되는 경우 게임 오브젝트가 Pool의 하위에 위치합니다.\nAcquire되는 경우 게임 오브젝트가 Active의 하위에 위치합니다.")]
         // ------------------------------------------------------------
         /// <summary>
         /// Release되는 경우 게임 오브젝트가 Pool의 하위에 위치합니다.
         /// </summary>
         // ------------------------------------------------------------
-        [Header("부모 트랜스폼")]
-        [SerializeField] private Transform pool = null;
+        public Transform Pool => pool;
+        [SerializeField] protected Transform pool = null;
 
         // ------------------------------------------------------------
         /// <summary>
         /// Acquire되는 경우 게임 오브젝트가 Active의 하위에 위치합니다.
         /// </summary>
         // ------------------------------------------------------------
-        [SerializeField] private Transform active = null;
-        
-        protected override T Create()
-        {
-            return GameObject.Instantiate(prefab, active).GetComponent<T>();
-        }
-
-        protected override void OnAcquire(T item)
-        {
-            item.transform.SetParent(active, worldPositionStays);
-            item.gameObject.SetActive(true);
-        }
-
-        protected override void OnRelease(T item)
-        {
-            item.transform.SetParent(pool, worldPositionStays);
-            item.gameObject.SetActive(false);
-        }
+        public Transform Active => active;
+        [SerializeField] protected Transform active = null;
     }
 }

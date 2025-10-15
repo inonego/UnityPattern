@@ -59,28 +59,14 @@ namespace inonego.Pool
             return GameObjectProvider.Acquire();
         }
 
+        protected async Awaitable<GameObject> AcquireNewAsync()
+        {
+            return await GameObjectProvider.AcquireAsync();
+        }
+
         public async Awaitable<GameObject> AcquireAsync()
         {
-            GameObject item;
-
-            // 풀에 남아있는 오브젝트가 있는 경우
-            if (released.Count > 0)
-            {
-                item = released.Dequeue();
-            }
-            // 풀에 남아있는 오브젝트가 없는 경우
-            else
-            {
-                // 새로운 오브젝트를 비동기로 생성합니다.
-                item = await GameObjectProvider.AcquireAsync();
-            }
-
-            // 사용중인 오브젝트 목록에 추가합니다.
-            acquired.Add(item);
-
-            OnAcquire(item);
-
-            return item;
+            return await AcquireInternalAsync(AcquireNewAsync);
         }
 
         protected override void OnAcquire(GameObject gameObject)

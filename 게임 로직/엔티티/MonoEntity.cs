@@ -16,11 +16,11 @@ namespace inonego
         public string Key => entity != null ? entity.Key : null;
 
         [SerializeField, ReadOnly]
-        private bool isSpawned = false;
+        protected bool isSpawned = false;
         public bool IsSpawned => isSpawned;
 
         [SerializeReference]
-        private Entity entity;
+        protected Entity entity;
         public Entity Entity => entity;
         
     #endregion

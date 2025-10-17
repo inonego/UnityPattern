@@ -14,15 +14,15 @@ namespace inonego
     #region 필드
 
         [SerializeField, ReadOnly]
-        private string key = Guid.NewGuid().ToString();
+        protected string key = Guid.NewGuid().ToString();
         public string Key => key;
 
         [SerializeField, ReadOnly]
-        private bool isSpawned = false;
+        protected bool isSpawned = false;
         public bool IsSpawned => isSpawned;
 
         [SerializeField]
-        private HP hp = new();
+        protected HP hp = null;
         public HP HP => hp;
     
     #endregion
@@ -51,6 +51,17 @@ namespace inonego
             }
 
             hp.OnStateChange -= OnHPStateChange;
+        }
+
+    #endregion
+
+    #region 생성자
+
+        public Entity() : this(null) {}
+
+        public Entity(HP hp)
+        {
+            this.hp = hp != null ? hp : new HP();
         }
 
     #endregion

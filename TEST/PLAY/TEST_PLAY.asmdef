@@ -1,5 +1,5 @@
 {
-    "name": "TEST_PLAY",
+    "name": "inonego.TEST_PLAY",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",

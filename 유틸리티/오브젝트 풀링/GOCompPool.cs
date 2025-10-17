@@ -36,6 +36,14 @@ namespace inonego.Pool
 
     #endregion
 
+    #region 생성자
+
+        public GOCompPool() : base() {}
+
+        public GOCompPool(IGameObjectProvider provider) : base(provider) {}
+
+    #endregion
+
     #region GOPool 오버라이드
 
         protected override void OnAcquire(GameObject gameObject)

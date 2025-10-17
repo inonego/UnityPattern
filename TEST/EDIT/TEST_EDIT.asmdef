@@ -1,5 +1,5 @@
 {
-    "name": "TEST_EDIT",
+    "name": "inonego.TEST_EDIT",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",

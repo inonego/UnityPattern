@@ -13,9 +13,8 @@ namespace inonego.Editor
         /// Timer 객체의 변경사항을 SerializedProperty에 적용합니다.
         /// </summary>
         // ------------------------------------------------------------
-        private void ApplyTimerChanges(SerializedProperty property, Timer timer)
+        private void ApplyTimerChanges(SerializedProperty property)
         {
-            property.boxedValue = timer;
             property.serializedObject.ApplyModifiedProperties();
             EditorUtility.SetDirty(property.serializedObject.targetObject);
             GUI.changed = true;
@@ -37,7 +36,8 @@ namespace inonego.Editor
             // SerializedObject 최신 상태로 업데이트
             property.serializedObject.Update();
 
-            Timer timer = property.boxedValue as Timer;
+            // 리플렉션으로 실제 객체 가져오기
+            Timer timer = SerializedPropertyUtility.GetTargetObjectOfProperty(property) as Timer;
 
             if (timer == null)
             {
@@ -81,14 +81,14 @@ namespace inonego.Editor
                 if (newDuration != timer.cachedStartDuration)
                 {
                     timer.cachedStartDuration = newDuration;
-                    ApplyTimerChanges(property, timer);
+                    ApplyTimerChanges(property);
                 }
 
                 GUI.enabled = newDuration >= 0;
                 if (GUI.Button(startButtonRect, EditorGUIUtility.IconContent("d_PlayButton"), compactButtonStyle))
                 {
                     timer.Start(newDuration);
-                    ApplyTimerChanges(property, timer);
+                    ApplyTimerChanges(property);
                 }
                 GUI.enabled = true;
 
@@ -97,7 +97,7 @@ namespace inonego.Editor
                 if (GUI.Button(resetButtonRect, EditorGUIUtility.IconContent("d_Refresh"), compactButtonStyle))
                 {
                     timer.Reset();
-                    ApplyTimerChanges(property, timer);
+                    ApplyTimerChanges(property);
                 }
                 GUI.enabled = true;
             }
@@ -115,13 +115,13 @@ namespace inonego.Editor
                 if (GUI.Button(pauseButtonRect, EditorGUIUtility.IconContent("d_PauseButton"), compactButtonStyle))
                 {
                     timer.Pause();
-                    ApplyTimerChanges(property, timer);
+                    ApplyTimerChanges(property);
                 }
 
                 if (GUI.Button(stopButtonRect, EditorGUIUtility.IconContent("d_PreMatQuad"), compactButtonStyle))
                 {
                     timer.Stop();
-                    ApplyTimerChanges(property, timer);
+                    ApplyTimerChanges(property);
                 }
             }
             else if (timer.Current == TimerState.Pause)
@@ -138,13 +138,13 @@ namespace inonego.Editor
                 if (GUI.Button(resumeButtonRect, EditorGUIUtility.IconContent("d_PlayButton"), compactButtonStyle))
                 {
                     timer.Resume();
-                    ApplyTimerChanges(property, timer);
+                    ApplyTimerChanges(property);
                 }
 
                 if (GUI.Button(stopButtonRect, EditorGUIUtility.IconContent("d_PreMatQuad"), compactButtonStyle))
                 {
                     timer.Stop();
-                    ApplyTimerChanges(property, timer);
+                    ApplyTimerChanges(property);
                 }
             }
 

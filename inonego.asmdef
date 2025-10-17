@@ -1,7 +1,11 @@
 {
     "name": "inonego",
     "rootNamespace": "inonego",
-    "references": [],
+    "references": [
+        "Unity.InputSystem",
+        "Unity.Addressables",
+        "Unity.ResourceManager"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

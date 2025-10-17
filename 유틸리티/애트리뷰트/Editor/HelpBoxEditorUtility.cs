@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-namespace inonego
+namespace inonego.Editor
 {
     //===============================================================
     /// <summary>

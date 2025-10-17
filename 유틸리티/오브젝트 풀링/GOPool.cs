@@ -15,7 +15,7 @@ namespace inonego.Pool
 
     #region 필드
     
-        [SerializeField]
+        [SerializeReference]
         protected IGameObjectProvider gameObjectProvider = null;
         public IGameObjectProvider GameObjectProvider => gameObjectProvider;
 

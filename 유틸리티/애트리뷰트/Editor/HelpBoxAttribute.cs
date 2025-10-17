@@ -6,6 +6,8 @@ using UnityEditor;
 
 namespace inonego
 {
+    using Editor;
+
     public class HelpBoxAttribute : PropertyAttribute
     {
         public string Message { get; }

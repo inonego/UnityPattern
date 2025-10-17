@@ -49,8 +49,11 @@ namespace inonego
         [SerializeField] private Color negativeColor = Color.red;
 
         private float lCurrentRatio = 0f;
+
+    #if DOTWEEN
         private Tween lCurrentTween;
-        
+    #endif
+
     #endregion
 
     #region 초기화

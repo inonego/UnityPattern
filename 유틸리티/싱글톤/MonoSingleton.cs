@@ -25,11 +25,25 @@ namespace inonego
             {
                 if (instance == null)
                 {
-                    instance = FindAnyObjectByType<T>();
-
-                    if (instance == null)
+                    lock (typeof(T))
                     {
-                        instance = new GameObject(typeof(T).Name).AddComponent<T>();
+                        if (instance == null)
+                        {
+                            instance = FindAnyObjectByType<T>();
+
+                            if (instance == null)
+                            {
+                                instance = new GameObject(typeof(T).Name).AddComponent<T>();
+                            }
+
+                            if (Application.isPlaying)
+                            {
+                                if (instance.isDontDestroyOnLoad)
+                                {
+                                    DontDestroyOnLoad(instance.gameObject);
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -43,11 +57,27 @@ namespace inonego
 
     #region 유니티 이벤트
 
-        private void Awake()
+        protected internal virtual bool isDontDestroyOnLoad => false;
+        
+        protected virtual void Awake()
         {
             if (instance == null)
             {
-                instance = this as T;
+                lock (typeof(T))
+                {
+                    if (instance == null)
+                    {
+                        instance = this as T;
+
+                        if (Application.isPlaying)
+                        {
+                            if (isDontDestroyOnLoad)
+                            {
+                                DontDestroyOnLoad(gameObject);
+                            }
+                        }
+                    }
+                }
             }
             else
             {
@@ -63,6 +93,14 @@ namespace inonego
                 {
                     DestroyImmediate(gameObject);
                 }
+            }
+        }
+
+        protected virtual void OnDestroy()
+        {
+            if (instance == this)
+            {
+                instance = null;
             }
         }
 

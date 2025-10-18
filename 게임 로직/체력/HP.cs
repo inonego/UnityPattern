@@ -11,7 +11,7 @@ namespace inonego
 /// </summary>
 // ============================================================
 [Serializable]
-public class HP
+public class HP : IDeepCloneable<HP>
 {   
     // ------------------------------------------------------------
     /// <summary>
@@ -147,21 +147,39 @@ public class HP
 
     public HP() {}
 
-    public HP Clone()
+    public HP Clone(bool cloneEvent = false)
     {
-        var hp = new HP();
-        CloneTo(hp);
-        return hp;
+        var result = new HP();
+        result.CloneFrom(this, cloneEvent);
+        return result;
     }
 
-    public void CloneTo(HP target)
+    public void CloneFrom(HP source, bool cloneEvent = false)
     {
-        if (target == null)
+        if (source == null)
         {
-            throw new ArgumentNullException($"HP.CloneTo()의 인자가 null입니다.");
+            throw new ArgumentNullException($"HP.CloneFrom()의 인자가 null입니다.");
         }
 
-        (target.current, target.value, target.maxValue) = (current, value, maxValue);
+        // 값 복사
+        (current, value, maxValue) = (source.current, source.value, source.maxValue);
+
+        // 이벤트 복사
+        if (cloneEvent)
+        {
+            InvokeEvent = source.InvokeEvent;
+
+            // 체력 값 이벤트
+            DelegateUtility.CloneFrom(ref OnValueChange, source.OnValueChange);
+            DelegateUtility.CloneFrom(ref OnMaxValueChange, source.OnMaxValueChange);
+
+            // 상태 이벤트
+            DelegateUtility.CloneFrom(ref OnStateChange, source.OnStateChange);
+
+            // Apply 이벤트
+            DelegateUtility.CloneFrom(ref OnHeal, source.OnHeal);
+            DelegateUtility.CloneFrom(ref OnDamage, source.OnDamage);
+        }
     }
 
 #endregion

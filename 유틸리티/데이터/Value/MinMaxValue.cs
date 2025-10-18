@@ -11,7 +11,7 @@ namespace inonego
     /// </summary>
     // ============================================================
     [Serializable]
-    public class MinMaxValue<T> : Value<T>, IReadOnlyMinMaxValue<T>, IComparable<T> where T : struct, IComparable<T>
+    public class MinMaxValue<T> : Value<T>, IReadOnlyMinMaxValue<T>, IComparable<T>, IDeepCloneable<MinMaxValue<T>> where T : struct, IComparable<T>
     {
         // ------------------------------------------------------------
         /// <summary>
@@ -139,6 +139,36 @@ namespace inonego
         protected override void ProcessValue(in T prev, ref T next)
         {
             next = ClampValue(next);
+        }
+
+    #endregion
+
+    #region 복제
+
+        public new MinMaxValue<T> Clone(bool cloneEvent = false)
+        {
+            var result = new MinMaxValue<T>();
+            result.CloneFrom(this, cloneEvent);
+            return result;
+        }
+
+        public void CloneFrom(MinMaxValue<T> source, bool cloneEvent = false)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException($"MinMaxValue<T>.CloneFrom()의 인자가 null입니다.");
+            }
+
+            base.CloneFrom(source, cloneEvent);
+            
+            // 값 복사
+            range = source.range;
+
+            // 이벤트 복사
+            if (cloneEvent)
+            {
+                DelegateUtility.CloneFrom(ref OnRangeChange, source.OnRangeChange);
+            }
         }
 
     #endregion

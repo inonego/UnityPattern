@@ -4,12 +4,12 @@ namespace inonego
 {
     public enum ReleativeFaction
     {
-        Ally, Enemy, Neutral
+        Self, Ally, Enemy, Neutral
     }
 
     [Serializable]
     public abstract class TeamFactionChecker
     {
-        public abstract ReleativeFaction Check(Team self, Team other);
+        public abstract ReleativeFaction Check(Entity self, Entity other);
     }
 }

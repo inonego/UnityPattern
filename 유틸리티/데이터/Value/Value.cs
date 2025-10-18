@@ -11,7 +11,7 @@ namespace inonego
     /// </summary>
     // ============================================================
     [Serializable]
-    public class Value<T> : IReadOnlyValue<T> where T : struct
+    public class Value<T> : IReadOnlyValue<T>, IDeepCloneable<Value<T>> where T : struct
     {
         // ------------------------------------------------------------
         /// <summary>
@@ -76,6 +76,36 @@ namespace inonego
         /// </summary>
         // ------------------------------------------------------------
         protected virtual void ProcessValue(in T prev, ref T next) { }
+
+    #endregion
+
+    #region 복제
+
+        public Value<T> Clone(bool cloneEvent = false)
+        {
+            var result = new Value<T>();
+            result.CloneFrom(this, cloneEvent);
+            return result;
+        }
+
+        public void CloneFrom(Value<T> source, bool cloneEvent = false)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException($"Value<T>.CloneFrom()의 인자가 null입니다.");
+            }
+
+            // 값 복사
+            current = source.current;
+
+            // 이벤트 복사
+            if (cloneEvent)
+            {
+                InvokeEvent = source.InvokeEvent;
+
+                DelegateUtility.CloneFrom(ref OnValueChange, source.OnValueChange);
+            }
+        }
 
     #endregion
 

@@ -8,7 +8,7 @@ namespace inonego.Pool
     /// </summary>
     // ===================================================================
     [Serializable]
-    public abstract class Pool<T> : PoolBase<T> where T : class, new()
+    public class Pool<T> : PoolBase<T> where T : class, new()
     {
         // ------------------------------------------------------------
         /// <summary>

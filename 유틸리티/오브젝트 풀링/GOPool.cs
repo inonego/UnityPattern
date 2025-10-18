@@ -56,11 +56,21 @@ namespace inonego.Pool
 
         protected override GameObject AcquireNew()
         {
+            if (GameObjectProvider == null)
+            {
+                throw new NullReferenceException("GameObjectProvider가 설정되지 않았습니다.");
+            }
+
             return GameObjectProvider.Acquire();
         }
 
         protected async Awaitable<GameObject> AcquireNewAsync()
         {
+            if (GameObjectProvider == null)
+            {
+                throw new NullReferenceException("GameObjectProvider가 설정되지 않았습니다.");
+            }
+
             return await GameObjectProvider.AcquireAsync();
         }
 

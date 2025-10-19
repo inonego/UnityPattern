@@ -73,13 +73,6 @@ namespace inonego
 
         // ------------------------------------------------------------
         /// <summary>
-        /// 새로운 객체를 가져옵니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        protected abstract T Acquire();
-
-        // ------------------------------------------------------------
-        /// <summary>
         /// 공통 스폰 등록 로직을 수행합니다.
         /// </summary>
         // ------------------------------------------------------------
@@ -133,7 +126,7 @@ namespace inonego
             return spawnable;
         }
 
-        private void Despawn(T despawnable)
+        private void Despawn(T despawnable, bool removeFromDictionary = true)
         {
             if (despawnable == null)
             {
@@ -155,7 +148,7 @@ namespace inonego
                 throw new KeyNotFoundException($"등록되지 않은 키({despawnable.Key})에 해당하는 객체를 디스폰할 수 없습니다.");
             }
 
-            DespawnInternal(despawnable);
+            DespawnInternal(despawnable, removeFromDictionary);
 
             if (InvokeEvent)
             {
@@ -163,14 +156,44 @@ namespace inonego
             }
         }
 
-        private void DespawnInternal(T despawnable)
+        private void DespawnInternal(T despawnable, bool removeFromDictionary = true)
         {
-            spawned.Remove(despawnable.Key);
+            if (removeFromDictionary)
+            {
+                spawned.Remove(despawnable.Key);
+            }
 
             despawnable.IsSpawned = false;
             despawnable.DespawnFromRegistry = null;
-
+            
             despawnable.OnDespawn();
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 모든 객체를 디스폰합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void DespawnAll()
+        {
+            foreach (var entity in spawned.Values)
+            {
+                try
+                {
+                    Despawn(entity, removeFromDictionary: false);
+                }
+                catch (Exception ex)
+                {
+
+                #if UNITY_EDITOR
+                    // 예외가 발생해도 나머지 객체들을 계속 디스폰합니다.
+                    Debug.LogException(ex);
+                #endif
+
+                }
+            }
+
+            spawned.Clear();
         }
 
     #endregion
@@ -186,6 +209,13 @@ namespace inonego
     [Serializable]
     public abstract class SpawnRegistry<T> : SpawnRegistryBase<T> where T : class, ISpawnable, IDespawnable
     {
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 스폰할 객체를 가져옵니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        protected abstract T Acquire();
+
         // ------------------------------------------------------------
         /// <summary>
         /// 객체를 스폰합니다.
@@ -218,12 +248,19 @@ namespace inonego
     {
         // ------------------------------------------------------------
         /// <summary>
+        /// 스폰할 객체를 가져옵니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        protected abstract T Acquire(TParam param);
+
+        // ------------------------------------------------------------
+        /// <summary>
         /// 객체를 스폰합니다.
         /// </summary>
         // ------------------------------------------------------------
         public T Spawn(TParam param)
         {
-            var spawnable = Acquire();
+            var spawnable = Acquire(param);
 
             if (spawnable == null)
             {

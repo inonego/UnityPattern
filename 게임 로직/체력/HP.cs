@@ -18,7 +18,14 @@ public class HP : IDeepCloneable<HP>
     /// 이벤트를 호출할지 여부를 결정합니다.
     /// </summary>
     // ------------------------------------------------------------
-    public bool InvokeEvent = true;
+    public bool InvokeEvent
+    {
+        get => invokeEvent;
+        set => invokeEvent = value;
+    }
+    
+    [SerializeField]
+    protected bool invokeEvent = true;
 
     public enum ApplyRatioType
     {
@@ -98,10 +105,10 @@ public class HP : IDeepCloneable<HP>
             if (prev == next) return;
             
             current = next;
-
+            
             Set(IsAlive ? maxValue : 0, autoChangeState: false);
       
-            if (InvokeEvent)
+            if (invokeEvent)
             {
                 OnStateChange?.Invoke(this, new() { Previous = prev, Current = next });
             }
@@ -161,13 +168,17 @@ public class HP : IDeepCloneable<HP>
             throw new ArgumentNullException($"HP.CloneFrom()의 인자가 null입니다.");
         }
 
-        // 값 복사
-        (current, value, maxValue) = (source.current, source.value, source.maxValue);
+        var _invokeEvent = invokeEvent; invokeEvent = false;
+        {
+            // 값 복사
+            (current, value, maxValue) = (source.current, source.value, source.maxValue);
+        }
+        invokeEvent = _invokeEvent;
 
         // 이벤트 복사
         if (cloneEvent)
         {
-            InvokeEvent = source.InvokeEvent;
+            invokeEvent = source.invokeEvent;
 
             // 체력 값 이벤트
             DelegateUtility.CloneFrom(ref OnValueChange, source.OnValueChange);
@@ -233,7 +244,7 @@ public class HP : IDeepCloneable<HP>
 
         this.value = next;
 
-        if (InvokeEvent)
+        if (invokeEvent)
         {
             OnValueChange?.Invoke(this, new() { Previous = prev, Current = next });
         }
@@ -258,7 +269,7 @@ public class HP : IDeepCloneable<HP>
             Set(next);
         }
 
-        if (InvokeEvent)
+        if (invokeEvent)
         {
             OnMaxValueChange?.Invoke(this, new() { Previous = prev, Current = next });
         }
@@ -285,7 +296,10 @@ public class HP : IDeepCloneable<HP>
 
         Set(value + amount);
 
-        OnHeal?.Invoke(this, new() { Amount = amount });
+        if (invokeEvent)
+        {
+            OnHeal?.Invoke(this, new() { Amount = amount });
+        }
     }
 
     // ------------------------------------------------------------
@@ -309,7 +323,10 @@ public class HP : IDeepCloneable<HP>
 
         Set(value - amount);
 
-        OnDamage?.Invoke(this, new() { Amount = amount });
+        if (invokeEvent)
+        {
+            OnDamage?.Invoke(this, new() { Amount = amount });
+        }
     }
 
     // ------------------------------------------------------------

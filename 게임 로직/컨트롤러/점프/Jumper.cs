@@ -208,7 +208,7 @@ namespace inonego
             // 점프 여부 설정
             isJumping = true;
 
-            if (InvokeEvent)
+            if (invokeEvent)
             {
                 OnJump?.Invoke(this, new JumpEventArgs { MaxCount = MaxCount, Count = Count });
             }

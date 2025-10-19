@@ -118,7 +118,7 @@ namespace inonego
                 throw;
             }
 
-            if (InvokeEvent)
+            if (invokeEvent)
             {
                 OnSpawn?.Invoke(this, spawnable);
             }
@@ -150,7 +150,7 @@ namespace inonego
 
             DespawnInternal(despawnable, removeFromDictionary);
 
-            if (InvokeEvent)
+            if (invokeEvent)
             {
                 OnDespawn?.Invoke(this, despawnable);
             }

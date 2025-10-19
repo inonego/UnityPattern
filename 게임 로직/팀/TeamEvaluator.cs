@@ -2,7 +2,7 @@ using System;
 
 namespace inonego
 {
-    public enum ReleativeFaction
+    public enum RelativeFaction
     {
         Self, Ally, Enemy, Neutral
     }
@@ -10,6 +10,6 @@ namespace inonego
     [Serializable]
     public abstract class TeamFactionChecker
     {
-        public abstract ReleativeFaction Check(Entity self, Entity other);
+        public abstract RelativeFaction Check(Entity self, Entity other);
     }
 }

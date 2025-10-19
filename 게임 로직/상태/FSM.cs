@@ -68,7 +68,7 @@ namespace inonego
 
             next?.Enter(sender);
 
-            if (InvokeEvent)
+            if (invokeEvent)
             {
                 OnStateChange?.Invoke(sender, new() { Previous = prev, Current = next });
             }

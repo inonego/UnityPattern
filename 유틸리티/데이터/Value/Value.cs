@@ -19,7 +19,7 @@ namespace inonego
         /// </summary>
         // ------------------------------------------------------------
         [SerializeField]
-        private bool invokeEvent = true;
+        protected bool invokeEvent = true;
         public bool InvokeEvent
         {
             get => invokeEvent;
@@ -47,7 +47,7 @@ namespace inonego
 
                 this.current = next;
 
-                if (InvokeEvent)
+                if (invokeEvent)
                 {
                     OnValueChange?.Invoke(this, new() { Previous = prev, Current = next } );
                 }
@@ -95,13 +95,17 @@ namespace inonego
                 throw new ArgumentNullException($"Value<T>.CloneFrom()의 인자가 null입니다.");
             }
 
-            // 값 복사
-            current = source.current;
+            var _invokeEvent = invokeEvent; invokeEvent = false;
+            {
+                // 값 복사
+                current = source.current;
+            }
+            invokeEvent = _invokeEvent;
 
             // 이벤트 복사
             if (cloneEvent)
             {
-                InvokeEvent = source.InvokeEvent;
+                invokeEvent = source.invokeEvent;
 
                 DelegateUtility.CloneFrom(ref OnValueChange, source.OnValueChange);
             }

@@ -145,9 +145,11 @@ namespace inonego
 
     #region 복제
 
+        public new MinMaxValue<T> @new() => new MinMaxValue<T>();
+
         public new MinMaxValue<T> Clone(bool cloneEvent = false)
         {
-            var result = new MinMaxValue<T>();
+            var result = @new();
             result.CloneFrom(this, cloneEvent);
             return result;
         }

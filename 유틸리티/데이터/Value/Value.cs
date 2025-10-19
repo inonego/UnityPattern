@@ -81,9 +81,11 @@ namespace inonego
 
     #region 복제
 
+        public Value<T> @new() => new Value<T>();
+
         public Value<T> Clone(bool cloneEvent = false)
         {
-            var result = new Value<T>();
+            var result = @new();
             result.CloneFrom(this, cloneEvent);
             return result;
         }

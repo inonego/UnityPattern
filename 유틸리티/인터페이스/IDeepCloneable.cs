@@ -1,8 +1,14 @@
 namespace inonego
 {
-    public interface IDeepCloneable<T>
+
+    public interface IDeepCloneableFrom<in T>
     {
-        public T Clone(bool cloneEvent = false);
         public void CloneFrom(T source, bool cloneEvent = false);
+    }
+
+    public interface IDeepCloneable<T> : IDeepCloneableFrom<T> where T : IDeepCloneable<T>
+    {
+        public T @new();
+        public T Clone(bool cloneEvent = false);
     }
 }

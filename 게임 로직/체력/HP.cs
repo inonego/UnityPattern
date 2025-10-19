@@ -154,9 +154,11 @@ public class HP : IDeepCloneable<HP>
 
     public HP() {}
 
+    public HP @new() => new HP();
+
     public HP Clone(bool cloneEvent = false)
     {
-        var result = new HP();
+        var result = @new();
         result.CloneFrom(this, cloneEvent);
         return result;
     }

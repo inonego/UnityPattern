@@ -17,23 +17,14 @@ namespace inonego
     #region 필드
 
         [SerializeField]
+        private InvokeEventFlag invokeEvent = new();
+        public InvokeEventFlag InvokeEvent => invokeEvent;
+
+        [SerializeField]
         protected MinMaxValue<int> value = new(new(0, 0), 0);
 
         [SerializeField]
         protected int limitMax = 0;
-
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 이벤트를 호출할지 여부를 결정합니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        [SerializeField]
-        private bool invokeEvent = true;
-        public bool InvokeEvent
-        {
-            get => invokeEvent;
-            set => invokeEvent = value;
-        }
 
         public virtual int Value
         {
@@ -141,7 +132,7 @@ namespace inonego
                 {
                     Value++;
 
-                    if (invokeEvent)
+                    if (invokeEvent.Value)
                     {
                         OnLevelUp?.Invoke(this, new() { Level = Value });
                     }

@@ -10,18 +10,9 @@ namespace inonego
 
     #region 필드
 
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 이벤트를 호출할지 여부를 결정합니다.
-        /// </summary>
-        // ------------------------------------------------------------
         [SerializeField]
-        private bool invokeEvent = true;
-        public bool InvokeEvent
-        {
-            get => invokeEvent;
-            set => invokeEvent = value;
-        }
+        private InvokeEventFlag invokeEvent = new();
+        public InvokeEventFlag InvokeEvent => invokeEvent;
 
         [SerializeReference]
         private TSource sender = null;
@@ -68,7 +59,7 @@ namespace inonego
 
             next?.Enter(sender);
 
-            if (invokeEvent)
+            if (invokeEvent.Value)
             {
                 OnStateChange?.Invoke(sender, new() { Previous = prev, Current = next });
             }

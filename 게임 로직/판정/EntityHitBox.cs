@@ -6,18 +6,9 @@ namespace inonego
 {
     public class EntityHitBox : MonoEntityBehaviour
     {
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 이벤트를 호출할지 여부를 결정합니다.
-        /// </summary>
-        // ------------------------------------------------------------
         [SerializeField]
-        private bool invokeEvent = true;
-        public bool InvokeEvent
-        {
-            get => invokeEvent;
-            set => invokeEvent = value;
-        }
+        private InvokeEventFlag invokeEvent = new();
+        public InvokeEventFlag InvokeEvent => invokeEvent;
 
         public event Action<EntityHitBox, EntityHurtBox> OnCollideTo;
 
@@ -33,7 +24,7 @@ namespace inonego
             // 같은 엔티티인 경우 충돌을 처리하지 않습니다.
             if (Entity.Key == hurtBox.Entity.Key) return;
             
-            if (invokeEvent)
+            if (invokeEvent.Value)
             {
                 OnCollideTo?.Invoke(this, hurtBox);
             }

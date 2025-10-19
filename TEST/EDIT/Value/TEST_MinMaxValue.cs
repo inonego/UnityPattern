@@ -31,7 +31,7 @@ public class TEST_MinMaxValue
         Assert.AreEqual(0, minMaxValue.Current);
         Assert.AreEqual(0, minMaxValue.Min);
         Assert.AreEqual(0, minMaxValue.Max);
-        Assert.IsTrue(minMaxValue.InvokeEvent);
+        Assert.IsTrue(minMaxValue.InvokeEvent.Value);
     }
 
     // ------------------------------------------------------------
@@ -203,7 +203,7 @@ public class TEST_MinMaxValue
         minMaxValue.OnRangeChange += (sender, e) => rangeChangeEventFired = true;
 
         // Act & Assert - InvokeEvent = false일 때
-        minMaxValue.InvokeEvent = false;
+        minMaxValue.InvokeEvent.Value = false;
         minMaxValue.Range = new MinMax<int>(10, 50);
         minMaxValue.Current = 30;
         Assert.IsFalse(valueChangeEventFired, "InvokeEvent가 false일 때 값 변경 이벤트가 발생하지 않아야 합니다");
@@ -214,7 +214,7 @@ public class TEST_MinMaxValue
         rangeChangeEventFired = false;
 
         // Act & Assert - InvokeEvent = true일 때
-        minMaxValue.InvokeEvent = true;
+        minMaxValue.InvokeEvent.Value = true;
         minMaxValue.Range = new MinMax<int>(20, 60);
         minMaxValue.Current = 40;
         Assert.IsTrue(rangeChangeEventFired, "InvokeEvent가 true일 때 범위 변경 이벤트가 발생해야 합니다");
@@ -237,7 +237,7 @@ public class TEST_MinMaxValue
         var originalMinMaxValue = new MinMaxValue<int>();
         originalMinMaxValue.Range = new MinMax<int>(10, 100);
         originalMinMaxValue.Current = 50;
-        originalMinMaxValue.InvokeEvent = false; // 직렬화 시 이벤트는 무시
+        originalMinMaxValue.InvokeEvent.Value = false; // 직렬화 시 이벤트는 무시
 
         // Act - 직렬화/역직렬화
         string json = JsonUtility.ToJson(originalMinMaxValue);
@@ -248,7 +248,7 @@ public class TEST_MinMaxValue
         Assert.AreEqual(originalMinMaxValue.Min, deserializedMinMaxValue.Min, "최소값이 올바르게 복원되어야 합니다");
         Assert.AreEqual(originalMinMaxValue.Max, deserializedMinMaxValue.Max, "최대값이 올바르게 복원되어야 합니다");
         Assert.AreEqual(originalMinMaxValue.Range, deserializedMinMaxValue.Range, "범위가 올바르게 복원되어야 합니다");
-        Assert.AreEqual(originalMinMaxValue.InvokeEvent, deserializedMinMaxValue.InvokeEvent, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalMinMaxValue.InvokeEvent.Value, deserializedMinMaxValue.InvokeEvent.Value, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
     }
 
 #endregion

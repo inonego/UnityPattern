@@ -318,7 +318,7 @@ public class TEST_HP
         hp.OnStateChange += (sender, e) => stateChangeEventFired = true;
 
         // Act & Assert - InvokeEvent = false일 때
-        hp.InvokeEvent = false;
+        hp.InvokeEvent.Value = false;
         hp.MaxValue = 100;
         hp.MakeAlive();
         Assert.IsFalse(valueChangeEventFired);
@@ -329,7 +329,7 @@ public class TEST_HP
         stateChangeEventFired = false;
 
         // Act & Assert - InvokeEvent = true일 때
-        hp.InvokeEvent = true;
+        hp.InvokeEvent.Value = true;
         hp.Value = 50;
         Assert.IsTrue(valueChangeEventFired);
     }

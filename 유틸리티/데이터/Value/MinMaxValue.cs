@@ -46,7 +46,7 @@ namespace inonego
 
                 this.range = next;
 
-                if (invokeEvent)
+                if (invokeEvent.Value)
                 {
                     OnRangeChange?.Invoke(this, new() { Previous = prev, Current = next });
                 }
@@ -163,16 +163,17 @@ namespace inonego
 
             base.CloneFrom(source, cloneEvent);
 
-            var _invokeEvent = invokeEvent; invokeEvent = false;
+            invokeEvent.ExecuteQuietly(() =>
             {
                 // 값 복사
                 range = source.range;
-            }
-            invokeEvent = _invokeEvent;
+            });
 
             // 이벤트 복사
             if (cloneEvent)
             {
+                invokeEvent.Value = source.invokeEvent.Value;
+
                 DelegateUtility.CloneFrom(ref OnRangeChange, source.OnRangeChange);
             }
         }

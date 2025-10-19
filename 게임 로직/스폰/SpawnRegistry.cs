@@ -47,14 +47,9 @@ namespace inonego
 
     #region 필드
 
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 이벤트를 호출할지 여부를 결정합니다.
-        /// </summary>
-        // ------------------------------------------------------------
         [SerializeField]
-        private bool invokeEvent = true;
-        public bool InvokeEvent => invokeEvent;
+        private InvokeEventFlag invokeEvent = new();
+        public InvokeEventFlag InvokeEvent => invokeEvent;
 
         [SerializeField]
         private SpawnedDictionary<T> spawned = new();
@@ -118,7 +113,7 @@ namespace inonego
                 throw;
             }
 
-            if (invokeEvent)
+            if (invokeEvent.Value)
             {
                 OnSpawn?.Invoke(this, spawnable);
             }
@@ -150,7 +145,7 @@ namespace inonego
 
             DespawnInternal(despawnable, removeFromDictionary);
 
-            if (invokeEvent)
+            if (invokeEvent.Value)
             {
                 OnDespawn?.Invoke(this, despawnable);
             }

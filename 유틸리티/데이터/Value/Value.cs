@@ -13,18 +13,9 @@ namespace inonego
     [Serializable]
     public class Value<T> : IReadOnlyValue<T>, IDeepCloneable<Value<T>> where T : struct
     {
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 이벤트를 호출할지 여부를 결정합니다.
-        /// </summary>
-        // ------------------------------------------------------------
         [SerializeField]
-        protected bool invokeEvent = true;
-        public bool InvokeEvent
-        {
-            get => invokeEvent;
-            set => invokeEvent = value;
-        }
+        protected InvokeEventFlag invokeEvent = new();
+        public InvokeEventFlag InvokeEvent => invokeEvent;
 
         // ------------------------------------------------------------
         /// <summary>
@@ -47,7 +38,7 @@ namespace inonego
 
                 this.current = next;
 
-                if (invokeEvent)
+                if (invokeEvent.Value)
                 {
                     OnValueChange?.Invoke(this, new() { Previous = prev, Current = next } );
                 }
@@ -97,17 +88,16 @@ namespace inonego
                 throw new ArgumentNullException($"Value<T>.CloneFrom()의 인자가 null입니다.");
             }
 
-            var _invokeEvent = invokeEvent; invokeEvent = false;
+            invokeEvent.ExecuteQuietly(() =>
             {
                 // 값 복사
                 current = source.current;
-            }
-            invokeEvent = _invokeEvent;
+            });
 
             // 이벤트 복사
             if (cloneEvent)
             {
-                invokeEvent = source.invokeEvent;
+                invokeEvent.Value = source.invokeEvent.Value;
 
                 DelegateUtility.CloneFrom(ref OnValueChange, source.OnValueChange);
             }

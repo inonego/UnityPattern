@@ -29,7 +29,7 @@ public class TEST_Value
 
         // Assert
         Assert.AreEqual(0, value.Current);
-        Assert.IsTrue(value.InvokeEvent);
+        Assert.IsTrue(value.InvokeEvent.Value);
     }
 
     // ------------------------------------------------------------
@@ -92,7 +92,7 @@ public class TEST_Value
         value.OnValueChange += (sender, e) => valueChangeEventFired = true;
 
         // Act & Assert - InvokeEvent = false일 때
-        value.InvokeEvent = false;
+        value.InvokeEvent.Value = false;
         value.Current = 10;
         Assert.IsFalse(valueChangeEventFired, "InvokeEvent가 false일 때 이벤트가 발생하지 않아야 합니다");
 
@@ -100,7 +100,7 @@ public class TEST_Value
         valueChangeEventFired = false;
 
         // Act & Assert - InvokeEvent = true일 때
-        value.InvokeEvent = true;
+        value.InvokeEvent.Value = true;
         value.Current = 20;
         Assert.IsTrue(valueChangeEventFired, "InvokeEvent가 true일 때 이벤트가 발생해야 합니다");
     }
@@ -181,7 +181,7 @@ public class TEST_Value
         // Arrange - 커스텀 Value 클래스 (ProcessValue 오버라이드)
         var originalValue = new CustomValue();
         originalValue.Current = 5; // ProcessValue에서 2배로 처리되어 10이 됨
-        originalValue.InvokeEvent = false; // 직렬화 시 이벤트는 무시
+        originalValue.InvokeEvent.Value = false; // 직렬화 시 이벤트는 무시
 
         // Act - 직렬화/역직렬화
         string json = JsonUtility.ToJson(originalValue);
@@ -189,7 +189,7 @@ public class TEST_Value
 
         // Assert - 상태 복원 확인
         Assert.AreEqual(originalValue.Current, deserializedValue.Current, "현재 값이 올바르게 복원되어야 합니다");
-        Assert.AreEqual(originalValue.InvokeEvent, deserializedValue.InvokeEvent, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalValue.InvokeEvent.Value, deserializedValue.InvokeEvent.Value, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
         
         // ProcessValue 동작 확인
         deserializedValue.Current = 3; // 3 * 2 = 6

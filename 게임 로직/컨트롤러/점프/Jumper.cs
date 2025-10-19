@@ -22,18 +22,9 @@ namespace inonego
 
     #region 필드
 
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 이벤트를 호출할지 여부를 결정합니다.
-        /// </summary>
-        // ------------------------------------------------------------
         [SerializeField]
-        private bool invokeEvent = true;
-        public bool InvokeEvent
-        {
-            get => invokeEvent;
-            set => invokeEvent = value;
-        }
+        private InvokeEventFlag invokeEvent = new();
+        public InvokeEventFlag InvokeEvent => invokeEvent;
 
         // ------------------------------------------------------------
         /// <summary>
@@ -208,7 +199,7 @@ namespace inonego
             // 점프 여부 설정
             isJumping = true;
 
-            if (invokeEvent)
+            if (invokeEvent.Value)
             {
                 OnJump?.Invoke(this, new JumpEventArgs { MaxCount = MaxCount, Count = Count });
             }

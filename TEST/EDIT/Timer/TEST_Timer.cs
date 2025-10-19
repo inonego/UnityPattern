@@ -362,7 +362,7 @@ public class TEST_Timer
         timer.OnStateChange += (sender, e) => stateChangeEventFired = true;
 
         // Act & Assert - InvokeEvent = false일 때
-        timer.InvokeEvent = false;
+        timer.InvokeEvent.Value = false;
         timer.Start(1.0f);
         Assert.IsFalse(stateChangeEventFired, "InvokeEvent가 false일 때 OnStateChange 이벤트가 발생하지 않아야 합니다");
 
@@ -374,7 +374,7 @@ public class TEST_Timer
         stateChangeEventFired = false;
 
         // Act & Assert - InvokeEvent = true일 때
-        timer.InvokeEvent = true;
+        timer.InvokeEvent.Value = true;
         timer.Start(1.0f);
         Assert.IsTrue(stateChangeEventFired, "InvokeEvent가 true일 때 OnStateChange 이벤트가 발생해야 합니다");
 
@@ -398,7 +398,7 @@ public class TEST_Timer
         var originalTimer = new Timer();
         originalTimer.Start(10.0f);
         originalTimer.Update(3.0f); // 3초 경과
-        originalTimer.InvokeEvent = false; // 직렬화 시 이벤트는 무시
+        originalTimer.InvokeEvent.Value = false; // 직렬화 시 이벤트는 무시
 
         // Act - 직렬화/역직렬화
         string json = JsonUtility.ToJson(originalTimer);
@@ -409,7 +409,7 @@ public class TEST_Timer
         Assert.AreEqual(originalTimer.ElapsedTime, deserializedTimer.ElapsedTime, "ElapsedTime이 올바르게 복원되어야 합니다");
         Assert.AreEqual(originalTimer.RemainingTime, deserializedTimer.RemainingTime, "RemainingTime이 올바르게 복원되어야 합니다");
         Assert.AreEqual(originalTimer.Current, deserializedTimer.Current, "현재 상태가 올바르게 복원되어야 합니다");
-        Assert.AreEqual(originalTimer.InvokeEvent, deserializedTimer.InvokeEvent, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalTimer.InvokeEvent.Value, deserializedTimer.InvokeEvent.Value, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
     }
 
 #endregion

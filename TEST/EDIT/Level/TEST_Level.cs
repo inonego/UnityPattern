@@ -177,7 +177,7 @@ public class TEST_Level
         var originalLevel = new Level(10);
         originalLevel.LevelUp(3); // 레벨 3으로 설정
         originalLevel.LimitMax = 5;
-        originalLevel.InvokeEvent = false; // 직렬화 시 이벤트는 무시
+        originalLevel.InvokeEvent.Value = false; // 직렬화 시 이벤트는 무시
 
         // Act - 직렬화/역직렬화
         string json = JsonUtility.ToJson(originalLevel);
@@ -189,7 +189,7 @@ public class TEST_Level
         Assert.AreEqual(originalLevel.Max, deserializedLevel.Max, "최대 레벨이 올바르게 복원되어야 합니다");
         Assert.AreEqual(originalLevel.FullMax, deserializedLevel.FullMax, "FullMax가 올바르게 복원되어야 합니다");
         Assert.AreEqual(originalLevel.LimitMax, deserializedLevel.LimitMax, "LimitMax가 올바르게 복원되어야 합니다");
-        Assert.AreEqual(originalLevel.InvokeEvent, deserializedLevel.InvokeEvent, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalLevel.InvokeEvent.Value, deserializedLevel.InvokeEvent.Value, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
     }
 
 #endregion
@@ -485,7 +485,7 @@ public class TEST_Level
         var originalLevelxEXP = new LevelxEXP(expTable);
         originalLevelxEXP.EXP = 25; // 레벨 2, 경험치 5 상태
         originalLevelxEXP.LimitMax = 3;
-        originalLevelxEXP.InvokeEvent = false; // 직렬화 시 이벤트는 무시
+        originalLevelxEXP.InvokeEvent.Value = false; // 직렬화 시 이벤트는 무시
 
         // Act - 직렬화/역직렬화
         string json = JsonUtility.ToJson(originalLevelxEXP);
@@ -497,7 +497,7 @@ public class TEST_Level
         Assert.AreEqual(originalLevelxEXP.MaxEXP, deserializedLevelxEXP.MaxEXP, "최대 경험치가 올바르게 복원되어야 합니다");
         Assert.AreEqual(originalLevelxEXP.FullMax, deserializedLevelxEXP.FullMax, "FullMax가 올바르게 복원되어야 합니다");
         Assert.AreEqual(originalLevelxEXP.LimitMax, deserializedLevelxEXP.LimitMax, "LimitMax가 올바르게 복원되어야 합니다");
-        Assert.AreEqual(originalLevelxEXP.InvokeEvent, deserializedLevelxEXP.InvokeEvent, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalLevelxEXP.InvokeEvent.Value, deserializedLevelxEXP.InvokeEvent.Value, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
         
         // Assert - expTable 직렬화 확인
         Assert.IsNotNull(deserializedLevelxEXP.RequiredEXPToLevelUpArray, "경험치 테이블이 직렬화되어야 합니다");

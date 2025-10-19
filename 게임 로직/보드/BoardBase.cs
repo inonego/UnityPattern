@@ -15,7 +15,7 @@ namespace inonego
     /// </summary>
     // ============================================================
     [Serializable]
-    public abstract class BoardSpace<TPlaceable> : IBoardSpace<TPlaceable>
+    public class BoardSpace<TPlaceable> : IBoardSpace<TPlaceable>
     where TPlaceable : class, new()
     {
         [SerializeReference]
@@ -136,7 +136,7 @@ namespace inonego
         /// 지정된 위치에 공간을 추가합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void AddSpace(TPoint point)
+        public virtual void AddSpace(TPoint point)
         {
             if (!IsValidPoint(point)) return;
 
@@ -154,7 +154,7 @@ namespace inonego
         /// 지정된 위치의 공간을 제거합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void RemoveSpace(TPoint point)
+        public virtual void RemoveSpace(TPoint point)
         {
             if (!IsValidPoint(point)) return;
 

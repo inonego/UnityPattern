@@ -37,7 +37,7 @@ namespace inonego
 
         Action IDespawnable.DespawnFromRegistry { get; set; }
 
-        public void OnSpawn()
+        public virtual void OnSpawn()
         {
             hp.OnStateChange += OnHPStateChange;
 
@@ -47,7 +47,7 @@ namespace inonego
             }
         }
 
-        public void OnDespawn()
+        public virtual void OnDespawn()
         {
             if (hp.IsAlive) 
             {
@@ -72,7 +72,7 @@ namespace inonego
 
     #region 이벤트 핸들러   
 
-        private void OnHPStateChange(HP sender, ValueChangeEventArgs<HP.State> e)
+        protected virtual void OnHPStateChange(HP sender, ValueChangeEventArgs<HP.State> e)
         {
             if (e.Current == HP.State.Dead)
             {
@@ -87,12 +87,12 @@ namespace inonego
 
     #region 메서드
 
-        public void ApplyDamage(int damage)
+        public virtual void ApplyDamage(int damage)
         {
             hp.ApplyDamage(damage);
         }
 
-        public void ApplyHeal(int amount)
+        public virtual void ApplyHeal(int amount)
         {
             hp.ApplyHeal(amount);
         }

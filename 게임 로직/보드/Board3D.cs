@@ -6,26 +6,26 @@ using UnityEngine;
 
 namespace inonego
 {
-
+    
     // ============================================================
     /// <summary>
-    /// 2D 크기(Width, Height) 범위 내에서 동작하는 보드입니다.
+    /// 3D 크기(Width, Height, Depth) 범위 내에서 동작하는 보드입니다.
     /// </summary>
     // ============================================================
     [Serializable]
-    public class Board2D<TPlaceable> : Board2D<BoardSpace<TPlaceable>, TPlaceable>
+    public class Board3D<TPlaceable> : Board3D<BoardSpace<TPlaceable>, TPlaceable>
     where TPlaceable : class, new()
     {
-        public Board2D(int width, int height, bool init = true) : base(width, height, init) {}
+        public Board3D(int width, int height, int depth, bool init = true) : base(width, height, depth, init) {}
     }
 
     // ============================================================
     /// <summary>
-    /// 2D 크기(Width, Height) 범위 내에서 동작하는 보드입니다.
+    /// 3D 크기(Width, Height, Depth) 범위 내에서 동작하는 보드입니다.
     /// </summary>
     // ============================================================
     [Serializable]
-    public class Board2D<TBoardSpace, TPlaceable> : BoardBase<Vector2Int, TBoardSpace, TPlaceable>
+    public class Board3D<TBoardSpace, TPlaceable> : BoardBase<Vector3Int, TBoardSpace, TPlaceable>
     where TBoardSpace : BoardSpace<TPlaceable>, new()
     where TPlaceable : class, new()
     {
@@ -34,6 +34,9 @@ namespace inonego
 
         [SerializeField]
         protected int height;
+
+        [SerializeField]
+        protected int depth;
 
         // ------------------------------------------------------------
         /// <summary>
@@ -51,19 +54,26 @@ namespace inonego
 
         // ------------------------------------------------------------
         /// <summary>
+        /// 보드의 깊이 크기입니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public int Depth => depth;
+
+        // ------------------------------------------------------------
+        /// <summary>
         /// 보드의 크기입니다.
         /// </summary>
         // ------------------------------------------------------------
-        public Vector2Int Size => new Vector2Int(width, height);
+        public Vector3Int Size => new Vector3Int(width, height, depth);
 
         // ------------------------------------------------------------
         /// <summary>
         /// 포인트가 유효한 보드 범위 내에 있는지 확인합니다.
         /// </summary>
         // ------------------------------------------------------------
-        protected override bool IsValidPoint(Vector2Int point)
+        protected override bool IsValidPoint(Vector3Int point)
         {
-            return 0 <= point.x && point.x < width && 0 <= point.y && point.y < height;
+            return 0 <= point.x && point.x < width && 0 <= point.y && point.y < height && 0 <= point.z && point.z < depth;
         }
 
         // ------------------------------------------------------------
@@ -71,10 +81,11 @@ namespace inonego
         /// 생성자에서 크기를 지정하고 공간을 초기화합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public Board2D(int width, int height, bool init = true)
+        public Board3D(int width, int height, int depth, bool init = true)
         {
             this.width = Math.Max(0, width);
             this.height = Math.Max(0, height);
+            this.depth = Math.Max(0, depth);
 
             if (init)
             {
@@ -91,17 +102,21 @@ namespace inonego
         {
             spaceMap.Clear();
 
-            for (int y = 0; y < height; y++)
+            for (int z = 0; z < depth; z++)
             {
-                for (int x = 0; x < width; x++)
+                for (int y = 0; y < height; y++)
                 {
-                    var p = new Vector2Int(x, y);
+                    for (int x = 0; x < width; x++)
+                    {
+                        var p = new Vector3Int(x, y, z);
 
-                    AddSpace(p);
+                        AddSpace(p);
+                    }
                 }
             }
         }
     }
 }
+
 
 

@@ -4,10 +4,10 @@ namespace inonego
 {
     public interface IState<TSender>
     {
-        protected internal void Enter(TSender sender);
-        protected internal void Exit(TSender sender);
-        protected internal void Update(TSender sender);
-        protected internal void FixedUpdate(TSender sender);
-        protected internal void LateUpdate(TSender sender);
+        public void Enter(TSender sender);
+        public void Exit(TSender sender);
+        public void Update(TSender sender);
+        public void FixedUpdate(TSender sender);
+        public void LateUpdate(TSender sender);
     }
 }

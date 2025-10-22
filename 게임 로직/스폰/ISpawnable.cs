@@ -3,7 +3,7 @@ using System;
 namespace inonego
 {
     
-    public interface ICanSpawnFromRegistry : IKeyable
+    public interface ISpawnedFlag
     {
         // ------------------------------------------------------------
         /// <summary>
@@ -18,7 +18,7 @@ namespace inonego
     /// 스폰 가능한 객체를 위한 인터페이스입니다.
     /// </summary>
     // ========================================================================
-    public interface ISpawnable : ICanSpawnFromRegistry
+    public interface ISpawnable : ISpawnedFlag
     {
         public void OnSpawn();
     }
@@ -29,7 +29,7 @@ namespace inonego
     /// </summary>
     /// <typeparam name="TParam">스폰 시 전달할 매개변수의 타입입니다.</typeparam>
     // ========================================================================
-    public interface ISpawnable<TParam> : ICanSpawnFromRegistry
+    public interface ISpawnable<TParam> : ISpawnedFlag
     {
         public void OnSpawn(TParam param);
     }
@@ -39,7 +39,7 @@ namespace inonego
     /// 디스폰 가능한 객체를 위한 인터페이스입니다.
     /// </summary>
     // ========================================================================
-    public interface IDespawnable : ICanSpawnFromRegistry
+    public interface IDespawnable : ISpawnedFlag
     {
         public void OnDespawn();
 

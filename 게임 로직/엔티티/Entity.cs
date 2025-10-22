@@ -33,7 +33,7 @@ namespace inonego
 
     #region 인터페이스 구현
 
-        bool ICanSpawnFromRegistry.IsSpawned { get => isSpawned; set => isSpawned = value; }
+        bool ISpawnedFlag.IsSpawned { get => isSpawned; set => isSpawned = value; }
 
         Action IDespawnable.DespawnFromRegistry { get; set; }
 

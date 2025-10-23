@@ -1,47 +1,82 @@
 using UnityEngine;
 
-using inonego;
-
 using System;
 
 namespace inonego
 {
 
-    [Serializable]
-    public abstract partial class MonoEntity : MonoBehaviour, ISpawnable<Entity>, IDespawnable
+    public interface IMonoEntity : IKeyable<ulong>
     {
-        
-    #region 필드
+        public Entity Entity { get; }
+    }
 
-        public string Key => entity != null ? entity.Key : null;
+    public interface IMonoEntity<TEntity> : IKeyable<ulong>
+    where TEntity : Entity
+    {
+        public TEntity Entity { get; }
+    }
 
-        [SerializeField, ReadOnly]
-        protected bool isSpawned = false;
-        public bool IsSpawned => isSpawned;
+    [Serializable]
+    public abstract class MonoEntity<TEntity> : MonoBehaviour, IMonoEntity<TEntity>, IMonoEntity, ISpawnable<TEntity>, IDespawnable
+    where TEntity : Entity
+    {
+        #region 키 설정
 
-        [SerializeReference]
-        protected Entity entity;
-        public Entity Entity => entity;
-        
-    #endregion
+            public ulong Key
+            {
+                get
+                {
+                    if (entity != null && entity.HasKey)
+                    {
+                        return entity.Key;
+                    }
 
-    #region 인터페이스 구현
-        
-        bool ISpawnedFlag.IsSpawned { get => isSpawned; set => isSpawned = value; }
+                    throw new InvalidOperationException("키가 설정되어 있지 않습니다.");
+                }
+            }
 
-        Action IDespawnable.DespawnFromRegistry { get; set; }
-        
-        public void OnSpawn(Entity entity)
-        {
-            this.entity = entity;
-        }
+            public bool HasKey => entity != null && entity.HasKey;
 
-        public void OnDespawn()
-        {
-            this.entity = null;
-        }
+        #endregion
 
-    #endregion
+        #region 필드
 
+            [SerializeField, ReadOnly]
+            protected bool isSpawned = false;
+            public bool IsSpawned => isSpawned;
+
+            [SerializeReference]
+            protected TEntity entity = null;
+            public TEntity Entity => entity;
+
+            Entity IMonoEntity.Entity => entity;
+            
+        #endregion
+
+        #region 인터페이스 구현
+            
+            bool ISpawnedFlag.IsSpawned { get => isSpawned; set => isSpawned = value; }
+
+            Action IDespawnable.DespawnFromRegistry { get; set; }
+
+            void ISpawnable<TEntity>.OnBeforeSpawn(TEntity entity) => OnBeforeSpawn(entity);
+            void IDespawnable.OnAfterDespawn() => OnAfterDespawn();
+
+            protected virtual void OnBeforeSpawn(TEntity entity)
+            {
+                if (entity == null)
+                {
+                    throw new ArgumentNullException("엔티티가 null입니다.");
+                }
+
+                this.entity = entity;
+            }
+
+            protected virtual void OnAfterDespawn()
+            {
+                entity = null;
+            }
+
+        #endregion
     }
 }

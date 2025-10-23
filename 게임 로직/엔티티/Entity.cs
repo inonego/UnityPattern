@@ -1,21 +1,44 @@
 using UnityEngine;
 
-using inonego;
-
 using System;
 
 namespace inonego
 {
+    using Serializable;
 
     [Serializable]
-    public abstract partial class Entity : ISpawnable, IDespawnable
+    public abstract partial class Entity : ISpawnable, IDespawnable, IKeyable<ulong>
     {
 
-    #region 필드
+    #region 키 설정
 
         [SerializeField, ReadOnly]
-        protected string key = Guid.NewGuid().ToString();
-        public string Key => key;
+        protected XNullable<ulong> key = null;
+        public ulong Key
+        {
+            get
+            {
+                if (key.HasValue)
+                {
+                    return key.Value;
+                }
+
+                throw new InvalidOperationException("키가 설정되어 있지 않습니다.");
+            }
+        }
+
+        public bool HasKey => key.HasValue;
+
+        // --------------------------------------------------------------------------------
+        /// <summary>
+        /// 키를 설정합니다.
+        /// </summary>
+        // --------------------------------------------------------------------------------
+        protected internal virtual void SetKey(ulong key) => this.key = key;
+
+    #endregion
+
+    #region 필드
 
         [SerializeField, ReadOnly]
         protected bool isSpawned = false;
@@ -26,7 +49,7 @@ namespace inonego
         public Team Team => lTeam;
 
         [SerializeField]
-        protected HP hp = null;
+        protected HP hp = new HP();
         public HP HP => hp;
     
     #endregion
@@ -37,8 +60,16 @@ namespace inonego
 
         Action IDespawnable.DespawnFromRegistry { get; set; }
 
-        public virtual void OnSpawn()
+        void ISpawnable.OnBeforeSpawn() => OnBeforeSpawn();
+        void IDespawnable.OnAfterDespawn() => OnAfterDespawn();
+
+        protected virtual void OnBeforeSpawn()
         {
+            if (hp == null)
+            {
+                throw new InvalidOperationException("체력이 설정되어 있지 않습니다.");
+            }
+
             hp.OnStateChange += OnHPStateChange;
 
             if (hp.IsDead)
@@ -47,8 +78,13 @@ namespace inonego
             }
         }
 
-        public virtual void OnDespawn()
+        protected virtual void OnAfterDespawn()
         {
+            if (hp == null)
+            {
+                throw new InvalidOperationException("체력이 설정되어 있지 않습니다.");
+            }
+
             if (hp.IsAlive) 
             {
                 hp.MakeDead();
@@ -61,11 +97,16 @@ namespace inonego
 
     #region 생성자
 
-        public Entity() : this(null) {}
+        public Entity() : base() {}
 
-        public Entity(HP hp)
+        public Entity(HP hp) : this()
         {
-            this.hp = hp != null ? hp : new HP();
+            if (hp == null)
+            {
+                throw new ArgumentNullException("HP가 null입니다.");
+            }
+            
+            this.hp = hp;
         }
 
     #endregion

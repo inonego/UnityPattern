@@ -2,7 +2,6 @@ using System;
 
 namespace inonego
 {
-    
     public interface ISpawnedFlag
     {
         // ------------------------------------------------------------
@@ -20,7 +19,7 @@ namespace inonego
     // ========================================================================
     public interface ISpawnable : ISpawnedFlag
     {
-        public void OnSpawn();
+        protected internal void OnBeforeSpawn();
     }
 
     // ========================================================================
@@ -31,7 +30,7 @@ namespace inonego
     // ========================================================================
     public interface ISpawnable<TParam> : ISpawnedFlag
     {
-        public void OnSpawn(TParam param);
+        protected internal void OnBeforeSpawn(TParam param);
     }
 
     // ========================================================================
@@ -41,7 +40,7 @@ namespace inonego
     // ========================================================================
     public interface IDespawnable : ISpawnedFlag
     {
-        public void OnDespawn();
+        protected internal void OnAfterDespawn();
 
         protected internal Action DespawnFromRegistry { get; set; }
     }

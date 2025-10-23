@@ -19,10 +19,10 @@ namespace inonego
         // ------------------------------------------------------------
         protected void CollideTo(EntityHurtBox hurtBox)
         {
-            if (Entity == null || hurtBox.Entity == null) return;
+            if (MonoEntity == null || hurtBox.MonoEntity == null) return;
 
             // 같은 엔티티인 경우 충돌을 처리하지 않습니다.
-            if (Entity.Key == hurtBox.Entity.Key) return;
+            if (MonoEntity.Key == hurtBox.MonoEntity.Key) return;
             
             if (invokeEvent.Value)
             {

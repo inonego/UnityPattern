@@ -16,7 +16,7 @@ namespace inonego.Pool
     #region 필드
     
         [SerializeReference]
-        protected IGameObjectProvider gameObjectProvider = null;
+        protected IGameObjectProvider gameObjectProvider = new PrefabGameObjectProvider();
         public IGameObjectProvider GameObjectProvider => gameObjectProvider;
 
         [SerializeField]
@@ -43,11 +43,16 @@ namespace inonego.Pool
 
     #region 생성자
 
-        public GOPool() : this(null) {}
+        public GOPool() : base() {}
 
-        public GOPool(IGameObjectProvider provider)
+        public GOPool(IGameObjectProvider gameObjectProvider) : this()
         {
-            gameObjectProvider = provider != null ? provider : new PrefabGameObjectProvider();
+            if (gameObjectProvider == null)
+            {
+                throw new ArgumentNullException("GameObjectProvider가 null입니다.");
+            }
+
+            this.gameObjectProvider = gameObjectProvider;
         }
 
     #endregion

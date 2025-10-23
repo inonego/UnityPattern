@@ -62,44 +62,29 @@ namespace inonego
         private SpawnedDictionary<TKey, T> spawned = new();
         public ISpawnedDictionary<TKey, T> Spawned => spawned;
 
-        [SerializeReference]
-        private IKeyGenerator<TKey> keyGenerator = null;
-        public IKeyGenerator<TKey> KeyGenerator => keyGenerator;
-
     #endregion
 
     #region 이벤트
 
-        public event Action<SpawnRegistryBase<TKey, T>, T> OnSpawn = null;
-        public event Action<SpawnRegistryBase<TKey, T>, T> OnDespawn = null;
-
-    #endregion
-
-    #region 생성자
-
-        protected SpawnRegistryBase() {}
-
-        public SpawnRegistryBase(IKeyGenerator<TKey> keyGenerator)
-        {
-            if (keyGenerator == null)
-            {
-                throw new ArgumentNullException("키 생성기를 설정해주세요.");
-            }
-
-            this.keyGenerator = keyGenerator;
-        }
+        public event Action<TKey, T> OnSpawn = null;
+        public event Action<TKey, T> OnDespawn = null;
 
     #endregion
 
     #region 메서드
 
-        // ------------------------------------------------------------
+        protected virtual void OnAfterDespawn(T despawnable) {}
+
+        // --------------------------------------------------------------------------------
         /// <summary>
         /// 공통 스폰 등록 로직을 수행합니다.
         /// </summary>
-        // ------------------------------------------------------------
-        protected T RegisterAndSpawn(T spawnable, Action<T> invokeSpawnable)
+        // --------------------------------------------------------------------------------
+        protected T RegisterAndSpawn(T spawnable, Action<T> onBeforeSpawnAction)
         {
+            // ------------------------------------------------------------
+            /// 예외 처리
+            // ------------------------------------------------------------
             if (spawnable == null)
             {
                 throw new ArgumentNullException("스폰할 객체를 설정해주세요.");
@@ -110,11 +95,29 @@ namespace inonego
                 throw new InvalidOperationException("이미 스폰된 객체입니다.");
             }
 
-            spawnable.Key = KeyGenerator.Generate();
-
-            if (spawned.ContainsKey(spawnable.Key))
+            // ------------------------------------------------------------
+            /// 스폰 처리
+            // ------------------------------------------------------------
+            try
             {
-                throw new InvalidOperationException($"이미 동일 키({spawnable.Key})가 등록되어 있습니다.");
+                onBeforeSpawnAction?.Invoke(spawnable);
+
+                if (!spawnable.HasKey)
+                {
+                    throw new InvalidOperationException("스폰할 객체에 키가 설정되어 있지 않습니다.");
+                }
+
+                if (spawned.ContainsKey(spawnable.Key))
+                {
+                    throw new InvalidOperationException($"이미 동일 키({spawnable.Key})가 등록되어 있습니다.");
+                }
+            }
+            catch (Exception)
+            {
+                // 스폰 중에 예외가 발생하면 객체를 디스폰합니다.
+                DespawnInternal(spawnable);
+
+                throw;
             }
 
             // 디스폰 메서드
@@ -125,28 +128,22 @@ namespace inonego
 
             spawned.Add(spawnable.Key, spawnable);
 
-            try
-            {
-                invokeSpawnable?.Invoke(spawnable);
-            }
-            catch (Exception)
-            {
-                // 스폰 중에 예외가 발생하면 객체를 디스폰합니다.
-                DespawnInternal(spawnable);
-
-                throw;
-            }
-
+            // ------------------------------------------------------------
+            /// 스폰 이벤트를 호출합니다.
+            // ------------------------------------------------------------
             if (invokeEvent.Value)
             {
-                OnSpawn?.Invoke(this, spawnable);
+                OnSpawn?.Invoke(spawnable.Key, spawnable);
             }
-
+            
             return spawnable;
         }
 
         private void Despawn(T despawnable, bool removeFromDictionary = true)
         {
+            // ------------------------------------------------------------
+            /// 예외 처리
+            // ------------------------------------------------------------
             if (despawnable == null)
             {
                 throw new ArgumentNullException("디스폰할 객체를 설정해주세요.");
@@ -157,16 +154,27 @@ namespace inonego
                 throw new InvalidOperationException("스폰되지 않은 객체를 디스폰할 수 없습니다.");
             }
 
+            if (!despawnable.HasKey)
+            {
+                throw new InvalidOperationException("디스폰할 객체에 키가 설정되어 있지 않습니다.");
+            }
+
             if (!spawned.ContainsKey(despawnable.Key))
             {
                 throw new KeyNotFoundException($"등록되지 않은 키({despawnable.Key})에 해당하는 객체를 디스폰할 수 없습니다.");
             }
 
+            // ------------------------------------------------------------
+            /// 디스폰 처리
+            // ------------------------------------------------------------
             DespawnInternal(despawnable, removeFromDictionary);
 
+            // ------------------------------------------------------------
+            /// 디스폰 이벤트를 호출합니다.
+            // ------------------------------------------------------------
             if (invokeEvent.Value)
             {
-                OnDespawn?.Invoke(this, despawnable);
+                OnDespawn?.Invoke(despawnable.Key, despawnable);
             }
         }
 
@@ -179,10 +187,9 @@ namespace inonego
             {
                 spawned.Remove(despawnable.Key);
             }
-            
-            despawnable.OnDespawn();
 
-            despawnable.Key = default;
+            despawnable.OnAfterDespawn();
+            OnAfterDespawn(despawnable);
         }
 
         // ------------------------------------------------------------
@@ -200,12 +207,12 @@ namespace inonego
                 }
                 catch (Exception ex)
                 {
-
-                #if UNITY_EDITOR
                     // 예외가 발생해도 나머지 객체들을 계속 디스폰합니다.
-                    Debug.LogException(ex);
-                #endif
-
+                    #if UNITY_EDITOR
+                        Debug.LogException(ex);
+                    #else
+                        Debug.LogError(ex.Message);
+                    #endif
                 }
             }
 
@@ -229,14 +236,13 @@ namespace inonego
     where TKey : IEquatable<TKey>
     where T : class, ISpawnable, IDespawnable, IKeyable<TKey>
     {
-        public SpawnRegistry(IKeyGenerator<TKey> keyGenerator) : base(keyGenerator) {}
-
         // ------------------------------------------------------------
         /// <summary>
         /// 스폰할 객체를 가져옵니다.
         /// </summary>
         // ------------------------------------------------------------
         protected abstract T Acquire();
+        protected virtual void OnBeforeSpawn(T spawnable) {}
 
         // ------------------------------------------------------------
         /// <summary>
@@ -252,9 +258,13 @@ namespace inonego
                 throw new InvalidOperationException("스폰할 객체를 가져올 수 없습니다.");
             }
 
-            void OnSpawn(T spawnable) => spawnable.OnSpawn();
+            void OnBeforeSpawnAction(T spawnable)
+            {
+                OnBeforeSpawn(spawnable);
+                spawnable.OnBeforeSpawn();
+            }
 
-            return RegisterAndSpawn(spawnable, OnSpawn);
+            return RegisterAndSpawn(spawnable, OnBeforeSpawnAction);
         }
     }
 
@@ -271,14 +281,13 @@ namespace inonego
     where TKey : IEquatable<TKey>
     where T : class, ISpawnable<TParam>, IDespawnable, IKeyable<TKey>
     {
-        public SpawnRegistry(IKeyGenerator<TKey> keyGenerator) : base(keyGenerator) {}
-
         // ------------------------------------------------------------
         /// <summary>
         /// 스폰할 객체를 가져옵니다.
         /// </summary>
         // ------------------------------------------------------------
         protected abstract T Acquire(TParam param);
+        protected virtual void OnBeforeSpawn(T spawnable, TParam param) {}
 
         // ------------------------------------------------------------
         /// <summary>
@@ -294,9 +303,13 @@ namespace inonego
                 throw new InvalidOperationException("스폰할 객체를 가져올 수 없습니다.");
             }
 
-            void OnSpawn(T spawnable) => spawnable.OnSpawn(param);
+            void OnBeforeSpawnAction(T spawnable)
+            {
+                OnBeforeSpawn(spawnable, param);
+                spawnable.OnBeforeSpawn(param);
+            }
 
-            return RegisterAndSpawn(spawnable, OnSpawn);
+            return RegisterAndSpawn(spawnable, OnBeforeSpawnAction);
         }
     }
 }

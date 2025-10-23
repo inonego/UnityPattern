@@ -7,9 +7,22 @@ namespace inonego
     public abstract class MonoEntityBehaviour : MonoBehaviour
     {
         [Header("엔티티", order = -999)]
-        [SerializeField, ReadOnly]
-        private MonoEntity entity = null;
-        public MonoEntity Entity => entity;
+        [SerializeReference, ReadOnly]
+        private IMonoEntity monoEntity = null;
+        public IMonoEntity MonoEntity => monoEntity;
+
+        public Entity Entity
+        {
+            get
+            {
+                if (monoEntity == null)
+                {
+                    throw new InvalidOperationException("모노 엔티티가 null입니다.");
+                }
+
+                return monoEntity.Entity;
+            }
+        }
 
         private void Awake()
         {
@@ -18,14 +31,14 @@ namespace inonego
 
         private void GetComponents()
         {
-            if (entity == null)
+            if (monoEntity == null)
             {
-                entity = GetComponentInParent<MonoEntity>();
+                monoEntity = GetComponentInParent<IMonoEntity>();
             }
 
-            if (entity == null)
+            if (monoEntity == null)
             {
-                throw new Exception("HitBox의 부모 오브젝트에 Entity 컴포넌트가 없습니다.");
+                throw new Exception("MonoEntityBehaviour의 부모 오브젝트에 MonoEntity 컴포넌트가 없습니다.");
             }
         }
     }

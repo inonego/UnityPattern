@@ -1,14 +1,16 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 
 using UnityEngine;
 
 namespace inonego
 {
+    // ======================================================================== 
+    /// <summary>
+    /// 모노 엔티티 스폰 레지스트리를 관리하기 위한 클래스입니다.
+    /// </summary>
+    // ========================================================================
     [Serializable]
-    public abstract class MonoEntitySpawnRegistry<TMonoEntity, TEntity> : SpawnRegistry<ulong, TMonoEntity, TEntity>
+    public abstract class MonoEntitySpawnRegistry<TMonoEntity, TEntity> : SpawnRegistryBase<ulong, TMonoEntity>
     where TMonoEntity : MonoEntity<TEntity>
     where TEntity : Entity
     {
@@ -39,7 +41,7 @@ namespace inonego
 
     #region 메서드
 
-        protected override TMonoEntity Acquire(TEntity entity)
+        protected override TMonoEntity Acquire()
         {
             var gameObject = GameObjectProvider.Acquire();
 
@@ -51,6 +53,24 @@ namespace inonego
             }
 
             return monoEntity;
+        }
+
+        protected virtual void OnInit(TMonoEntity spawnable, TEntity entity) {}
+
+        // --------------------------------------------------------------------------------
+        /// <summary>
+        /// 모노 엔티티를 스폰합니다.
+        /// </summary>
+        // --------------------------------------------------------------------------------
+        public TMonoEntity Spawn(TEntity entity)
+        {
+            void InitAction(TMonoEntity spawnable)
+            {
+                OnInit(spawnable, entity);
+                spawnable.Init(entity);
+            }
+
+            return SpawnInternal(InitAction);
         }
 
     #endregion
@@ -66,7 +86,7 @@ namespace inonego
         /// 엔티티 스폰 레지스트리와 연동하여 엔티티의 상태를 동기화합니다.
         /// </summary>
         // --------------------------------------------------------------------------------
-        public void LinkTo(EntitySpawnRegistry<TEntity> registry, bool resync = false)
+        public void LinkTo(EntitySpawnRegistry<TEntity> registry, bool reSpawnAll = false)
         {
             RemoveLink();
             
@@ -80,9 +100,9 @@ namespace inonego
 
             linkedRegistry = registry;
 
-            if (resync)
+            if (reSpawnAll)
             {
-                Resync();
+                ReSpawnAll();
             }
         }
 
@@ -107,7 +127,7 @@ namespace inonego
         /// 엔티티 스폰 레지스트리와 다시 동기화하여 모든 객체를 디스폰하고 다시 스폰하도록 합니다.
         /// </summary>
         // --------------------------------------------------------------------------------
-        public void Resync()
+        public void ReSpawnAll()
         {
             if (linkedRegistry == null)
             {

@@ -7,15 +7,6 @@ using UnityEngine;
 namespace inonego
 {
     using Serializable;
-
-    [Serializable]
-    public class SpawnedDictionary<TKey, T> : XDictionary<TKey, SerializeReferenceWrapper<T>>, ISpawnedDictionary<TKey, T>
-    where TKey : IEquatable<TKey>
-    where T : class, ISpawnedFlag, IKeyable<TKey> {}
-
-    public interface ISpawnedDictionary<TKey, T> : IReadOnlyDictionary<TKey, SerializeReferenceWrapper<T>>
-    where TKey : IEquatable<TKey>
-    where T : class, ISpawnedFlag, IKeyable<TKey> {}
     
     public static class SpawnRegistryUtility
     {
@@ -28,11 +19,6 @@ namespace inonego
         {
             if (despawnable != null)
             {
-                if (!despawnable.IsSpawned)
-                {
-                    throw new InvalidOperationException("스폰되지 않은 객체를 디스폰할 수 없습니다.");
-                }
-
                 if (despawnable.DespawnFromRegistry != null)
                 {
                     despawnable.DespawnFromRegistry.Invoke();
@@ -40,6 +26,11 @@ namespace inonego
             }
         }
     }
+    
+    [Serializable]
+    public class SpawnedDictionary<TKey, T> : XDictionary<TKey, SerializeReferenceWrapper<T>>, ISpawnedDictionary<TKey, T>
+    where TKey : IEquatable<TKey>
+    where T : class, ISpawnRegistryObject<TKey> {}
 
     // ========================================================================
     /// <summary>
@@ -47,9 +38,9 @@ namespace inonego
     /// </summary>
     // ========================================================================
     [Serializable]
-    public abstract class SpawnRegistryBase<TKey, T> 
+    public abstract class SpawnRegistryBase<TKey, T> : ISpawnRegistry<TKey, T>
     where TKey : IEquatable<TKey>
-    where T : class, IDespawnable, IKeyable<TKey>
+    where T : class, ISpawnRegistryObject<TKey>
     {
 
     #region 필드
@@ -73,34 +64,40 @@ namespace inonego
 
     #region 메서드
 
+        protected virtual void OnBeforeSpawn(T spawnable) {}
         protected virtual void OnAfterDespawn(T despawnable) {}
+
+        protected abstract T Acquire();
 
         // --------------------------------------------------------------------------------
         /// <summary>
         /// 공통 스폰 등록 로직을 수행합니다.
         /// </summary>
         // --------------------------------------------------------------------------------
-        protected T RegisterAndSpawn(T spawnable, Action<T> onBeforeSpawnAction)
+        protected T SpawnInternal(Action<T> initAction = null)
         {
+            var spawnable = Acquire();
+
             // ------------------------------------------------------------
             /// 예외 처리
             // ------------------------------------------------------------
             if (spawnable == null)
             {
-                throw new ArgumentNullException("스폰할 객체를 설정해주세요.");
+                throw new InvalidOperationException("스폰할 객체를 가져올 수 없습니다.");
             }
             
             if (spawnable.IsSpawned)
             {
                 throw new InvalidOperationException("이미 스폰된 객체입니다.");
             }
-
+    
             // ------------------------------------------------------------
             /// 스폰 처리
             // ------------------------------------------------------------
             try
             {
-                onBeforeSpawnAction?.Invoke(spawnable);
+                OnBeforeSpawn(spawnable);
+                spawnable.OnBeforeSpawn();
 
                 if (!spawnable.HasKey)
                 {
@@ -110,6 +107,11 @@ namespace inonego
                 if (spawned.ContainsKey(spawnable.Key))
                 {
                     throw new InvalidOperationException($"이미 동일 키({spawnable.Key})가 등록되어 있습니다.");
+                }
+
+                if (initAction != null)
+                {
+                    initAction.Invoke(spawnable);
                 }
             }
             catch (Exception)
@@ -199,7 +201,7 @@ namespace inonego
         // ------------------------------------------------------------
         public void DespawnAll()
         {
-            foreach (var entity in spawned.Values)
+            foreach (var (key, entity) in spawned)
             {
                 try
                 {
@@ -234,16 +236,8 @@ namespace inonego
     [Serializable]
     public abstract class SpawnRegistry<TKey, T> : SpawnRegistryBase<TKey, T>
     where TKey : IEquatable<TKey>
-    where T : class, ISpawnable, IDespawnable, IKeyable<TKey>
+    where T : class, ISpawnRegistryObject<TKey>
     {
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 스폰할 객체를 가져옵니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        protected abstract T Acquire();
-        protected virtual void OnBeforeSpawn(T spawnable) {}
-
         // ------------------------------------------------------------
         /// <summary>
         /// 객체를 스폰합니다.
@@ -251,20 +245,7 @@ namespace inonego
         // ------------------------------------------------------------
         public T Spawn()
         {
-            var spawnable = Acquire();
-
-            if (spawnable == null)
-            {
-                throw new InvalidOperationException("스폰할 객체를 가져올 수 없습니다.");
-            }
-
-            void OnBeforeSpawnAction(T spawnable)
-            {
-                OnBeforeSpawn(spawnable);
-                spawnable.OnBeforeSpawn();
-            }
-
-            return RegisterAndSpawn(spawnable, OnBeforeSpawnAction);
+            return SpawnInternal();
         }
     }
 
@@ -277,17 +258,11 @@ namespace inonego
     /// <typeparam name="TParam">스폰 시 전달할 매개변수의 타입입니다.</typeparam>
     // ========================================================================
     [Serializable]
-    public abstract class SpawnRegistry<TKey, T, TParam> : SpawnRegistryBase<TKey, T>
+    public abstract class SpawnRegistry<TKey, T, TParam> : SpawnRegistry<TKey, T>
     where TKey : IEquatable<TKey>
-    where T : class, ISpawnable<TParam>, IDespawnable, IKeyable<TKey>
+    where T : class, ISpawnRegistryObject<TKey>, IInitNeeded<TParam>
     {
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 스폰할 객체를 가져옵니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        protected abstract T Acquire(TParam param);
-        protected virtual void OnBeforeSpawn(T spawnable, TParam param) {}
+        protected virtual void OnInit(T spawnable, TParam param) {}
 
         // ------------------------------------------------------------
         /// <summary>
@@ -296,20 +271,13 @@ namespace inonego
         // ------------------------------------------------------------
         public T Spawn(TParam param)
         {
-            var spawnable = Acquire(param);
-
-            if (spawnable == null)
+            void InitAction(T spawnable)
             {
-                throw new InvalidOperationException("스폰할 객체를 가져올 수 없습니다.");
+                OnInit(spawnable, param);
+                spawnable.Init(param);
             }
 
-            void OnBeforeSpawnAction(T spawnable)
-            {
-                OnBeforeSpawn(spawnable, param);
-                spawnable.OnBeforeSpawn(param);
-            }
-
-            return RegisterAndSpawn(spawnable, OnBeforeSpawnAction);
+            return SpawnInternal(InitAction);
         }
     }
 }

@@ -7,7 +7,7 @@ namespace inonego
     using Serializable;
 
     [Serializable]
-    public abstract partial class Entity : ISpawnable, IDespawnable, IKeyable<ulong>
+    public abstract partial class Entity : ISpawnRegistryObject<ulong>
     {
 
     #region 키 설정
@@ -29,12 +29,8 @@ namespace inonego
 
         public bool HasKey => key.HasValue;
 
-        // --------------------------------------------------------------------------------
-        /// <summary>
-        /// 키를 설정합니다.
-        /// </summary>
-        // --------------------------------------------------------------------------------
         protected internal virtual void SetKey(ulong key) => this.key = key;
+        protected internal virtual void ClearKey() => this.key = null;
 
     #endregion
 
@@ -48,28 +44,21 @@ namespace inonego
         protected Team lTeam = new Team();
         public Team Team => lTeam;
 
+    #endregion
+    
+    #region 체력 관련
+
         [SerializeField]
         protected HP hp = new HP();
         public HP HP => hp;
-    
-    #endregion
 
-    #region 인터페이스 구현
-
-        bool ISpawnedFlag.IsSpawned { get => isSpawned; set => isSpawned = value; }
-
-        Action IDespawnable.DespawnFromRegistry { get; set; }
-
-        void ISpawnable.OnBeforeSpawn() => OnBeforeSpawn();
-        void IDespawnable.OnAfterDespawn() => OnAfterDespawn();
-
-        protected virtual void OnBeforeSpawn()
+        protected void InitHP()
         {
             if (hp == null)
             {
                 throw new InvalidOperationException("체력이 설정되어 있지 않습니다.");
             }
-
+            
             hp.OnStateChange += OnHPStateChange;
 
             if (hp.IsDead)
@@ -78,19 +67,37 @@ namespace inonego
             }
         }
 
-        protected virtual void OnAfterDespawn()
+        protected void ReleaseHP()
         {
             if (hp == null)
             {
                 throw new InvalidOperationException("체력이 설정되어 있지 않습니다.");
             }
+            
+            hp.OnStateChange -= OnHPStateChange;
 
-            if (hp.IsAlive) 
+            if (hp.IsAlive)
             {
                 hp.MakeDead();
             }
+        }
+    
+    #endregion
 
-            hp.OnStateChange -= OnHPStateChange;
+    #region 인터페이스 구현
+
+        bool ISpawnRegistryObject<ulong>.IsSpawned { get => isSpawned; set => isSpawned = value; }
+
+        Action IDespawnable.DespawnFromRegistry { get; set; }
+
+        public virtual void OnBeforeSpawn()
+        {
+            InitHP();
+        }
+
+        public virtual void OnAfterDespawn()
+        {
+            ReleaseHP();
         }
 
     #endregion

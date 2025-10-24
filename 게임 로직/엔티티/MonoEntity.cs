@@ -5,19 +5,19 @@ using System;
 namespace inonego
 {
 
-    public interface IMonoEntity : IKeyable<ulong>
+    public interface IMonoEntity : ISpawnRegistryObject<ulong>
     {
         public Entity Entity { get; }
     }
 
-    public interface IMonoEntity<TEntity> : IKeyable<ulong>
+    public interface IMonoEntity<TEntity> : IMonoEntity, IInitNeeded<TEntity>
     where TEntity : Entity
     {
-        public TEntity Entity { get; }
+        public new TEntity Entity { get; }
     }
 
     [Serializable]
-    public abstract class MonoEntity<TEntity> : MonoBehaviour, IMonoEntity<TEntity>, IMonoEntity, ISpawnable<TEntity>, IDespawnable
+    public abstract class MonoEntity<TEntity> : MonoBehaviour, IMonoEntity<TEntity>
     where TEntity : Entity
     {
         #region 키 설정
@@ -55,14 +55,16 @@ namespace inonego
 
         #region 인터페이스 구현
             
-            bool ISpawnedFlag.IsSpawned { get => isSpawned; set => isSpawned = value; }
+            bool ISpawnRegistryObject<ulong>.IsSpawned { get => isSpawned; set => isSpawned = value; }
 
             Action IDespawnable.DespawnFromRegistry { get; set; }
 
-            void ISpawnable<TEntity>.OnBeforeSpawn(TEntity entity) => OnBeforeSpawn(entity);
-            void IDespawnable.OnAfterDespawn() => OnAfterDespawn();
+            public virtual void OnBeforeSpawn()
+            {
+                // NONE
+            }
 
-            protected virtual void OnBeforeSpawn(TEntity entity)
+            public virtual void Init(TEntity entity)
             {
                 if (entity == null)
                 {
@@ -72,7 +74,7 @@ namespace inonego
                 this.entity = entity;
             }
 
-            protected virtual void OnAfterDespawn()
+            public virtual void OnAfterDespawn()
             {
                 entity = null;
             }

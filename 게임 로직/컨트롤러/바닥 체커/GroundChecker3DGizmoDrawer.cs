@@ -9,7 +9,7 @@ namespace inonego
     /// GroundChecker3D의 기즈모를 그리는 컴포넌트입니다.
     /// </summary>
     // ============================================================================
-    public class GroundChecker3DGizmoDrawer : MonoBehaviour
+    public class GroundChecker3DGizmoDrawer : MonoBehaviour, IInitNeeded<GroundChecker3D>
     {
 
     #region 생성자

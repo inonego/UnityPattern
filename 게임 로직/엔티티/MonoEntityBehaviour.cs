@@ -38,7 +38,7 @@ namespace inonego
 
             if (monoEntity == null)
             {
-                throw new Exception("MonoEntityBehaviour의 부모 오브젝트에 MonoEntity 컴포넌트가 없습니다.");
+                throw new NullReferenceException("MonoEntityBehaviour의 부모 오브젝트에 MonoEntity 컴포넌트가 없습니다.");
             }
         }
     }

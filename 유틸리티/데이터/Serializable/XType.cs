@@ -45,6 +45,15 @@ namespace inonego.Serializable
 
         public bool Equals(XType other) => Value == other.Value;
         public bool Equals(Type other) => Value == other;
+        
+        public override bool Equals(object obj)
+        {
+            if (obj is XType x)
+                return Equals(x);
+            if (obj is Type t)
+                return Equals(t);
+            return false;
+        }
 
         public override int GetHashCode() => Value.GetHashCode();
     }

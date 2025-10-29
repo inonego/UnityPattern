@@ -8,6 +8,11 @@ namespace inonego
 {
     using Editor;
 
+    public enum MessageType
+    {
+        None, Info, Warning, Error
+    }
+
     public class HelpBoxAttribute : PropertyAttribute
     {
         public string Message { get; }

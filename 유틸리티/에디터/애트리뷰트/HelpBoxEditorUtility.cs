@@ -1,8 +1,14 @@
 using UnityEngine;
+
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
 namespace inonego.Editor
 {
+
+#if UNITY_EDITOR
+
     //===============================================================
     /// <summary>
     /// HelpBox를 그리는 유틸리티 클래스
@@ -229,4 +235,7 @@ namespace inonego.Editor
     #endregion
 
     }
+
+#endif
+
 }

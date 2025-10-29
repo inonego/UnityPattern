@@ -1,10 +1,16 @@
 using System;
 
 using UnityEditor;
+
+#if UNITY_EDITOR
 using UnityEngine;
+#endif
 
 namespace inonego.Editor
 {
+
+#if UNITY_EDITOR
+
    // ============================================================
    /// <summary>
    /// IGameObjectProvider 인터페이스에 대한 프로퍼티 드로어입니다.
@@ -281,4 +287,7 @@ namespace inonego.Editor
     #endregion
 
     }
+
+#endif
+
 }

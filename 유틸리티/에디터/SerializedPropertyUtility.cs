@@ -1,10 +1,17 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
 namespace inonego.Editor
 {
+
+#if UNITY_EDITOR
+
     // ==============================================================
     /// <summary>
     /// SerializedProperty 관련 유틸리티 메서드를 제공합니다.
@@ -80,5 +87,8 @@ namespace inonego.Editor
             return enm.Current;
         }
     }
+
+#endif
+
 }
 

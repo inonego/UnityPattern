@@ -8,7 +8,7 @@ namespace inonego
 {
     public class ReadOnlyAttribute : PropertyAttribute { }
 
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
 
     [CustomPropertyDrawer(typeof(ReadOnlyAttribute))]
     public class ReadOnlyDrawer : PropertyDrawer
@@ -25,5 +25,5 @@ namespace inonego
         }
     }
 
-    #endif
+#endif
 }

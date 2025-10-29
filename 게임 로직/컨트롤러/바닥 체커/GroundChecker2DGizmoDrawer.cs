@@ -28,12 +28,6 @@ namespace inonego
         {
             if (groundChecker == null) return;
             
-            // IsOnGround 상태에 따라 색상 결정
-            var color = groundChecker.IsOnGround ? Color.green : Color.red;
-            
-            Gizmos.color = color;
-            Handles.color = color;
-            
             // GroundChecker2D의 각 Collider에 대해 기즈모 그리기
             var colliders = groundChecker.GameObject.GetComponents<Collider2D>();
             

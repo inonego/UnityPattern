@@ -1,5 +1,8 @@
 using UnityEngine;
+
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
 namespace inonego
 {
@@ -12,12 +15,16 @@ namespace inonego
         // ------------------------------------------------------------
         public static void DrawLine(Vector3 p0, Vector3 p1, Color color)
         {
+
+        #if UNITY_EDITOR
             var originalColor = Handles.color;
             Handles.color = color;
 
             Handles.DrawLine(p0, p1);
 
             Handles.color = originalColor;
+        #endif
+
         }
 
         // ------------------------------------------------------------
@@ -39,12 +46,16 @@ namespace inonego
         // ------------------------------------------------------------
         public static void DrawWireCube(Matrix4x4 matrix, Color color)
         {
+
+        #if UNITY_EDITOR
             var (originalMatrix, originalColor) = (Handles.matrix, Handles.color);
             (Handles.matrix, Handles.color) = (matrix, color);
 
             Handles.DrawWireCube(Vector3.zero, Vector3.one);
 
             (Handles.matrix, Handles.color) = (originalMatrix, originalColor);
+        #endif
+
         }
 
         // ------------------------------------------------------------
@@ -66,6 +77,8 @@ namespace inonego
         // ------------------------------------------------------------
         public static void DrawWireSphere(Matrix4x4 matrix, Color color)
         {
+
+        #if UNITY_EDITOR
             var (originalMatrix, originalColor) = (Handles.matrix, Handles.color);
             (Handles.matrix, Handles.color) = (matrix, color);
 
@@ -74,6 +87,8 @@ namespace inonego
             Handles.DrawWireDisc(Vector3.zero, new(0f, 0f, 1f), 1);
 
             (Handles.matrix, Handles.color) = (originalMatrix, originalColor);
+        #endif
+
         }
 
         // ------------------------------------------------------------
@@ -97,6 +112,8 @@ namespace inonego
         // ------------------------------------------------------------
         public static void DrawWireHemisphere(Matrix4x4 matrix, Color color)
         {
+
+        #if UNITY_EDITOR
             var (originalMatrix, originalColor) = (Handles.matrix, Handles.color);
             (Handles.matrix, Handles.color) = (matrix, color);
 
@@ -106,6 +123,8 @@ namespace inonego
             Handles.DrawWireArc(Vector3.zero, new(0f, 0f, 1f), new(1f, 0f, 0f), +180f, 1f);
 
             (Handles.matrix, Handles.color) = (originalMatrix, originalColor);
+        #endif
+
         }
         
         // ------------------------------------------------------------

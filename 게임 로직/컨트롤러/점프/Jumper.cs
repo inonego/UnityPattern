@@ -127,10 +127,7 @@ namespace inonego
         /// 점프가 시작될 때 호출되는 이벤트입니다.
         /// </summary>
         // ------------------------------------------------------------
-        public event Action<Jumper, JumpEventArgs> OnJump = null;
-
-        event Action<IJumper, JumpEventArgs> IJumper.OnJump
-        { add => OnJump += value; remove => OnJump -= value; }
+        public event EventHandler<JumpEventArgs> OnJump = null;
 
     #endregion
 
@@ -195,7 +192,7 @@ namespace inonego
             // 점프 여부 설정
             isJumping = true;
 
-            OnJump?.Invoke(this, new JumpEventArgs { MaxCount = MaxCount, Count = Count });
+            OnJump?.Invoke(this, new() { MaxCount = MaxCount, Count = Count });
         }
 
         // ------------------------------------------------------------

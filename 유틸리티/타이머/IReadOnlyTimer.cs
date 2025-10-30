@@ -7,15 +7,22 @@ namespace inonego
     /// 읽기 전용 타이머 인터페이스입니다.
     /// </summary>
     // ==================================================================
-    public interface IReadOnlyTimer : ITimerEventHandler<IReadOnlyTimer>
+    public interface IReadOnlyTimer
     {
 
-    #region 상태
+    #region 필드
 
         public bool IsRunning { get; }
         public bool IsPaused { get; }
     
         public TimerState Current { get; }
+
+    #endregion
+
+    #region 이벤트
+
+        public event EventHandler<TimerEndEventArgs> OnEnd;
+        public event ValueChangeEventHandler<TimerState> OnStateChange;
 
     #endregion
 

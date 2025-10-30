@@ -8,15 +8,22 @@ namespace inonego
     /// 타이머 인터페이스입니다.
     /// </summary>
     // ==================================================================
-    public interface ITimer : ITimerEventHandler<ITimer>
+    public interface ITimer
     {
 
-    #region 상태
+    #region 필드
 
         public bool IsRunning { get; }
         public bool IsPaused { get; }
     
         public TimerState Current { get; }
+
+    #endregion
+
+    #region 이벤트
+
+        public event EventHandler<TimerEndEventArgs> OnEnd;
+        public event ValueChangeEventHandler<TimerState> OnStateChange;
 
     #endregion
 

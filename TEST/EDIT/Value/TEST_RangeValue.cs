@@ -143,14 +143,14 @@ public class TEST_RangeValue
         rangeValue.OnCurrentChange += (sender, e) => 
         {
             valueChangeEventFired = true;
-            valueChangeSender = sender;
+            valueChangeSender = sender as Value<int>;
             valueChangeEventArgs = e;
         };
 
         rangeValue.Range.OnCurrentChange += (sender, e) =>
         {
             rangeChangeFired = true;
-            rangeChangeSender = sender;
+            rangeChangeSender = sender as Value<MinMax<int>>;
             rangeChangeArgs = e;
         };
 

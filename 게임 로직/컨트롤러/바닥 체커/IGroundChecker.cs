@@ -6,6 +6,9 @@ namespace inonego
 {
     public interface IGroundChecker
     {
+
+    #region 필드
+
         // ------------------------------------------------------------
         /// <summary>
         /// 현재 바닥에 있는지 여부를 가져옵니다.
@@ -41,19 +44,27 @@ namespace inonego
         // ------------------------------------------------------------
         public GameObject GameObject { get; }
 
+    #endregion
+
+    #region 이벤트
+
         // ------------------------------------------------------------
         /// <summary>
         /// 바닥에 착지했을 때 이벤트를 발생시킵니다.
         /// </summary>
         // ------------------------------------------------------------
-        public event ValueChangeEvent<IGroundChecker, GameObject> OnLand;
+        public event ValueChangeEventHandler<GameObject> OnLand;
 
         // ------------------------------------------------------------
         /// <summary>
         /// 바닥을 벗어났을 때 이벤트를 발생시킵니다.
         /// </summary>
         // ------------------------------------------------------------
-        public event ValueChangeEvent<IGroundChecker, GameObject> OnLeave;
+        public event ValueChangeEventHandler<GameObject> OnLeave;
+
+    #endregion
+
+    #region 메서드
 
         // ------------------------------------------------------------
         /// <summary>
@@ -61,5 +72,8 @@ namespace inonego
         /// </summary>
         // ------------------------------------------------------------
         public void Check(float deltaTime);
+
+    #endregion
+    
     }
 }

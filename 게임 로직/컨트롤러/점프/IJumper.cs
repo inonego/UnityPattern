@@ -44,7 +44,7 @@ namespace inonego
         /// 점프가 시작될 때 호출되는 이벤트입니다.
         /// </summary>
         // ------------------------------------------------------------
-        public event Action<IJumper, JumpEventArgs> OnJump;
+        public event EventHandler<JumpEventArgs> OnJump;
 
     #endregion
 

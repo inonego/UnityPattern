@@ -22,7 +22,7 @@ namespace inonego
 
     #region 이벤트
     
-        public event ValueChangeEvent<TSource, IState<TSource>> OnStateChange = null;
+        public event ValueChangeEventHandler<IState<TSource>> OnStateChange = null;
 
     #endregion
 

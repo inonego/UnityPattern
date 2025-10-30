@@ -19,6 +19,6 @@ namespace inonego
         /// 현재 값이 변경될 때 발생하는 이벤트입니다.
         /// </summary>
         // ------------------------------------------------------------
-        public event ValueChangeEvent<IReadOnlyValue<T>, T> OnCurrentChange;
+        public event ValueChangeEventHandler<T> OnCurrentChange;
     }
 }

@@ -334,7 +334,7 @@ public class TEST_Timer
         timer.OnEnd += (sender, e) => 
         {
             endEventFired = true;
-            endEventSender = sender;
+            endEventSender = sender as Timer;
             endEventArgs = e;
         };
 
@@ -380,7 +380,7 @@ public class TEST_Timer
         timer.OnStateChange += (sender, e) => 
         {
             stateChangeEventFired = true;
-            stateChangeSender = sender;
+            stateChangeSender = sender as Timer;
             stateChangeEventArgs = e;
         };
 

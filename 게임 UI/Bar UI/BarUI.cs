@@ -115,12 +115,12 @@ namespace inonego
         
         }
 
-        private void OnValueChange(Value<float> sender, ValueChangeEventArgs<float> args)
+        private void OnValueChange(object sender, ValueChangeEventArgs<float> args)
         {
             Refresh();
         }
 
-        private void OnRangeChange(Value<MinMax<float>> sender, ValueChangeEventArgs<MinMax<float>> args)
+        private void OnRangeChange(object sender, ValueChangeEventArgs<MinMax<float>> args)
         {
             Refresh();
         }

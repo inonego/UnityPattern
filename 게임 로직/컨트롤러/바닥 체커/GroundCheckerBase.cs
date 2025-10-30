@@ -26,8 +26,8 @@ namespace inonego
 
     #region 이벤트
 
-        public event ValueChangeEvent<IGroundChecker, GameObject> OnLand = null;
-        public event ValueChangeEvent<IGroundChecker, GameObject> OnLeave = null;
+        public event ValueChangeEventHandler<GameObject> OnLand = null;
+        public event ValueChangeEventHandler<GameObject> OnLeave = null;
 
     #endregion
 

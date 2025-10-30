@@ -57,7 +57,7 @@ public class TEST_Value
         value.OnCurrentChange += (sender, e) => 
         {
             valueChangeEventFired = true;
-            valueChangeSender = sender;
+            valueChangeSender = sender as Value<int>;
             valueChangeEventArgs = e;
         };
 

@@ -1,19 +1,60 @@
 using System;
 
+using UnityEngine;
+
 namespace inonego
 {
     [Serializable]
     public struct MinMax<T> where T : struct, IComparable<T>
     {
-        public T Min;
-        public T Max;
 
-        public MinMax(T min, T max) => (Min, Max) = (min, max);
+        [SerializeField]
+        private T min;
+        public T Min
+        {
+            get => min;
+            set
+            {
+                if (value.CompareTo(max) > 0)
+                {
+                    throw new InvalidOperationException($"잘못된 범위입니다. ({value} - {max})");
+                }
+
+                min = value;
+            }
+        }
+
+        [SerializeField]
+        private T max;
+        public T Max
+        {
+            get => max;
+            set
+            {
+                if (value.CompareTo(min) < 0)
+                {
+                    throw new InvalidOperationException($"잘못된 범위입니다. ({min} - {value})");
+                }
+
+                max = value;
+            }
+        }
+
+        public MinMax(T min, T max)
+        {
+            if (min.CompareTo(max) > 0)
+            {
+                throw new InvalidOperationException($"잘못된 범위입니다. ({min} - {max})");
+            }
+
+            this.min = min;
+            this.max = max;
+        }
 
         public T Clamp(T value)
         {
-            if (value.CompareTo(Max) > 0) return Max;
             if (value.CompareTo(Min) < 0) return Min;
+            if (value.CompareTo(Max) > 0) return Max;
 
             return value;
         }

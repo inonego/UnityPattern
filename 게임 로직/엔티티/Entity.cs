@@ -120,7 +120,7 @@ namespace inonego
 
     #region 이벤트 핸들러   
 
-        protected virtual void OnHPStateChange(HP sender, ValueChangeEventArgs<HP.State> e)
+        protected virtual void OnHPStateChange(object sender, ValueChangeEventArgs<HP.State> e)
         {
             if (e.Current == HP.State.Dead)
             {

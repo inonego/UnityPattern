@@ -31,21 +31,21 @@ public class HP : IDeepCloneable<HP>
     /// 현재 체력 값이 변경될 때 호출되는 이벤트입니다.
     /// </summary>
     // ------------------------------------------------------------
-    public event ValueChangeEvent<HP, int> OnValueChange;
+    public event ValueChangeEventHandler<int> OnValueChange;   
 
     // ------------------------------------------------------------
     /// <summary>
     /// 최대 체력 값이 변경될 때 호출되는 이벤트입니다.
     /// </summary>
     // ------------------------------------------------------------
-    public event ValueChangeEvent<HP, int> OnMaxValueChange;
+    public event ValueChangeEventHandler<int> OnMaxValueChange;
 
     // ------------------------------------------------------------
     /// <summary>
     /// 상태가 변경될 때 호출되는 이벤트입니다.
     /// </summary>
     // ------------------------------------------------------------
-    public event ValueChangeEvent<HP, State> OnStateChange;
+    public event ValueChangeEventHandler<State> OnStateChange;
 
     [Serializable]
     public struct ApplyEventArgs
@@ -58,14 +58,14 @@ public class HP : IDeepCloneable<HP>
     /// 힐이 적용되었을때 호출되는 이벤트입니다.
     /// </summary>
     // ------------------------------------------------------------
-    public event Action<HP, ApplyEventArgs> OnHeal;
+    public event EventHandler<ApplyEventArgs> OnHeal;
 
     // ------------------------------------------------------------
     /// <summary>
     /// 데미지가 적용되었을때 호출되는 이벤트입니다.
     /// </summary>
     // ------------------------------------------------------------
-    public event Action<HP, ApplyEventArgs> OnDamage;
+    public event EventHandler<ApplyEventArgs> OnDamage;
 
 #endregion
 

@@ -4,6 +4,12 @@ using UnityEngine;
 
 namespace inonego
 {
+    [Serializable]
+    public struct LevelUpEventArgs
+    {
+        public int Level;
+    }
+
     // =======================================================================================
     /// <summary>
     /// <br/>게임에서 레벨과 경험치를 관리하기 위한 클래스입니다.
@@ -11,7 +17,7 @@ namespace inonego
     /// </summary>
     // =======================================================================================
     [Serializable]
-    public abstract class LevelBase : ILevel, IReadOnlyLevel, ILevelEventHandler<LevelBase>
+    public abstract class LevelBase : ILevel, IReadOnlyLevel
     {
 
     #region 필드
@@ -80,7 +86,7 @@ namespace inonego
             // Reset()은 파생 클래스에서 FullMax 설정 후 호출해야 함
         }
 
-        private void OnValueChangeHandler(Value<int> sender, ValueChangeEventArgs<int> e)
+        private void OnValueChangeHandler(object sender, ValueChangeEventArgs<int> e)
         {
             OnValueChange?.Invoke(this, e);
         }
@@ -98,18 +104,8 @@ namespace inonego
 
     #region 이벤트
 
-        public virtual event LevelUpEvent<LevelBase> OnLevelUp;
-        public virtual event ValueChangeEvent<LevelBase, int> OnValueChange;
-
-        event LevelUpEvent<ILevel> ILevelEventHandler<ILevel>.OnLevelUp
-        { add => OnLevelUp += value; remove => OnLevelUp -= value; }
-        event LevelUpEvent<IReadOnlyLevel> ILevelEventHandler<IReadOnlyLevel>.OnLevelUp
-        { add => OnLevelUp += value; remove => OnLevelUp -= value; }
-        
-        event ValueChangeEvent<ILevel, int> ILevelEventHandler<ILevel>.OnValueChange
-        { add => OnValueChange += value; remove => OnValueChange -= value; }
-        event ValueChangeEvent<IReadOnlyLevel, int> ILevelEventHandler<IReadOnlyLevel>.OnValueChange
-        { add => OnValueChange += value; remove => OnValueChange -= value; }
+        public virtual event EventHandler<LevelUpEventArgs> OnLevelUp;
+        public virtual event ValueChangeEventHandler<int> OnValueChange; 
 
     #endregion
 

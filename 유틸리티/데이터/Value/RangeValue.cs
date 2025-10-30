@@ -60,16 +60,8 @@ namespace inonego
 
     #region 이벤트 핸들러
 
-        private void OnRangeChange(Value<MinMax<T>> sender, ValueChangeEventArgs<MinMax<T>> e)
+        private void OnRangeChange(object sender, ValueChangeEventArgs<MinMax<T>> e)
         {
-            var min = range.Current.Min;
-            var max = range.Current.Max;
-
-            if (min.CompareTo(max) > 0)
-            {
-                throw new InvalidOperationException($"최소값({min})이 최대값({max})보다 클 수 없습니다.");
-            }
-
             // 값을 다시 적용합니다.
             Current = Current;
         }

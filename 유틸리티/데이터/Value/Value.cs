@@ -54,11 +54,8 @@ namespace inonego
         /// 값이 변경될 때 발생하는 이벤트입니다.
         /// </summary>
         // ------------------------------------------------------------
-        public event ValueChangeEvent<Value<T>, T> OnCurrentChange = null;
+        public event ValueChangeEventHandler<T> OnCurrentChange = null;
 
-        event ValueChangeEvent<IReadOnlyValue<T>, T> IReadOnlyValue<T>.OnCurrentChange
-        { add => OnCurrentChange += value; remove => OnCurrentChange -= value; }
-        
     #endregion
 
     #region 생성자

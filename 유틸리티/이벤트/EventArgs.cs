@@ -2,7 +2,9 @@ using System;
 
 namespace inonego
 {
-    public delegate void ValueChangeEvent<in TSender, T>(TSender sender, ValueChangeEventArgs<T> e);
+    public delegate void EventHandler<T>(object sender, T e);
+
+    public delegate void ValueChangeEventHandler<T>(object sender, ValueChangeEventArgs<T> e);
 
     [Serializable]
     public struct ValueChangeEventArgs<T>

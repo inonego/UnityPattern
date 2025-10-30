@@ -303,35 +303,35 @@ public class TEST_HP
         hp.OnValueChange += (sender, e) => 
         {
             valueChangeEventFired = true;
-            valueChangeSender = sender;
+            valueChangeSender = sender as HP;
             valueChangeEventArgs = e;
         };
 
         hp.OnMaxValueChange += (sender, e) => 
         {
             maxValueChangeEventFired = true;
-            maxValueChangeSender = sender;
+            maxValueChangeSender = sender as HP;
             maxValueChangeEventArgs = e;
         };
 
         hp.OnStateChange += (sender, e) => 
         {
             stateChangeEventFired = true;
-            stateChangeSender = sender;
+            stateChangeSender = sender as HP;
             stateChangeEventArgs = e;
         };
 
         hp.OnHeal += (sender, e) => 
         {
             healEventFired = true;
-            healSender = sender;
+            healSender = sender as HP;
             healEventArgs = e;
         };
 
         hp.OnDamage += (sender, e) => 
         {
             damageEventFired = true;
-            damageSender = sender;
+            damageSender = sender as HP;
             damageEventArgs = e;
         };
 

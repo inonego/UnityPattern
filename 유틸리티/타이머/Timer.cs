@@ -8,18 +8,10 @@ namespace inonego
 {
     public enum TimerState { Ready, Run, Pause }
 
-    public delegate void TimerEndEvent<in TSender>(TSender sender, TimerEndEventArgs e);
-
     [Serializable]
     public struct TimerEndEventArgs
     {
         // NONE
-    }
-
-    public interface ITimerEventHandler<out TSelf>
-    {
-        public event TimerEndEvent<TSelf> OnEnd;
-        public event ValueChangeEvent<TSelf, TimerState> OnStateChange;
     }
 
     // ==================================================================
@@ -29,7 +21,7 @@ namespace inonego
     /// </summary>
     // ==================================================================
     [Serializable]
-    public partial class Timer : ITimer, IReadOnlyTimer, ITimerEventHandler<Timer>
+    public partial class Timer : ITimer, IReadOnlyTimer
     {
         [SerializeField] private TValue duration = default;
         [SerializeField] private TValue elapsedTime = default;
@@ -132,18 +124,8 @@ namespace inonego
         
     #region 이벤트
 
-        public event TimerEndEvent<Timer> OnEnd = null;
-        public event ValueChangeEvent<Timer, TimerState> OnStateChange = null;
-        
-        event TimerEndEvent<ITimer> ITimerEventHandler<ITimer>.OnEnd 
-        { add => OnEnd += value; remove => OnEnd -= value; }
-        event TimerEndEvent<IReadOnlyTimer> ITimerEventHandler<IReadOnlyTimer>.OnEnd
-        { add => OnEnd += value; remove => OnEnd -= value; }
-
-        event ValueChangeEvent<ITimer, TimerState> ITimerEventHandler<ITimer>.OnStateChange 
-        { add => OnStateChange += value; remove => OnStateChange -= value; }
-        event ValueChangeEvent<IReadOnlyTimer, TimerState> ITimerEventHandler<IReadOnlyTimer>.OnStateChange 
-        { add => OnStateChange += value; remove => OnStateChange -= value; }
+        public event EventHandler<TimerEndEventArgs> OnEnd = null;
+        public event ValueChangeEventHandler<TimerState> OnStateChange = null;
 
     #endregion
 

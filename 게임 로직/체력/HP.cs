@@ -13,10 +13,6 @@ namespace inonego
 [Serializable]
 public class HP : IDeepCloneable<HP>
 {   
-    [SerializeField]
-    private InvokeEventFlag invokeEvent = new();
-    public InvokeEventFlag InvokeEvent => invokeEvent;
-
     public enum ApplyRatioType
     {
         ByValue,
@@ -85,25 +81,7 @@ public class HP : IDeepCloneable<HP>
     // ------------------------------------------------------------
     [SerializeField]
     private State current = State.Dead;
-    public State Current
-    {
-        get => current;
-        protected set
-        {
-            var (prev, next) = (current, value);
-            
-            if (prev == next) return;
-            
-            current = next;
-            
-            Set(IsAlive ? maxValue : 0, autoChangeState: false);
-      
-            if (invokeEvent.Value)
-            {
-                OnStateChange?.Invoke(this, new() { Previous = prev, Current = next });
-            }
-        }
-    }
+    public State Current => current;
     
     // ------------------------------------------------------------
     /// <summary>
@@ -146,42 +124,22 @@ public class HP : IDeepCloneable<HP>
 
     public HP @new() => new HP();
 
-    public HP Clone(bool cloneEvent = false)
+    public HP Clone()    
     {
         var result = @new();
-        result.CloneFrom(this, cloneEvent);
+        result.CloneFrom(this);
         return result;
     }
 
-    public void CloneFrom(HP source, bool cloneEvent = false)
+    public void CloneFrom(HP source)
     {
         if (source == null)
         {
             throw new ArgumentNullException($"HP.CloneFrom()의 인자가 null입니다.");
         }
 
-        invokeEvent.ExecuteQuietly(() =>
-        {
-            // 값 복사
-            (current, value, maxValue) = (source.current, source.value, source.maxValue);
-        });
-
-        // 이벤트 복사
-        if (cloneEvent)
-        {
-            invokeEvent.Value = source.invokeEvent.Value;
-
-            // 체력 값 이벤트
-            DelegateUtility.CloneFrom(ref OnValueChange, source.OnValueChange);
-            DelegateUtility.CloneFrom(ref OnMaxValueChange, source.OnMaxValueChange);
-
-            // 상태 이벤트
-            DelegateUtility.CloneFrom(ref OnStateChange, source.OnStateChange);
-
-            // Apply 이벤트
-            DelegateUtility.CloneFrom(ref OnHeal, source.OnHeal);
-            DelegateUtility.CloneFrom(ref OnDamage, source.OnDamage);
-        }
+        // 값 복사
+        (current, value, maxValue) = (source.current, source.value, source.maxValue);
     }
 
 #endregion
@@ -193,9 +151,9 @@ public class HP : IDeepCloneable<HP>
     /// 현재 상태를 살아있는 상태로 설정합니다.
     /// </summary>
     // ------------------------------------------------------------
-    public void MakeAlive()
+    public void MakeAlive(bool autoChangeValue = true)
     {
-        Current = State.Alive;
+        Set(State.Alive, autoChangeValue);
     }
 
     // ------------------------------------------------------------
@@ -203,9 +161,30 @@ public class HP : IDeepCloneable<HP>
     /// 현재 상태를 죽어있는 상태로 설정합니다.
     /// </summary>
     // ------------------------------------------------------------
-    public void MakeDead()
+    public void MakeDead(bool autoChangeValue = true)
     {
-        Current = State.Dead;
+        Set(State.Dead, autoChangeValue);
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// 현재 상태를 설정합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    private void Set(State state, bool autoChangeValue = true)
+    {
+        var (prev, next) = (this.current, state);
+        
+        if (prev == next) return;
+        
+        this.current = next;
+
+        if (autoChangeValue)
+        {
+            Set(IsAlive ? maxValue : 0, autoChangeState: false);
+        }
+        
+        OnStateChange?.Invoke(this, new() { Previous = prev, Current = next });
     }
 
     // ------------------------------------------------------------
@@ -224,21 +203,18 @@ public class HP : IDeepCloneable<HP>
             // 체력이 0 이하로 떨어지면 자동으로 죽음 상태로 변경
             if (prev > 0 && next <= 0)
             {
-                MakeDead();
+                MakeDead(autoChangeValue: false);
             }
             // 체력이 0에서 1 이상으로 올라가면 자동으로 생존 상태로 변경
             else if (prev <= 0 && next > 0)
             {
-                MakeAlive();
+                MakeAlive(autoChangeValue: false);
             }
         }
 
         this.value = next;
 
-        if (invokeEvent.Value)
-        {
-            OnValueChange?.Invoke(this, new() { Previous = prev, Current = next });
-        }
+        OnValueChange?.Invoke(this, new() { Previous = prev, Current = next });
     }
 
     // ------------------------------------------------------------
@@ -260,10 +236,7 @@ public class HP : IDeepCloneable<HP>
             Set(next);
         }
 
-        if (invokeEvent.Value)
-        {
-            OnMaxValueChange?.Invoke(this, new() { Previous = prev, Current = next });
-        }
+        OnMaxValueChange?.Invoke(this, new() { Previous = prev, Current = next });
     }
 
     // ------------------------------------------------------------
@@ -287,10 +260,7 @@ public class HP : IDeepCloneable<HP>
 
         Set(value + amount);
 
-        if (invokeEvent.Value)
-        {
-            OnHeal?.Invoke(this, new() { Amount = amount });
-        }
+        OnHeal?.Invoke(this, new() { Amount = amount });
     }
 
     // ------------------------------------------------------------
@@ -314,10 +284,7 @@ public class HP : IDeepCloneable<HP>
 
         Set(value - amount);
 
-        if (invokeEvent.Value)
-        {
-            OnDamage?.Invoke(this, new() { Amount = amount });
-        }
+        OnDamage?.Invoke(this, new() { Amount = amount });
     }
 
     // ------------------------------------------------------------

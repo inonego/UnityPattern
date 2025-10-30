@@ -15,11 +15,11 @@ using inonego;
 
 public class TEST_GroundChecker2D
 {
-    // ----------------------------------------------------------
+    // ------------------------------------------------------------
     /// <summary>
     /// Space키 입력을 체크합니다.
     /// </summary>
-    // ----------------------------------------------------------
+    // ------------------------------------------------------------
     private bool IsSpaceKeyPressed()
     {
     
@@ -122,18 +122,15 @@ public class TEST_GroundChecker2D
         var monoForTEST = new GameObject("MonoForTEST").AddComponent<MonoForTEST>();
 
         // ------------------------------------------------------------
-        // 바닥 설정
+        // 테스트 준비
         // ------------------------------------------------------------
+        // 바닥 설정
         var groundObject = CreateGroundObject(groundLayer);
         
-        // ------------------------------------------------------------
         // 카메라 설정
-        // ------------------------------------------------------------
         var cameraObject = CreateCameraObject();
 
-        // ------------------------------------------------------------
         // 4개 플레이어 설정 (간격 4, 일렬 배치)
-        // ------------------------------------------------------------
         var players = new List<GameObject>();
         var groundCheckers = new List<GroundChecker2D>();
         var gizmoDrawers = new List<GroundChecker2DGizmoDrawer>();
@@ -170,9 +167,7 @@ public class TEST_GroundChecker2D
         players.Add(verticalCapsulePlayer);
         players.Add(horizontalCapsulePlayer);
         
-        // ------------------------------------------------------------
         // GroundChecker2D 및 테스터 설정
-        // ------------------------------------------------------------
         foreach (var player in players)
         {
             var groundChecker = new GroundChecker2D();
@@ -185,11 +180,12 @@ public class TEST_GroundChecker2D
             gizmoDrawers.Add(gizmoDrawer);
         }
 
-        // 이벤트 카운터 초기화
+        // ------------------------------------------------------------
+        // 이벤트 카운터 초기화 및 구독
+        // ------------------------------------------------------------
         var landEventCount = new int[groundCheckers.Count];
         var leaveEventCount = new int[groundCheckers.Count];
         
-        // 이벤트 구독
         for (int i = 0; i < groundCheckers.Count; i++)
         {
             int index = i; // 클로저를 위한 캡처
@@ -205,13 +201,15 @@ public class TEST_GroundChecker2D
             };
         }
         
+        // ------------------------------------------------------------
+        // Update 루프 시작
+        // ------------------------------------------------------------
         IEnumerator Update()
         {
             while (true)
             {
                 yield return new WaitForFixedUpdate();
             
-                // Act - 모든 플레이어의 바닥 감지 테스트
                 foreach (var groundChecker in groundCheckers)
                 {
                     groundChecker.Check(Time.fixedDeltaTime);
@@ -224,13 +222,16 @@ public class TEST_GroundChecker2D
             }
         }
 
-        // Update 시작
         monoForTEST.StartCoroutine(Update());
 
+        // ------------------------------------------------------------
         // 1. 처음 3초 대기
+        // ------------------------------------------------------------
         yield return new WaitForSeconds(3f);
         
+        // ------------------------------------------------------------
         // 2. Dynamic으로 변경
+        // ------------------------------------------------------------
         foreach (var player in players)
         {
             var rigidbody = player.GetComponent<Rigidbody2D>();
@@ -240,7 +241,9 @@ public class TEST_GroundChecker2D
             }
         }
 
+        // ------------------------------------------------------------
         // 3. Land 이벤트가 모든 오브젝트에서 딱 한번씩만 호출되는지 확인 (5초 유예)
+        // ------------------------------------------------------------
         var landEventTriggered = new bool[groundCheckers.Count];
         
         IEnumerator WaitForLandEvents(List<GroundChecker2D> groundCheckers, bool[] landEventTriggered, float timeout)
@@ -332,7 +335,9 @@ public class TEST_GroundChecker2D
             Assert.Fail("Land 이벤트가 올바르게 호출되지 않았습니다.");
         }
 
+        // ------------------------------------------------------------
         // 4. 모든 오브젝트가 바닥에 닿고 점프
+        // ------------------------------------------------------------
         foreach (var player in players)
         {
             var rigidbody = player.GetComponent<Rigidbody2D>();
@@ -342,7 +347,9 @@ public class TEST_GroundChecker2D
             }
         }
 
+        // ------------------------------------------------------------
         // 5. OnLeave 이벤트가 한번씩만 호출되는지 확인 (5초 유예)
+        // ------------------------------------------------------------
         var leaveEventTriggered = new bool[groundCheckers.Count];
         
         IEnumerator WaitForLeaveEvents(List<GroundChecker2D> groundCheckers, bool[] leaveEventTriggered, float timeout)
@@ -434,7 +441,9 @@ public class TEST_GroundChecker2D
             Assert.Fail("OnLeave 이벤트가 올바르게 호출되지 않았습니다.");
         }
 
+        // ------------------------------------------------------------
         // 6. 원래 위치로 돌려놓고 kinematic으로 설정
+        // ------------------------------------------------------------
         for (int i = 0; i < players.Count; i++)
         {
             var player = players[i];
@@ -448,7 +457,9 @@ public class TEST_GroundChecker2D
             }
         }
 
+        // ------------------------------------------------------------
         // 7. Space바를 눌러서 종료 및 테스트 성공
+        // ------------------------------------------------------------
         Debug.Log("테스트 성공! Space바를 눌러서 종료하세요.");
         while (true)
         {

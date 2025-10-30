@@ -10,7 +10,7 @@ using inonego;
 
 // ============================================================
 /// <summary>
-///
+/// Board3D 시스템의 핵심 기능 테스트 클래스입니다.
 /// </summary>
 // ============================================================
 public class TEST_Board3D
@@ -42,13 +42,22 @@ public class TEST_Board3D
     [Test]
     public void Board3D_01_크기_경계_테스트()
     {
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var board = new Board3D<TestSpace, TestPiece>(3, 2, 4);
 
+        // ------------------------------------------------------------
+        // 크기 확인
+        // ------------------------------------------------------------
         Assert.That(board.Width, Is.EqualTo(3));
         Assert.That(board.Height, Is.EqualTo(2));
         Assert.That(board.Depth, Is.EqualTo(4));
         Assert.That(board.Size, Is.EqualTo(new Vector3Int(3, 2, 4)));
 
+        // ------------------------------------------------------------
+        // 경계 확인
+        // ------------------------------------------------------------
         Assert.That(board[new Vector3Int(+0, +0, +0)], Is.Not.Null);
         Assert.That(board[new Vector3Int(+2, +1, +3)], Is.Not.Null);
         Assert.That(board[new Vector3Int(-1, +0, +0)], Is.Null);
@@ -60,6 +69,9 @@ public class TEST_Board3D
     [Test]
     public void Board3D_02_배치_및_인덱서_테스트()
     {
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var board = new Board3D<TestSpace, TestPiece>(2, 2, 2);
         var a = new TestPiece("A");
         var b = new TestPiece("B");
@@ -67,17 +79,22 @@ public class TEST_Board3D
         var p0 = new Vector3Int(0, 0, 0);
         var p1 = new Vector3Int(1, 1, 1);
 
+        // ------------------------------------------------------------
+        // 배치 및 인덱서 확인
+        // ------------------------------------------------------------
         board.Place(p0, a);
         Assert.That(board[p0].Placed, Is.EqualTo(a));
         Assert.That(board[a].HasValue, Is.True);
-
-        // 기물로 접근 가능
         Assert.That(board[a].Value, Is.EqualTo(p0));
 
-        // 같은 위치에 다른 기물은 불가 → InvalidPlacementException
+        // ------------------------------------------------------------
+        // 같은 위치에 다른 기물 배치 시 예외
+        // ------------------------------------------------------------
         Assert.Throws<BoardBase.InvalidPlacementException>(() => board.Place(p0, b));
 
-        // 다른 위치는 가능
+        // ------------------------------------------------------------
+        // 다른 위치 배치
+        // ------------------------------------------------------------
         board.Place(p1, b);
         Assert.That(board[p1].Placed, Is.EqualTo(b));
         Assert.That(board[b].HasValue, Is.True);
@@ -86,19 +103,25 @@ public class TEST_Board3D
     [Test]
     public void Board3D_03_제거_공간_보존_테스트()
     {
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var board = new Board3D<TestSpace, TestPiece>(2, 2, 2);
         var c = new TestPiece("C");
         var p = new Vector3Int(1, 0, 1);
-
         board.Place(p, c);
-        Assert.That(board[p].IsFull, Is.True);
 
+        // ------------------------------------------------------------
+        // 위치로 제거
+        // ------------------------------------------------------------
         board.Remove(p);
         Assert.That(board[p], Is.Not.Null);
         Assert.That(board[p].IsFull, Is.False);
         Assert.That(board[c].HasValue, Is.False);
 
-        // 다시 배치 후, 기물로 제거
+        // ------------------------------------------------------------
+        // 다시 배치 후 기물로 제거
+        // ------------------------------------------------------------
         board.Place(p, c);
         board.Remove(c);
         Assert.That(board[p].IsFull, Is.False);
@@ -107,13 +130,22 @@ public class TEST_Board3D
     [Test]
     public void Board3D_04_가득참_상태_테스트()
     {
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var board = new Board3D<TestSpace, TestPiece>(2, 1, 1);
         Assert.That(board.IsAllSpaceFull, Is.False);
 
+        // ------------------------------------------------------------
+        // 모든 공간 채우기
+        // ------------------------------------------------------------
         board.Place(new Vector3Int(0, 0, 0), new TestPiece("X"));
         board.Place(new Vector3Int(1, 0, 0), new TestPiece("Y"));
         Assert.That(board.IsAllSpaceFull, Is.True);
 
+        // ------------------------------------------------------------
+        // 한 공간 제거
+        // ------------------------------------------------------------
         board.Remove(new Vector3Int(0, 0, 0));
         Assert.That(board.IsAllSpaceFull, Is.False);
     }
@@ -121,21 +153,32 @@ public class TEST_Board3D
     [Test]
     public void Board3D_05_공간_추가_제거_및_인덱스_동기화_테스트()
     {
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var board = new Board3D<TestSpace, TestPiece>(1, 1, 1);
         var pt = new Vector3Int(0, 0, 0);
 
-        // 기본 공간 존재
+        // ------------------------------------------------------------
+        // 기본 공간 확인
+        // ------------------------------------------------------------
         Assert.That(board[pt], Is.Not.Null);
 
-        // 제거 후 접근 불가
+        // ------------------------------------------------------------
+        // 공간 제거
+        // ------------------------------------------------------------
         board.RemoveSpace(pt);
         Assert.That(board[pt], Is.Null);
 
-        // 다시 추가
+        // ------------------------------------------------------------
+        // 공간 다시 추가
+        // ------------------------------------------------------------
         board.AddSpace(pt);
         Assert.That(board[pt], Is.Not.Null);
 
-        // 공간에 기물을 넣고 제거하면 역인덱스도 비워짐
+        // ------------------------------------------------------------
+        // 인덱스 동기화 확인
+        // ------------------------------------------------------------
         var z = new TestPiece("Z");
         board.Place(pt, z);
         Assert.That(board[z].HasValue, Is.True);
@@ -146,21 +189,31 @@ public class TEST_Board3D
     [Test]
     public void Board3D_06_범위밖_배치시_SpaceNotFound_예외()
     {
-        var piece = new TestPiece("O");
-
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var board = new Board3D<TestSpace, TestPiece>(2, 2, 2);
+        var piece = new TestPiece("O");
         var point = new Vector3Int(5, 5, 5);
 
+        // ------------------------------------------------------------
+        // 범위 밖 배치 시 예외
+        // ------------------------------------------------------------
         Assert.Throws<BoardBase.SpaceNotFoundException>(() => board.Place(point, piece));
     }
 
     [Test]
     public void Board3D_07_중복_AddSpace시_SpaceAlreadyExists_예외()
     {
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var board = new Board3D<TestSpace, TestPiece>(1, 1, 1);
         var point = new Vector3Int(0, 0, 0);
 
-        // 생성자에서 이미 공간 생성됨 → 중복 추가 시 예외
+        // ------------------------------------------------------------
+        // 중복 공간 추가 시 예외
+        // ------------------------------------------------------------
         Assert.Throws<BoardBase.SpaceAlreadyExistsException>(() => board.AddSpace(point));
     }
 }

@@ -10,10 +10,6 @@ namespace inonego
 
     #region 필드
 
-        [SerializeField]
-        private InvokeEventFlag invokeEvent = new();
-        public InvokeEventFlag InvokeEvent => invokeEvent;
-
         [SerializeReference]
         private TSource sender = null;
         public TSource Sender => sender;
@@ -59,10 +55,7 @@ namespace inonego
 
             next?.Enter(sender);
 
-            if (invokeEvent.Value)
-            {
-                OnStateChange?.Invoke(sender, new() { Previous = prev, Current = next });
-            }
+            OnStateChange?.Invoke(sender, new() { Previous = prev, Current = next });
         }
 
     #endregion

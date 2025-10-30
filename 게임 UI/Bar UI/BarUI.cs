@@ -21,8 +21,8 @@ namespace inonego
     #region 필드
 
         [SerializeField]
-        private MinMaxValue<float> value;
-        public MinMaxValue<float> Value => value;
+        private RangeValue<float> value;
+        public RangeValue<float> Value => value;
 
         // ------------------------------------------------------------
         /// <summary>
@@ -60,8 +60,8 @@ namespace inonego
 
         private void OnEnable()
         {
-            value.OnValueChange += OnValueChange;
-            value.OnRangeChange += OnRangeChange;
+            value.OnCurrentChange += OnValueChange;
+            value.Range.OnCurrentChange += OnRangeChange;
 
             // 초기화
             UpdateBarInstantly();
@@ -69,8 +69,8 @@ namespace inonego
 
         private void OnDisable()
         {
-            value.OnValueChange -= OnValueChange;
-            value.OnRangeChange -= OnRangeChange;
+            value.OnCurrentChange -= OnValueChange;
+            value.Range.OnCurrentChange -= OnRangeChange;
         }
 
     #endregion
@@ -120,7 +120,7 @@ namespace inonego
             Refresh();
         }
 
-        private void OnRangeChange(MinMaxValue<float> sender, ValueChangeEventArgs<MinMax<float>> args)
+        private void OnRangeChange(Value<MinMax<float>> sender, ValueChangeEventArgs<MinMax<float>> args)
         {
             Refresh();
         }

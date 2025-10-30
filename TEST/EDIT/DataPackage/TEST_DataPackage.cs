@@ -66,7 +66,9 @@ public class TEST_DataPackage
     [Test]
     public void DataPackage_02_테이블_추가_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var package = new DataPackage();
         var testTable = new TestTable();
         
@@ -76,10 +78,11 @@ public class TEST_DataPackage
         testTable.Add("key1", testData1);
         testTable.Add("key2", testData2);
 
-        // Act
+        // ------------------------------------------------------------
+        // 테이블 추가
+        // ------------------------------------------------------------
         package.AddTable<TestTable, TestData>(testTable);
 
-        // Assert - 추가 성공 확인
         var readData1 = package.Read<TestData>("key1");
         var readData2 = package.Read<TestData>("key2");
 
@@ -90,7 +93,9 @@ public class TEST_DataPackage
         Assert.AreEqual(100, readData1.Value);
         Assert.AreEqual(200, readData2.Value);
         
-        // Assert - 중복 테이블 추가 시 예외
+        // ------------------------------------------------------------
+        // 중복 테이블 추가 시 예외
+        // ------------------------------------------------------------
         var duplicateTable = new TestTable();
         
         Assert.Throws<InvalidOperationException>(() => package.AddTable<TestTable, TestData>(duplicateTable));
@@ -104,7 +109,9 @@ public class TEST_DataPackage
     [Test]
     public void DataPackage_03_테이블_읽기_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var package = new DataPackage();
         var testTable = new TestTable();
         
@@ -112,17 +119,23 @@ public class TEST_DataPackage
         testTable.Add("key1", testData);
         package.AddTable<TestTable, TestData>(testTable);
 
-        // Act & Assert - 정상 읽기
+        // ------------------------------------------------------------
+        // 정상 읽기
+        // ------------------------------------------------------------
         var readData = package.Read<TestData>("key1");
         Assert.IsNotNull(readData);
         Assert.AreEqual("key1", readData.Key);
         Assert.AreEqual(100, readData.Value);
         
-        // Assert - 존재하지 않는 키로 읽기 시 null 반환
+        // ------------------------------------------------------------
+        // 존재하지 않는 키로 읽기 시 null 반환
+        // ------------------------------------------------------------
         var result = package.Read<TestData>("nonexistent_key");
         Assert.IsNull(result, "존재하지 않는 키로 읽기 시 null이 반환되어야 합니다");
         
-        // Assert - 존재하지 않는 테이블 읽기 시 예외
+        // ------------------------------------------------------------
+        // 존재하지 않는 테이블 읽기 시 예외
+        // ------------------------------------------------------------
         package.RemoveTable<TestData>();
         Assert.Throws<InvalidOperationException>(() => package.Read<TestData>("key1"));
     }
@@ -135,7 +148,9 @@ public class TEST_DataPackage
     [Test]
     public void DataPackage_04_테이블_제거_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var package = new DataPackage();
         var testTable = new TestTable();
         
@@ -143,17 +158,22 @@ public class TEST_DataPackage
         testTable.Add("key1", testData);
         package.AddTable<TestTable, TestData>(testTable);
 
-        // Act & Assert - 제거 전 읽기 성공
         var readData = package.Read<TestData>("key1");
         Assert.IsNotNull(readData);
 
-        // Act
+        // ------------------------------------------------------------
+        // 테이블 제거
+        // ------------------------------------------------------------
         package.RemoveTable<TestData>();
 
-        // Assert - 제거 후 읽기 실패
+        // ------------------------------------------------------------
+        // 제거 후 읽기 실패
+        // ------------------------------------------------------------
         Assert.Throws<InvalidOperationException>(() => package.Read<TestData>("key1"));
         
-        // Assert - 존재하지 않는 테이블 제거 시 예외
+        // ------------------------------------------------------------
+        // 존재하지 않는 테이블 제거 시 예외
+        // ------------------------------------------------------------
         Assert.Throws<InvalidOperationException>(() => package.RemoveTable<TestData>());
     }
 
@@ -169,7 +189,9 @@ public class TEST_DataPackage
     [Test]
     public void DataPackage_05_Load_Release_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var package = new DataPackage();
         
         var testTable = new TestTable();
@@ -177,7 +199,9 @@ public class TEST_DataPackage
         testTable.Add("key1", testData);
         package.AddTable<TestTable, TestData>(testTable);
 
-        // Act & Assert - Load 기능
+        // ------------------------------------------------------------
+        // Load 기능
+        // ------------------------------------------------------------
         DataPackage.Load(package);
         Assert.AreEqual(package, DataPackage.Loaded);
         
@@ -185,15 +209,21 @@ public class TEST_DataPackage
         Assert.IsNotNull(readData);
         Assert.AreEqual(100, readData.Value);
         
-        // Assert - 중복 로드 시 예외 발생
+        // ------------------------------------------------------------
+        // 중복 로드 시 예외 발생
+        // ------------------------------------------------------------
         var package2 = new DataPackage();
         Assert.Throws<InvalidOperationException>(() => DataPackage.Load(package2));
         
-        // Act & Assert - Release 기능
+        // ------------------------------------------------------------
+        // Release 기능
+        // ------------------------------------------------------------
         DataPackage.Release();
         Assert.IsNull(DataPackage.Loaded);
         
-        // Assert - Release 후 접근 시 예외
+        // ------------------------------------------------------------
+        // Release 후 접근 시 예외
+        // ------------------------------------------------------------
         Assert.Throws<NullReferenceException>(() => DataPackage.Loaded.Read<TestData>("key1"));
     }
 
@@ -209,7 +239,9 @@ public class TEST_DataPackage
     [Test]
     public void DataPackage_06_다중_타입_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var package = new DataPackage();
         
         var testTable1 = new TestTable();
@@ -221,11 +253,12 @@ public class TEST_DataPackage
         testTable1.Add("key1", testData1);
         testTable2.Add("key2", testData2);
 
-        // Act
+        // ------------------------------------------------------------
+        // 다중 타입 테이블 추가
+        // ------------------------------------------------------------
         package.AddTable<TestTable, TestData>(testTable1);
         package.AddTable<TestTable2, TestData2>(testTable2);
 
-        // Assert
         var readData1 = package.Read<TestData>("key1");
         var readData2 = package.Read<TestData2>("key2");
 
@@ -247,7 +280,9 @@ public class TEST_DataPackage
     [Test]
     public void DataPackage_07_JSON_직렬화_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var originalPackage = new DataPackage();
         var testTable = new TestTable();
         
@@ -258,7 +293,9 @@ public class TEST_DataPackage
         testTable.Add("key2", testData2);
         originalPackage.AddTable<TestTable, TestData>(testTable);
 
-        // Act - 직렬화/역직렬화
+        // ------------------------------------------------------------
+        // JSON 직렬화/역직렬화
+        // ------------------------------------------------------------
         string json = JsonUtility.ToJson(originalPackage, prettyPrint: true);
         Debug.Log($"=== JSON 직렬화 결과 ===");
         Debug.Log($"JSON 길이: {json.Length} 문자");
@@ -267,10 +304,8 @@ public class TEST_DataPackage
         var deserializedPackage = JsonUtility.FromJson<DataPackage>(json);
         Debug.Log($"역직렬화 성공: {deserializedPackage != null}");
         
-        // Assert - 상태 복원 확인
         Assert.IsNotNull(deserializedPackage);
         
-        // 테이블이 복원되었는지 확인 (직접 접근은 private이므로 Read를 통해 확인)
         var readData1 = deserializedPackage.Read<TestData>("key1");
         var readData2 = deserializedPackage.Read<TestData>("key2");
         
@@ -295,33 +330,35 @@ public class TEST_DataPackage
     [Test]
     public void DataPackage_08_통합_사용_시나리오_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var package = new DataPackage();
         
-        // 다양한 타입의 테이블 생성
         var playerTable = new TestTable();
         var itemTable = new TestTable2();
         
-        // 플레이어 데이터 추가
         var player1 = new TestData { Key = "player1", Value = 1000 };
         var player2 = new TestData { Key = "player2", Value = 1500 };
         playerTable.Add("player1", player1);
         playerTable.Add("player2", player2);
         
-        // 아이템 데이터 추가
         var item1 = new TestData2 { Key = "item1", Name = "Sword" };
         var item2 = new TestData2 { Key = "item2", Name = "Shield" };
         itemTable.Add("item1", item1);
         itemTable.Add("item2", item2);
         
-        // Act - 테이블 추가
+        // ------------------------------------------------------------
+        // 테이블 추가
+        // ------------------------------------------------------------
         package.AddTable<TestTable, TestData>(playerTable);
         package.AddTable<TestTable2, TestData2>(itemTable);
         
-        // Act - 패키지 로드
+        // ------------------------------------------------------------
+        // 패키지 로드
+        // ------------------------------------------------------------
         DataPackage.Load(package);
         
-        // Assert - 정적 접근으로 데이터 읽기
         var loadedPlayer1 = DataPackage.Loaded.Read<TestData>("player1");
         var loadedPlayer2 = DataPackage.Loaded.Read<TestData>("player2");
         var loadedItem1 = DataPackage.Loaded.Read<TestData2>("item1");
@@ -332,20 +369,21 @@ public class TEST_DataPackage
         Assert.AreEqual("Sword", loadedItem1.Name);
         Assert.AreEqual("Shield", loadedItem2.Name);
         
-        // Act - 테이블 제거
+        // ------------------------------------------------------------
+        // 테이블 제거
+        // ------------------------------------------------------------
         package.RemoveTable<TestData>();
         
-        // Assert - 제거된 테이블 접근 시 예외
         Assert.Throws<InvalidOperationException>(() => DataPackage.Loaded.Read<TestData>("player1"));
         
-        // Assert - 남은 테이블은 정상 동작
         var remainingItem = DataPackage.Loaded.Read<TestData2>("item1");
         Assert.AreEqual("Sword", remainingItem.Name);
         
-        // Act - 패키지 해제
+        // ------------------------------------------------------------
+        // 패키지 해제
+        // ------------------------------------------------------------
         DataPackage.Release();
         
-        // Assert - 해제 후 접근 시 예외
         Assert.Throws<NullReferenceException>(() => DataPackage.Loaded.Read<TestData2>("item1"));
     }
 

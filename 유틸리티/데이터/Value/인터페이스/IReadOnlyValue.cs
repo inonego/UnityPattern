@@ -1,13 +1,12 @@
-using System;
-
-using UnityEngine;
-
 namespace inonego
 {
+    // ============================================================
+    /// <summary>
+    /// 읽기 전용 Value 인터페이스입니다.
+    /// </summary>
+    // ============================================================
     public interface IReadOnlyValue<T> where T : struct
     {
-        public InvokeEventFlag InvokeEvent { get; }
-        
         // ------------------------------------------------------------
         /// <summary>
         /// 현재 값입니다.
@@ -17,9 +16,9 @@ namespace inonego
 
         // ------------------------------------------------------------
         /// <summary>
-        /// 값이 변경될 때 발생하는 이벤트입니다.
+        /// 현재 값이 변경될 때 발생하는 이벤트입니다.
         /// </summary>
         // ------------------------------------------------------------
-        public event ValueChangeEvent<IReadOnlyValue<T>, T> OnValueChange;
+        public event ValueChangeEvent<IReadOnlyValue<T>, T> OnCurrentChange;
     }
 }

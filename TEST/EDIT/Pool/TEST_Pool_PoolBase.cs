@@ -40,14 +40,17 @@ public class TEST_Pool_PoolBase
     [Test]
     public void PoolBase_02_Acquire_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var pool = new TestPool();
 
-        // Act
+        // ------------------------------------------------------------
+        // Acquire
+        // ------------------------------------------------------------
         var item1 = pool.Acquire();
         var item2 = pool.Acquire();
 
-        // Assert
         Assert.IsNotNull(item1);
         Assert.IsNotNull(item2);
         Assert.AreNotSame(item1, item2);
@@ -63,22 +66,26 @@ public class TEST_Pool_PoolBase
     [Test]
     public void PoolBase_03_Release_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var pool = new TestPool();
         var item1 = pool.Acquire();
         var item2 = pool.Acquire();
 
-        // Act
+        // ------------------------------------------------------------
+        // Release - item1
+        // ------------------------------------------------------------
         pool.Release(item1);
 
-        // Assert
         Assert.AreEqual(1, pool.Acquired.Count);
         Assert.AreEqual(1, pool.Released.Count);
 
-        // Act
+        // ------------------------------------------------------------
+        // Release - item2
+        // ------------------------------------------------------------
         pool.Release(item2);
 
-        // Assert
         Assert.AreEqual(0, pool.Acquired.Count);
         Assert.AreEqual(2, pool.Released.Count);
     }
@@ -91,15 +98,18 @@ public class TEST_Pool_PoolBase
     [Test]
     public void PoolBase_04_재사용_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var pool = new TestPool();
         var item1 = pool.Acquire();
         pool.Release(item1);
 
-        // Act
+        // ------------------------------------------------------------
+        // 재사용
+        // ------------------------------------------------------------
         var item2 = pool.Acquire();
 
-        // Assert
         Assert.AreSame(item1, item2, "Released된 오브젝트가 재사용되어야 합니다");
         Assert.AreEqual(1, pool.Acquired.Count);
         Assert.AreEqual(0, pool.Released.Count);
@@ -113,16 +123,19 @@ public class TEST_Pool_PoolBase
     [Test]
     public void PoolBase_05_ReleaseAll_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var pool = new TestPool();
         var item1 = pool.Acquire();
         var item2 = pool.Acquire();
         var item3 = pool.Acquire();
 
-        // Act
+        // ------------------------------------------------------------
+        // ReleaseAll
+        // ------------------------------------------------------------
         pool.ReleaseAll();
 
-        // Assert
         Assert.AreEqual(0, pool.Acquired.Count);
         Assert.AreEqual(3, pool.Released.Count);
     }
@@ -139,13 +152,20 @@ public class TEST_Pool_PoolBase
     [Test]
     public void PoolBase_06_예외_처리_통합_테스트()
     {
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var pool = new TestPool();
 
+        // ------------------------------------------------------------
         // 풀에 없는 아이템 Release 시도
+        // ------------------------------------------------------------
         var nonPooledItem = new TestPoolItem();
         Assert.Throws<Exception>(() => pool.Release(nonPooledItem));
 
+        // ------------------------------------------------------------
         // 이미 Released된 아이템 다시 Release 시도
+        // ------------------------------------------------------------
         var item = pool.Acquire();
         pool.Release(item);
         Assert.Throws<Exception>(() => pool.Release(item));
@@ -163,25 +183,28 @@ public class TEST_Pool_PoolBase
     [Test]
     public void PoolBase_07_콜백_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var pool = new TestPoolWithCallbacks();
         var item = pool.Acquire();
 
-        // Assert
         Assert.AreEqual(1, pool.AcquireCallCount);
         Assert.AreEqual(0, pool.ReleaseCallCount);
 
-        // Act
+        // ------------------------------------------------------------
+        // Release
+        // ------------------------------------------------------------
         pool.Release(item);
 
-        // Assert
         Assert.AreEqual(1, pool.AcquireCallCount);
         Assert.AreEqual(1, pool.ReleaseCallCount);
 
-        // Act - 재사용
+        // ------------------------------------------------------------
+        // 재사용
+        // ------------------------------------------------------------
         var item2 = pool.Acquire();
 
-        // Assert
         Assert.AreEqual(2, pool.AcquireCallCount);
         Assert.AreEqual(1, pool.ReleaseCallCount);
         Assert.AreSame(item, item2);

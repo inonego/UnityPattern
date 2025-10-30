@@ -24,13 +24,19 @@ public class TEST_HP
     [Test]
     public void HP_01_기본_생성_테스트()
     {
-        // Arrange & Act
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var hp = new HP();
 
-        // Assert
+        // ------------------------------------------------------------
+        // 테스트 결과
+        // ------------------------------------------------------------
         Assert.AreEqual(0, hp.Value);
         Assert.AreEqual(0, hp.MaxValue);
+        
         Assert.AreEqual(0.0f, hp.Ratio);
+
         Assert.AreEqual(HP.State.Dead, hp.Current);
         Assert.IsFalse(hp.IsAlive);
         Assert.IsTrue(hp.IsDead);
@@ -44,32 +50,47 @@ public class TEST_HP
     [Test]
     public void HP_02_상태_변경_통합_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var hp = new HP();
         hp.MaxValue = 100;
 
-        // Act & Assert - 살아있는 상태로 변경
+        // ------------------------------------------------------------
+        // MakeAlive - 살아있는 상태로 변경
+        // ------------------------------------------------------------
         hp.MakeAlive();
+        
         Assert.AreEqual(HP.State.Alive, hp.Current);
         Assert.AreEqual(100, hp.Value);
         Assert.AreEqual(100, hp.MaxValue);
         Assert.IsTrue(hp.IsAlive);
         Assert.IsFalse(hp.IsDead);
 
-        // Act & Assert - 죽은 상태로 변경
+        // ------------------------------------------------------------
+        // MakeDead - 죽은 상태로 변경
+        // ------------------------------------------------------------
         hp.MakeDead();
+        
         Assert.AreEqual(HP.State.Dead, hp.Current);
         Assert.AreEqual(0, hp.Value);
         Assert.IsFalse(hp.IsAlive);
         Assert.IsTrue(hp.IsDead);
 
-        // Act & Assert - 체력 설정으로 자동 상태 전환
-        hp.Value = 50; // 0에서 50으로 변경 시 자동으로 살아있는 상태로 전환
+        // ------------------------------------------------------------
+        // Value 설정으로 자동 상태 전환 - Alive
+        // ------------------------------------------------------------
+        hp.Value = 50;
+        
         Assert.AreEqual(HP.State.Alive, hp.Current);
         Assert.AreEqual(50, hp.Value);
         Assert.IsTrue(hp.IsAlive);
 
-        hp.Value = 0; // 50에서 0으로 변경 시 자동으로 죽은 상태로 전환
+        // ------------------------------------------------------------
+        // Value 설정으로 자동 상태 전환 - Dead
+        // ------------------------------------------------------------
+        hp.Value = 0;
+        
         Assert.AreEqual(HP.State.Dead, hp.Current);
         Assert.AreEqual(0, hp.Value);
         Assert.IsTrue(hp.IsDead);
@@ -83,39 +104,60 @@ public class TEST_HP
     [Test]
     public void HP_03_힐_데미지_통합_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var hp = new HP();
         hp.MaxValue = 100;
         hp.MakeAlive();
         hp.Value = 50;
 
-        // Act & Assert - 힐 적용
+        // ------------------------------------------------------------
+        // ApplyHeal - 힐 적용
+        // ------------------------------------------------------------
         hp.ApplyHeal(30);
+        
         Assert.AreEqual(80, hp.Value);
         Assert.AreEqual(0.8f, hp.Ratio);
 
-        // Act & Assert - 최대 체력 초과 힐
-        hp.ApplyHeal(50); // 80 + 50 = 130, 최대 100으로 제한
+        // ------------------------------------------------------------
+        // ApplyHeal - 최대 체력 초과 힐 제한
+        // ------------------------------------------------------------
+        hp.ApplyHeal(50);
+        
         Assert.AreEqual(100, hp.Value);
         Assert.AreEqual(1.0f, hp.Ratio);
 
-        // Act & Assert - 데미지 적용
+        // ------------------------------------------------------------
+        // ApplyDamage - 데미지 적용
+        // ------------------------------------------------------------
         hp.ApplyDamage(40);
+        
         Assert.AreEqual(60, hp.Value);
         Assert.AreEqual(0.6f, hp.Ratio);
 
-        // Act & Assert - 치명적 데미지 (죽음)
-        hp.ApplyDamage(100); // 60 - 100 = -40, 0으로 제한되고 죽음 상태로 전환
+        // ------------------------------------------------------------
+        // ApplyDamage - 치명적 데미지로 상태 전환
+        // ------------------------------------------------------------
+        hp.ApplyDamage(100);
+        
         Assert.AreEqual(0, hp.Value);
         Assert.AreEqual(HP.State.Dead, hp.Current);
         Assert.IsTrue(hp.IsDead);
 
-        // Act & Assert - 죽은 상태에서 힐/데미지 무시
-        hp.ApplyHeal(50); // 죽은 상태에서는 힐 무시
+        // ------------------------------------------------------------
+        // ApplyHeal - 죽은 상태에서 힐 무시
+        // ------------------------------------------------------------
+        hp.ApplyHeal(50);
+        
         Assert.AreEqual(0, hp.Value);
         Assert.IsTrue(hp.IsDead);
 
-        hp.ApplyDamage(30); // 죽은 상태에서는 데미지 무시
+        // ------------------------------------------------------------
+        // ApplyDamage - 죽은 상태에서 데미지 무시
+        // ------------------------------------------------------------
+        hp.ApplyDamage(30);
+        
         Assert.AreEqual(0, hp.Value);
         Assert.IsTrue(hp.IsDead);
     }
@@ -128,30 +170,41 @@ public class TEST_HP
     [Test]
     public void HP_04_최대체력_변경_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var hp = new HP();
         hp.MaxValue = 100;
         hp.MakeAlive();
         hp.Value = 80;
 
-        // Act & Assert - 최대 체력 증가
+        // ------------------------------------------------------------
+        // MaxValue 증가 - 현재 체력 유지
+        // ------------------------------------------------------------
         hp.MaxValue = 150;
+        
         Assert.AreEqual(150, hp.MaxValue);
-        Assert.AreEqual(80, hp.Value); // 현재 체력은 유지
+        Assert.AreEqual(80, hp.Value);
         Assert.AreEqual(80.0f / 150.0f, hp.Ratio);
 
-        // Act & Assert - 최대 체력 감소 (현재 체력 초과)
-        hp.MaxValue = 50; // 80에서 50으로 감소
+        // ------------------------------------------------------------
+        // MaxValue 감소 - 현재 체력 조정
+        // ------------------------------------------------------------
+        hp.MaxValue = 50;
+        
         Assert.AreEqual(50, hp.MaxValue);
-        Assert.AreEqual(50, hp.Value); // 현재 체력이 최대 체력으로 조정됨
+        Assert.AreEqual(50, hp.Value);
         Assert.AreEqual(1.0f, hp.Ratio);
 
-        // Act & Assert - 최대 체력 0 설정
+        // ------------------------------------------------------------
+        // MaxValue 0 설정 - 죽은 상태 전환
+        // ------------------------------------------------------------
         hp.MaxValue = 0;
+        
         Assert.AreEqual(0, hp.MaxValue);
         Assert.AreEqual(0, hp.Value);
         Assert.AreEqual(0.0f, hp.Ratio);
-        Assert.IsTrue(hp.IsDead); // 최대 체력이 0이면 죽은 상태
+        Assert.IsTrue(hp.IsDead);
     }
 
     // ------------------------------------------------------------
@@ -162,12 +215,16 @@ public class TEST_HP
     [Test]
     public void HP_05_비율_계산_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var hp = new HP();
         hp.MaxValue = 100;
         hp.MakeAlive();
 
-        // Act & Assert - 다양한 체력 비율
+        // ------------------------------------------------------------
+        // Ratio 계산 - 다양한 체력 값
+        // ------------------------------------------------------------
         hp.Value = 0;
         Assert.AreEqual(0.0f, hp.Ratio);
 
@@ -183,7 +240,9 @@ public class TEST_HP
         hp.Value = 100;
         Assert.AreEqual(1.0f, hp.Ratio);
 
-        // Act & Assert - 최대 체력이 0일 때
+        // ------------------------------------------------------------
+        // Ratio 계산 - MaxValue 0일 때
+        // ------------------------------------------------------------
         hp.MaxValue = 0;
         Assert.AreEqual(0.0f, hp.Ratio);
     }
@@ -200,7 +259,9 @@ public class TEST_HP
     [Test]
     public void HP_06_이벤트_통합_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var hp = new HP();
         bool valueChangeEventFired = false;
         bool maxValueChangeEventFired = false;
@@ -219,6 +280,25 @@ public class TEST_HP
         ValueChangeEventArgs<HP.State> stateChangeEventArgs = default;
         HP.ApplyEventArgs healEventArgs = default;
         HP.ApplyEventArgs damageEventArgs = default;
+
+        void Reset()
+        {
+            valueChangeEventFired = false;
+            maxValueChangeEventFired = false;
+            stateChangeEventFired = false;
+            healEventFired = false;
+            damageEventFired = false;
+            valueChangeSender = null;
+            maxValueChangeSender = null;
+            stateChangeSender = null;
+            healSender = null;
+            damageSender = null;
+            valueChangeEventArgs = default;
+            maxValueChangeEventArgs = default;
+            stateChangeEventArgs = default;
+            healEventArgs = default;
+            damageEventArgs = default;
+        }
 
         hp.OnValueChange += (sender, e) => 
         {
@@ -255,83 +335,61 @@ public class TEST_HP
             damageEventArgs = e;
         };
 
-        // Act & Assert - 최대 체력 변경 이벤트
+        // ------------------------------------------------------------
+        // OnMaxValueChange 이벤트 확인
+        // ------------------------------------------------------------
         hp.MaxValue = 100;
+        
         Assert.IsTrue(maxValueChangeEventFired);
         Assert.AreEqual(hp, maxValueChangeSender);
         Assert.AreEqual(0, maxValueChangeEventArgs.Previous);
         Assert.AreEqual(100, maxValueChangeEventArgs.Current);
 
-        // Reset
-        maxValueChangeEventFired = false;
+        Reset();
 
-        // Act & Assert - 상태 변경 이벤트
+        // ------------------------------------------------------------
+        // OnStateChange 이벤트 확인
+        // ------------------------------------------------------------
         hp.MakeAlive();
+        
         Assert.IsTrue(stateChangeEventFired);
         Assert.AreEqual(hp, stateChangeSender);
         Assert.AreEqual(HP.State.Dead, stateChangeEventArgs.Previous);
         Assert.AreEqual(HP.State.Alive, stateChangeEventArgs.Current);
 
-        // Reset
-        stateChangeEventFired = false;
+        Reset();
 
-        // Act & Assert - 체력 변경 이벤트
+        // ------------------------------------------------------------
+        // OnValueChange 이벤트 확인
+        // ------------------------------------------------------------
         hp.Value = 50;
+        
         Assert.IsTrue(valueChangeEventFired);
         Assert.AreEqual(hp, valueChangeSender);
         Assert.AreEqual(100, valueChangeEventArgs.Previous);
         Assert.AreEqual(50, valueChangeEventArgs.Current);
 
-        // Reset
-        valueChangeEventFired = false;
+        Reset();
 
-        // Act & Assert - 힐 이벤트
+        // ------------------------------------------------------------
+        // OnHeal 이벤트 확인
+        // ------------------------------------------------------------
         hp.ApplyHeal(30);
+        
         Assert.IsTrue(healEventFired);
         Assert.AreEqual(hp, healSender);
         Assert.AreEqual(30, healEventArgs.Amount);
 
-        // Reset
-        healEventFired = false;
+        Reset();
 
-        // Act & Assert - 데미지 이벤트
+        // ------------------------------------------------------------
+        // OnDamage 이벤트 확인
+        // ------------------------------------------------------------
         hp.ApplyDamage(20);
+        
         Assert.IsTrue(damageEventFired);
         Assert.AreEqual(hp, damageSender);
         Assert.AreEqual(20, damageEventArgs.Amount);
-    }
-
-    // ------------------------------------------------------------
-    /// <summary>
-    /// HP의 InvokeEvent 설정에 따른 이벤트 발생을 테스트합니다.
-    /// </summary>
-    // ------------------------------------------------------------
-    [Test]
-    public void HP_07_InvokeEvent_설정_테스트()
-    {
-        // Arrange
-        var hp = new HP();
-        bool valueChangeEventFired = false;
-        bool stateChangeEventFired = false;
-
-        hp.OnValueChange += (sender, e) => valueChangeEventFired = true;
-        hp.OnStateChange += (sender, e) => stateChangeEventFired = true;
-
-        // Act & Assert - InvokeEvent = false일 때
-        hp.InvokeEvent.Value = false;
-        hp.MaxValue = 100;
-        hp.MakeAlive();
-        Assert.IsFalse(valueChangeEventFired);
-        Assert.IsFalse(stateChangeEventFired);
-
-        // Reset
-        valueChangeEventFired = false;
-        stateChangeEventFired = false;
-
-        // Act & Assert - InvokeEvent = true일 때
-        hp.InvokeEvent.Value = true;
-        hp.Value = 50;
-        Assert.IsTrue(valueChangeEventFired);
     }
 
 #endregion
@@ -344,23 +402,26 @@ public class TEST_HP
     /// </summary>
     // ------------------------------------------------------------
     [Test]
-    public void HP_08_Clone_테스트()
+    public void HP_07_Clone_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var originalHp = new HP();
         originalHp.MaxValue = 100;
         originalHp.MakeAlive();
         originalHp.Value = 75;
 
-        // Act
+        // ------------------------------------------------------------
+        // Clone - 상태 복사 확인
+        // ------------------------------------------------------------
         var clonedHp = originalHp.Clone();
-
-        // Assert
+        
         Assert.AreEqual(originalHp.Current, clonedHp.Current);
         Assert.AreEqual(originalHp.Value, clonedHp.Value);
         Assert.AreEqual(originalHp.MaxValue, clonedHp.MaxValue);
         Assert.AreEqual(originalHp.Ratio, clonedHp.Ratio);
-        Assert.AreNotSame(originalHp, clonedHp); // 다른 인스턴스여야 함
+        Assert.AreNotSame(originalHp, clonedHp);
     }
 
     // ------------------------------------------------------------
@@ -369,25 +430,36 @@ public class TEST_HP
     /// </summary>
     // ------------------------------------------------------------
     [Test]
-    public void HP_09_비율_기반_계산_테스트()
+    public void HP_08_비율_기반_계산_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var hp = new HP();
         hp.MaxValue = 100;
         hp.MakeAlive();
-        hp.Value = 60; // 60% 체력
+        hp.Value = 60;
 
-        // Act & Assert - ByValue (현재 체력 기준)
+        // ------------------------------------------------------------
+        // CalculateApplyAmount - ByValue (현재 체력 기준)
+        // ------------------------------------------------------------
         int amount1 = hp.CalculateApplyAmount(0.5f, HP.ApplyRatioType.ByValue);
-        Assert.AreEqual(30, amount1); // 60 * 0.5 = 30
+        
+        Assert.AreEqual(30, amount1);
 
-        // Act & Assert - ByMaxValue (최대 체력 기준)
+        // ------------------------------------------------------------
+        // CalculateApplyAmount - ByMaxValue (최대 체력 기준)
+        // ------------------------------------------------------------
         int amount2 = hp.CalculateApplyAmount(0.3f, HP.ApplyRatioType.ByMaxValue);
-        Assert.AreEqual(30, amount2); // 100 * 0.3 = 30
+        
+        Assert.AreEqual(30, amount2);
 
-        // Act & Assert - ByMissingValue (부족한 체력 기준)
+        // ------------------------------------------------------------
+        // CalculateApplyAmount - ByMissingValue (부족한 체력 기준)
+        // ------------------------------------------------------------
         int amount3 = hp.CalculateApplyAmount(0.5f, HP.ApplyRatioType.ByMissingValue);
-        Assert.AreEqual(20, amount3); // (100 - 60) * 0.5 = 20
+        
+        Assert.AreEqual(20, amount3);
     }
 
 #endregion

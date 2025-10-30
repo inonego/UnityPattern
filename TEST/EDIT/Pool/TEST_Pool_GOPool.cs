@@ -48,7 +48,9 @@ public class TEST_Pool_GOPool
     [UnityTest]
     public IEnumerator GOPool_02_Acquire_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var prefab = new GameObject("TestPrefab");
         var provider = new PrefabGameObjectProvider { Prefab = prefab };
         var pool = new GOPool(provider);
@@ -58,7 +60,9 @@ public class TEST_Pool_GOPool
 
         try
         {
-            // Act
+            // ------------------------------------------------------------
+            // Acquire
+            // ------------------------------------------------------------
             go1 = pool.Acquire();
             go2 = pool.Acquire();
 
@@ -90,7 +94,9 @@ public class TEST_Pool_GOPool
     [UnityTest]
     public IEnumerator GOPool_03_Release_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var prefab = new GameObject("TestPrefab");
         var provider = new PrefabGameObjectProvider { Prefab = prefab };
         var poolParent = new GameObject("PoolParent");
@@ -104,7 +110,9 @@ public class TEST_Pool_GOPool
 
             yield return null;
 
-            // Act
+            // ------------------------------------------------------------
+            // Release
+            // ------------------------------------------------------------
             pool.Release(go);
 
             yield return null;
@@ -132,7 +140,9 @@ public class TEST_Pool_GOPool
     [UnityTest]
     public IEnumerator GOPool_04_재사용_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var prefab = new GameObject("TestPrefab");
         var provider = new PrefabGameObjectProvider { Prefab = prefab };
         var pool = new GOPool(provider);
@@ -151,7 +161,9 @@ public class TEST_Pool_GOPool
 
             yield return null;
 
-            // Act
+            // ------------------------------------------------------------
+            // 재사용
+            // ------------------------------------------------------------
             go2 = pool.Acquire();
 
             yield return null;
@@ -178,7 +190,9 @@ public class TEST_Pool_GOPool
     [UnityTest]
     public IEnumerator GOPool_05_Parent_설정_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var prefab = new GameObject("TestPrefab");
         var provider = new PrefabGameObjectProvider { Prefab = prefab };
         var parentObject = new GameObject("Parent");
@@ -188,7 +202,9 @@ public class TEST_Pool_GOPool
 
         try
         {
-            // Act
+            // ------------------------------------------------------------
+            // Parent 설정 확인
+            // ------------------------------------------------------------
             go = pool.Acquire();
 
             yield return null;
@@ -213,7 +229,9 @@ public class TEST_Pool_GOPool
     [UnityTest]
     public IEnumerator GOPool_06_ReleaseAll_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var prefab = new GameObject("TestPrefab");
         var provider = new PrefabGameObjectProvider { Prefab = prefab };
         var poolParent = new GameObject("PoolParent");
@@ -231,7 +249,9 @@ public class TEST_Pool_GOPool
 
             yield return null;
 
-            // Act
+            // ------------------------------------------------------------
+            // ReleaseAll
+            // ------------------------------------------------------------
             pool.ReleaseAll();
 
             yield return null;
@@ -266,7 +286,9 @@ public class TEST_Pool_GOPool
     [UnityTest]
     public IEnumerator GOPool_07_WorldPositionStays_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var prefab = new GameObject("TestPrefab");
         prefab.transform.position = new Vector3(10, 20, 30);
         var provider = new PrefabGameObjectProvider { Prefab = prefab };
@@ -283,7 +305,9 @@ public class TEST_Pool_GOPool
 
         try
         {
-            // Act
+            // ------------------------------------------------------------
+            // WorldPositionStays 설정 확인
+            // ------------------------------------------------------------
             go = pool.Acquire();
 
             yield return null;
@@ -313,7 +337,9 @@ public class TEST_Pool_GOPool
     [UnityTest]
     public IEnumerator GOPool_08_AcquireAsync_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var prefab = new GameObject("TestPrefab");
         var provider = new PrefabGameObjectProvider { Prefab = prefab };
         var pool = new GOPool(provider);
@@ -321,7 +347,9 @@ public class TEST_Pool_GOPool
         GameObject go = null;
         bool completed = false;
 
-        // Act
+        // ------------------------------------------------------------
+        // AcquireAsync
+        // ------------------------------------------------------------
         var task = TestAcquireAsync(pool);
         
         async Awaitable TestAcquireAsync(GOPool p)

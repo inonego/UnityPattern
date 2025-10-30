@@ -46,10 +46,6 @@ namespace inonego
     #region 필드
 
         [SerializeField]
-        private InvokeEventFlag invokeEvent = new();
-        public InvokeEventFlag InvokeEvent => invokeEvent;
-
-        [SerializeField]
         private SpawnedDictionary<TKey, T> spawned = new();
         public ISpawnedDictionary<TKey, T> Spawned => spawned;
 
@@ -133,10 +129,7 @@ namespace inonego
             // ------------------------------------------------------------
             /// 스폰 이벤트를 호출합니다.
             // ------------------------------------------------------------
-            if (invokeEvent.Value)
-            {
-                OnSpawn?.Invoke(spawnable.Key, spawnable);
-            }
+            OnSpawn?.Invoke(spawnable.Key, spawnable);
             
             return spawnable;
         }
@@ -174,10 +167,7 @@ namespace inonego
             // ------------------------------------------------------------
             /// 디스폰 이벤트를 호출합니다.
             // ------------------------------------------------------------
-            if (invokeEvent.Value)
-            {
-                OnDespawn?.Invoke(despawnable.Key, despawnable);
-            }
+            OnDespawn?.Invoke(despawnable.Key, despawnable);
         }
 
         private void DespawnInternal(T despawnable, bool removeFromDictionary = true)

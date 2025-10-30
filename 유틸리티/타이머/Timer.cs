@@ -18,8 +18,6 @@ namespace inonego
 
     public interface ITimerEventHandler<out TSelf>
     {
-        public InvokeEventFlag InvokeEvent { get; }
-
         public event TimerEndEvent<TSelf> OnEnd;
         public event ValueChangeEvent<TSelf, TimerState> OnStateChange;
     }
@@ -33,10 +31,6 @@ namespace inonego
     [Serializable]
     public partial class Timer : ITimer, IReadOnlyTimer, ITimerEventHandler<Timer>
     {
-        [SerializeField]
-        private InvokeEventFlag invokeEvent = new();
-        public InvokeEventFlag InvokeEvent => invokeEvent;
-
         [SerializeField] private TValue duration = default;
         [SerializeField] private TValue elapsedTime = default;
         
@@ -127,10 +121,7 @@ namespace inonego
 
                 this.current = next;
 
-                if (invokeEvent.Value)
-                {
-                    OnStateChange?.Invoke(this, new() { Previous = prev, Current = next });
-                }
+                OnStateChange?.Invoke(this, new() { Previous = prev, Current = next });
             }
         }
         
@@ -172,10 +163,7 @@ namespace inonego
                 // 타이머의 시간이 목표 시간을 초과하면 타이머를 종료합니다.
                 if (elapsedTime >= duration)
                 {
-                    if (invokeEvent.Value)
-                    {
-                        OnEnd?.Invoke(this, new() { });
-                    }
+                    OnEnd?.Invoke(this, new() { });
 
                     Stop();
                 }

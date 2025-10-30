@@ -6,8 +6,6 @@ namespace inonego
 {
     public interface IGroundChecker
     {
-        public InvokeEventFlag InvokeEvent { get; }
-
         // ------------------------------------------------------------
         /// <summary>
         /// 현재 바닥에 있는지 여부를 가져옵니다.

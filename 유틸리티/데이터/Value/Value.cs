@@ -6,17 +6,12 @@ namespace inonego
 {
     // ============================================================
     /// <summary>
-    /// 값 변경 시 이벤트를 발생시키는 래퍼 구조체입니다.
-    /// 암시적 변환을 통해 일반 변수처럼 사용할 수 있습니다.
+    /// 값을 관리하는 클래스입니다.
     /// </summary>
     // ============================================================
     [Serializable]
     public class Value<T> : IReadOnlyValue<T>, IDeepCloneable<Value<T>> where T : struct
     {
-        [SerializeField]
-        protected InvokeEventFlag invokeEvent = new();
-        public InvokeEventFlag InvokeEvent => invokeEvent;
-
         // ------------------------------------------------------------
         /// <summary>
         /// 현재 값입니다.
@@ -27,21 +22,28 @@ namespace inonego
         public T Current
         {
             get => current;
-            set
+            set => Set(value);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 값을 설정합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public virtual void Set(T value, bool invokeEvent = true)
+        {
+            var (prev, next) = (this.current, value);
+
+            ProcessValue(prev, ref next);
+
+            // 값 변화가 없으면 종료합니다.
+            if (Equals(prev, next)) return;
+
+            this.current = next;
+
+            if (invokeEvent)
             {
-                var (prev, next) = (this.current, value);
-
-                ProcessValue(prev, ref next);
-
-                // 값 변화가 없으면 종료합니다.
-                if (Equals(prev, next)) return;
-
-                this.current = next;
-
-                if (invokeEvent.Value)
-                {
-                    OnValueChange?.Invoke(this, new() { Previous = prev, Current = next } );
-                }
+                OnCurrentChange?.Invoke(this, new() { Previous = prev, Current = this.current } );
             }
         }
 
@@ -52,11 +54,23 @@ namespace inonego
         /// 값이 변경될 때 발생하는 이벤트입니다.
         /// </summary>
         // ------------------------------------------------------------
-        public event ValueChangeEvent<Value<T>, T> OnValueChange = null;
+        public event ValueChangeEvent<Value<T>, T> OnCurrentChange = null;
 
-        event ValueChangeEvent<IReadOnlyValue<T>, T> IReadOnlyValue<T>.OnValueChange
-        { add => OnValueChange += value; remove => OnValueChange -= value; }
+        event ValueChangeEvent<IReadOnlyValue<T>, T> IReadOnlyValue<T>.OnCurrentChange
+        { add => OnCurrentChange += value; remove => OnCurrentChange -= value; }
         
+    #endregion
+
+    #region 생성자
+
+        public Value() : this(default) {}
+
+        public Value(T value)
+        {
+            current = value;
+            ProcessValue(default, ref current);
+        }
+
     #endregion
 
     #region 메서드
@@ -74,51 +88,22 @@ namespace inonego
 
         public Value<T> @new() => new Value<T>();
 
-        public Value<T> Clone(bool cloneEvent = false)
+        public Value<T> Clone()
         {
             var result = @new();
-            result.CloneFrom(this, cloneEvent);
+            result.CloneFrom(this);
             return result;
         }
 
-        public void CloneFrom(Value<T> source, bool cloneEvent = false)
+        public void CloneFrom(Value<T> source)
         {
             if (source == null)
             {
                 throw new ArgumentNullException($"Value<T>.CloneFrom()의 인자가 null입니다.");
             }
 
-            invokeEvent.ExecuteQuietly(() =>
-            {
-                // 값 복사
-                current = source.current;
-            });
-
-            // 이벤트 복사
-            if (cloneEvent)
-            {
-                invokeEvent.Value = source.invokeEvent.Value;
-
-                DelegateUtility.CloneFrom(ref OnValueChange, source.OnValueChange);
-            }
-        }
-
-    #endregion
-
-    #region 생성자
-
-        public Value()
-        {
-            current = default;
-
-            ProcessValue(default, ref current);
-        }
-
-        public Value(T value)
-        {
-            current = value;
-
-            ProcessValue(default, ref current);
+            // 값 복사
+            current = source.current;
         }
 
     #endregion

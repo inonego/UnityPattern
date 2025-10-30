@@ -22,10 +22,6 @@ namespace inonego
 
     #region 필드
 
-        [SerializeField]
-        private InvokeEventFlag invokeEvent = new();
-        public InvokeEventFlag InvokeEvent => invokeEvent;
-
         // ------------------------------------------------------------
         /// <summary>
         /// 점프 중인지 여부를 가져옵니다.
@@ -199,10 +195,7 @@ namespace inonego
             // 점프 여부 설정
             isJumping = true;
 
-            if (invokeEvent.Value)
-            {
-                OnJump?.Invoke(this, new JumpEventArgs { MaxCount = MaxCount, Count = Count });
-            }
+            OnJump?.Invoke(this, new JumpEventArgs { MaxCount = MaxCount, Count = Count });
         }
 
         // ------------------------------------------------------------

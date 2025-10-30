@@ -7,8 +7,6 @@ namespace inonego
 
     #region 필드
 
-        public InvokeEventFlag InvokeEvent { get; }
-
         // ------------------------------------------------------------
         /// <summary>
         /// 최대 점프 횟수입니다.

@@ -10,10 +10,6 @@ namespace inonego
 
     #region 필드
 
-        [SerializeField]
-        private InvokeEventFlag invokeEvent = new();
-        public InvokeEventFlag InvokeEvent => invokeEvent;
-
         [SerializeField, ReadOnly]
         protected GameObject ground = null;
         public GameObject Ground => ground;
@@ -85,16 +81,16 @@ namespace inonego
 
             if (prev == next) return;
 
-            if (invokeEvent.Value && prev != null)
+            if (prev != null)
             {
-                OnLeave?.Invoke(this, new ValueChangeEventArgs<GameObject> { Previous = prev, Current = next });
+                OnLeave?.Invoke(this, new() { Previous = prev, Current = next });
             }
 
             this.ground = next;
 
-            if (invokeEvent.Value && next != null)
+            if (next != null)
             {
-                OnLand?.Invoke(this, new ValueChangeEventArgs<GameObject> { Previous = prev, Current = next });
+                OnLand?.Invoke(this, new() { Previous = prev, Current = next });
             }
         }
 

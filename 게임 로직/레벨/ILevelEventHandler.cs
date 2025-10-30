@@ -17,8 +17,6 @@ namespace inonego
     // =======================================================================================
     public interface ILevelEventHandler<out TSelf>
     {   
-        public InvokeEventFlag InvokeEvent { get; }
-
         // ------------------------------------------------------------
         /// <summary>
         /// 레벨 업 이벤트입니다. 레벨이 1 오를때마다 호출됩니다.

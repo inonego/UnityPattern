@@ -17,11 +17,7 @@ namespace inonego
     #region 필드
 
         [SerializeField]
-        private InvokeEventFlag invokeEvent = new();
-        public InvokeEventFlag InvokeEvent => invokeEvent;
-
-        [SerializeField]
-        protected MinMaxValue<int> value = new(new(0, 0), 0);
+        protected RangeValue<int> value = new(0, (0, 0));
 
         [SerializeField]
         protected int limitMax = 0;
@@ -49,7 +45,7 @@ namespace inonego
                 // ------------------------------------------------------------
                 // 최대 레벨을 업데이트합니다.
                 // ------------------------------------------------------------
-                this.value.Max = Max;
+                this.value.Range.Current = (Min, Max);
             }
         }
         
@@ -94,8 +90,8 @@ namespace inonego
             LimitMax = FullMax;
 
             // 이벤트 핸들러 중복 등록 방지
-            value.OnValueChange -= OnValueChangeHandler;
-            value.OnValueChange += OnValueChangeHandler;
+            value.OnCurrentChange -= OnValueChangeHandler;
+            value.OnCurrentChange += OnValueChangeHandler;
         }
 
     #endregion
@@ -132,10 +128,7 @@ namespace inonego
                 {
                     Value++;
 
-                    if (invokeEvent.Value)
-                    {
-                        OnLevelUp?.Invoke(this, new() { Level = Value });
-                    }
+                    OnLevelUp?.Invoke(this, new() { Level = Value });
                 }
                 else
                 {

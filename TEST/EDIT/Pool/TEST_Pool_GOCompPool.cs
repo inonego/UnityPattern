@@ -50,7 +50,9 @@ public class TEST_Pool_GOCompPool
     [UnityTest]
     public IEnumerator GOCompPool_02_AcquireComp_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var prefab = new GameObject("TestPrefab");
         var testComp = prefab.AddComponent<TestComponent>();
         var provider = new PrefabGameObjectProvider { Prefab = prefab };
@@ -61,7 +63,9 @@ public class TEST_Pool_GOCompPool
 
         try
         {
-            // Act
+            // ------------------------------------------------------------
+            // AcquireComp
+            // ------------------------------------------------------------
             comp1 = pool.AcquireComp();
             comp2 = pool.AcquireComp();
 
@@ -93,7 +97,9 @@ public class TEST_Pool_GOCompPool
     [UnityTest]
     public IEnumerator GOCompPool_03_ReleaseComp_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var prefab = new GameObject("TestPrefab");
         prefab.AddComponent<TestComponent>();
         var provider = new PrefabGameObjectProvider { Prefab = prefab };
@@ -111,7 +117,9 @@ public class TEST_Pool_GOCompPool
 
             yield return null;
 
-            // Act
+            // ------------------------------------------------------------
+            // ReleaseComp
+            // ------------------------------------------------------------
             pool.ReleaseComp(comp);
 
             yield return null;
@@ -139,7 +147,9 @@ public class TEST_Pool_GOCompPool
     [UnityTest]
     public IEnumerator GOCompPool_04_재사용_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var prefab = new GameObject("TestPrefab");
         prefab.AddComponent<TestComponent>();
         var provider = new PrefabGameObjectProvider { Prefab = prefab };
@@ -160,7 +170,9 @@ public class TEST_Pool_GOCompPool
 
             yield return null;
 
-            // Act
+            // ------------------------------------------------------------
+            // 재사용
+            // ------------------------------------------------------------
             comp2 = pool.AcquireComp();
 
             yield return null;
@@ -188,7 +200,9 @@ public class TEST_Pool_GOCompPool
     [UnityTest]
     public IEnumerator GOCompPool_05_IPool_인터페이스_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var prefab = new GameObject("TestPrefab");
         prefab.AddComponent<TestComponent>();
         var provider = new PrefabGameObjectProvider { Prefab = prefab };
@@ -199,7 +213,9 @@ public class TEST_Pool_GOCompPool
 
         try
         {
-            // Act
+            // ------------------------------------------------------------
+            // Acquire
+            // ------------------------------------------------------------
             comp1 = pool.Acquire();
             comp2 = pool.Acquire();
 
@@ -211,7 +227,9 @@ public class TEST_Pool_GOCompPool
             Assert.AreEqual(2, pool.Acquired.Count);
             Assert.AreEqual(0, pool.Released.Count);
 
-            // Act
+            // ------------------------------------------------------------
+            // Release
+            // ------------------------------------------------------------
             pool.Release(comp1);
 
             yield return null;
@@ -237,7 +255,9 @@ public class TEST_Pool_GOCompPool
     [UnityTest]
     public IEnumerator GOCompPool_06_다중_Component_관리_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var prefab = new GameObject("TestPrefab");
         prefab.AddComponent<TestComponent>();
         var provider = new PrefabGameObjectProvider { Prefab = prefab };
@@ -247,7 +267,9 @@ public class TEST_Pool_GOCompPool
 
         try
         {
-            // Act - 5개 획득
+            // ------------------------------------------------------------
+            // 5개 획득
+            // ------------------------------------------------------------
             for (int i = 0; i < 5; i++)
             {
                 var comp = pool.AcquireComp();
@@ -261,7 +283,9 @@ public class TEST_Pool_GOCompPool
             Assert.AreEqual(5, pool.AcquiredComp.Count);
             Assert.AreEqual(0, pool.ReleasedComp.Count);
 
-            // Act - 3개 반환
+            // ------------------------------------------------------------
+            // 3개 반환
+            // ------------------------------------------------------------
             for (int i = 0; i < 3; i++)
             {
                 pool.ReleaseComp(components[i]);
@@ -273,7 +297,9 @@ public class TEST_Pool_GOCompPool
             Assert.AreEqual(2, pool.AcquiredComp.Count);
             Assert.AreEqual(3, pool.ReleasedComp.Count);
 
-            // Act - 다시 2개 획득 (재사용)
+            // ------------------------------------------------------------
+            // 다시 2개 획득 (재사용)
+            // ------------------------------------------------------------
             var reused1 = pool.AcquireComp();
             var reused2 = pool.AcquireComp();
 
@@ -308,7 +334,9 @@ public class TEST_Pool_GOCompPool
     [UnityTest]
     public IEnumerator GOCompPool_07_예외_처리_통합_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var prefab = new GameObject("TestPrefab");
         prefab.AddComponent<TestComponent>();
         var provider = new PrefabGameObjectProvider { Prefab = prefab };
@@ -316,7 +344,9 @@ public class TEST_Pool_GOCompPool
 
         try
         {
+            // ------------------------------------------------------------
             // null Component 반환 시도
+            // ------------------------------------------------------------
             Assert.Throws<Exception>(() => pool.ReleaseComp(null));
 
             yield return null;
@@ -340,7 +370,9 @@ public class TEST_Pool_GOCompPool
     [UnityTest]
     public IEnumerator GOCompPool_08_AcquireCompAsync_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var prefab = new GameObject("TestPrefab");
         prefab.AddComponent<TestComponent>();
         var provider = new PrefabGameObjectProvider { Prefab = prefab };
@@ -349,7 +381,9 @@ public class TEST_Pool_GOCompPool
         TestComponent comp = null;
         bool completed = false;
 
-        // Act
+        // ------------------------------------------------------------
+        // AcquireCompAsync
+        // ------------------------------------------------------------
         var task = TestAcquireAsync(pool);
         
         async Awaitable TestAcquireAsync(GOCompPool<TestComponent> p)

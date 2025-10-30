@@ -29,7 +29,6 @@ public class TEST_Value
 
         // Assert
         Assert.AreEqual(0, value.Current);
-        Assert.IsTrue(value.InvokeEvent.Value);
     }
 
     // ------------------------------------------------------------
@@ -40,69 +39,79 @@ public class TEST_Value
     [Test]
     public void Value_02_값_변경_통합_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var value = new Value<int>();
         bool valueChangeEventFired = false;
         Value<int> valueChangeSender = null;
         ValueChangeEventArgs<int> valueChangeEventArgs = default;
 
-        value.OnValueChange += (sender, e) => 
+        void Reset()
+        {
+            valueChangeEventFired = false;
+            valueChangeSender = null;
+            valueChangeEventArgs = default;
+        }
+
+        value.OnCurrentChange += (sender, e) => 
         {
             valueChangeEventFired = true;
             valueChangeSender = sender;
             valueChangeEventArgs = e;
         };
 
-        // Act & Assert - 값 변경
+        // ------------------------------------------------------------
+        // 일반 값 변경 - 이벤트 발생 확인
+        // ------------------------------------------------------------
         value.Current = 10;
         Assert.AreEqual(10, value.Current);
-        Assert.IsTrue(valueChangeEventFired);
+        Assert.IsTrue(valueChangeEventFired, "일반 값 변경 시 이벤트가 발생해야 합니다");
+
         Assert.AreEqual(value, valueChangeSender);
         Assert.AreEqual(0, valueChangeEventArgs.Previous);
         Assert.AreEqual(10, valueChangeEventArgs.Current);
 
-        // Reset
-        valueChangeEventFired = false;
+        Reset();
 
-        // Act & Assert - 동일한 값 설정 (이벤트 발생하지 않음)
+        // ------------------------------------------------------------
+        // 동일한 값 설정 - 이벤트 미발생 확인
+        // ------------------------------------------------------------
         value.Current = 10;
         Assert.AreEqual(10, value.Current);
         Assert.IsFalse(valueChangeEventFired, "동일한 값 설정 시 이벤트가 발생하지 않아야 합니다");
+        
+        Reset();
 
-        // Act & Assert - 다른 값 설정
+        // ------------------------------------------------------------
+        // 다른 값 설정 - 이벤트 발생 확인
+        // ------------------------------------------------------------
         value.Current = 20;
         Assert.AreEqual(20, value.Current);
         Assert.IsTrue(valueChangeEventFired);
+
         Assert.AreEqual(10, valueChangeEventArgs.Previous);
         Assert.AreEqual(20, valueChangeEventArgs.Current);
-    }
-
-    // ------------------------------------------------------------
-    /// <summary>
-    /// Value의 InvokeEvent 설정에 따른 이벤트 발생을 테스트합니다.
-    /// </summary>
-    // ------------------------------------------------------------
-    [Test]
-    public void Value_03_InvokeEvent_설정_테스트()
-    {
-        // Arrange
-        var value = new Value<int>();
-        bool valueChangeEventFired = false;
-
-        value.OnValueChange += (sender, e) => valueChangeEventFired = true;
-
-        // Act & Assert - InvokeEvent = false일 때
-        value.InvokeEvent.Value = false;
-        value.Current = 10;
-        Assert.IsFalse(valueChangeEventFired, "InvokeEvent가 false일 때 이벤트가 발생하지 않아야 합니다");
-
-        // Reset
-        valueChangeEventFired = false;
-
-        // Act & Assert - InvokeEvent = true일 때
-        value.InvokeEvent.Value = true;
-        value.Current = 20;
-        Assert.IsTrue(valueChangeEventFired, "InvokeEvent가 true일 때 이벤트가 발생해야 합니다");
+        
+        Reset();
+        
+        // ------------------------------------------------------------
+        // Set 메서드 invokeEvent: false - 이벤트 미발생 확인
+        // ------------------------------------------------------------
+        value.Set(30, invokeEvent: false);
+        Assert.AreEqual(30, value.Current);
+        Assert.IsFalse(valueChangeEventFired, "Set에서 invokeEvent가 False일 때 이벤트가 발생하지 않아야 합니다");
+        
+        Reset();
+        
+        // ------------------------------------------------------------
+        // Set 메서드 invokeEvent: true - 이벤트 발생 확인
+        // ------------------------------------------------------------
+        value.Set(40, invokeEvent: true);
+        Assert.AreEqual(40, value.Current);
+        Assert.IsTrue(valueChangeEventFired, "Set에서 invokeEvent가 True일 때 이벤트가 발생해야 합니다");
+        
+        Reset();
     }
 
     // ------------------------------------------------------------
@@ -111,21 +120,31 @@ public class TEST_Value
     /// </summary>
     // ------------------------------------------------------------
     [Test]
-    public void Value_04_암시적_변환_및_비교_테스트()
+    public void Value_03_암시적_변환_및_비교_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var value = new Value<int>(42);
 
-        // Act & Assert - 암시적 변환
+        // ------------------------------------------------------------
+        // 암시적 변환 - Value<T>를 T로 변환
+        // ------------------------------------------------------------
         int intValue = value; // 암시적 변환
+        
         Assert.AreEqual(42, intValue);
 
-        // Act & Assert - 직접 값과 비교
+        // ------------------------------------------------------------
+        // Equals - 직접 값과 비교
+        // ------------------------------------------------------------
         Assert.IsTrue(value.Equals(42));
+        Assert.IsFalse(value.Equals(10));
         Assert.IsTrue(value.Equals(new Value<int>(42)));
         Assert.IsFalse(value.Equals(new Value<int>(10)));
 
-        // Act & Assert - ToString
+        // ------------------------------------------------------------
+        // ToString - 문자열 표현
+        // ------------------------------------------------------------
         Assert.AreEqual("42", value.ToString());
     }
 
@@ -135,16 +154,25 @@ public class TEST_Value
     /// </summary>
     // ------------------------------------------------------------
     [Test]
-    public void Value_05_상속_ProcessValue_테스트()
+    public void Value_04_상속_ProcessValue_테스트()
     {
-        // Arrange
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var customValue = new CustomValue();
 
-        // Act & Assert - ProcessValue 오버라이드 동작
+        // ------------------------------------------------------------
+        // ProcessValue 오버라이드 - 값 변환 처리
+        // ------------------------------------------------------------
         customValue.Current = 5;
+        
         Assert.AreEqual(10, customValue.Current, "ProcessValue에서 값이 2배로 처리되어야 합니다");
 
+        // ------------------------------------------------------------
+        // ProcessValue 오버라이드 - 음수 처리
+        // ------------------------------------------------------------
         customValue.Current = -3;
+        
         Assert.AreEqual(0, customValue.Current, "ProcessValue에서 음수는 0으로 처리되어야 합니다");
     }
 
@@ -176,23 +204,27 @@ public class TEST_Value
     /// </summary>
     // ------------------------------------------------------------
     [Test]
-    public void Value_06_JSON_직렬화_테스트()
+    public void Value_05_JSON_직렬화_테스트()
     {
-        // Arrange - 커스텀 Value 클래스 (ProcessValue 오버라이드)
+        // ------------------------------------------------------------
+        // 테스트 준비
+        // ------------------------------------------------------------
         var originalValue = new CustomValue();
         originalValue.Current = 5; // ProcessValue에서 2배로 처리되어 10이 됨
-        originalValue.InvokeEvent.Value = false; // 직렬화 시 이벤트는 무시
 
-        // Act - 직렬화/역직렬화
+        // ------------------------------------------------------------
+        // JSON 직렬화/역직렬화 - 상태 복원 확인
+        // ------------------------------------------------------------
         string json = JsonUtility.ToJson(originalValue);
         var deserializedValue = JsonUtility.FromJson<CustomValue>(json);
-
-        // Assert - 상태 복원 확인
-        Assert.AreEqual(originalValue.Current, deserializedValue.Current, "현재 값이 올바르게 복원되어야 합니다");
-        Assert.AreEqual(originalValue.InvokeEvent.Value, deserializedValue.InvokeEvent.Value, "InvokeEvent 설정이 올바르게 복원되어야 합니다");
         
-        // ProcessValue 동작 확인
+        Assert.AreEqual(originalValue.Current, deserializedValue.Current, "현재 값이 올바르게 복원되어야 합니다");
+        
+        // ------------------------------------------------------------
+        // 역직렬화 후 ProcessValue 동작 확인
+        // ------------------------------------------------------------
         deserializedValue.Current = 3; // 3 * 2 = 6
+        
         Assert.AreEqual(6, deserializedValue.Current, "ProcessValue 오버라이드가 올바르게 동작해야 합니다");
     }
 

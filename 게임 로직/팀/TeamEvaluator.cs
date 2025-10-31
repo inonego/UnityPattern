@@ -11,5 +11,6 @@ namespace inonego
     public abstract class TeamFactionChecker
     {
         public abstract RelativeFaction Check(Entity self, Entity other);
+        public abstract RelativeFaction Check(int self, int other);
     }
 }

@@ -2,8 +2,6 @@ using System;
 
 namespace inonego
 {
-    public delegate void EventHandler<T>(object sender, T e);
-
     public delegate void ValueChangeEventHandler<T>(object sender, ValueChangeEventArgs<T> e);
 
     [Serializable]

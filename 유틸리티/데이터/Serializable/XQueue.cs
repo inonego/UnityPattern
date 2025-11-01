@@ -17,7 +17,7 @@ namespace inonego.Serializable
         [SerializeField]
         private List<T> items = new();
 
-        public void OnBeforeSerialize()
+        public virtual void OnBeforeSerialize()
         {
             items.Clear();
 
@@ -27,7 +27,7 @@ namespace inonego.Serializable
             }
         }
 
-        public void OnAfterDeserialize()
+        public virtual void OnAfterDeserialize()
         {
             Clear();
             

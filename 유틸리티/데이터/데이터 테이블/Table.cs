@@ -19,43 +19,11 @@ namespace inonego
 
     // ============================================================
     /// <summary>
-    /// 읽기 전용 테이블을 위한 인터페이스입니다.
-    /// </summary>
-    // ============================================================
-    public interface IReadOnlyTable
-    {
-        public int Count { get; }
-
-        public IEnumerable<string> Keys { get; }
-        public IEnumerable<ITableValue> Values { get; }
-
-        public ITableValue this[string key] { get; }
-
-        public bool Has(string key);
-
-        public IEnumerator GetEnumerator();
-
-        public Type ValueType { get; }
-    }
-
-    // ============================================================
-    /// <summary>
-    /// 테이블을 위한 인터페이스입니다.
-    /// </summary>
-    // ============================================================
-    public interface ITable : IReadOnlyTable
-    {
-        public void Reload();
-        public void Merge(ITable other);
-    }
-
-    // ============================================================
-    /// <summary>
     /// 테이블을 위한 클래스입니다.
     /// </summary>
     // ============================================================
     [Serializable]
-    public class Table<TTableValue> : ITable
+    public class Table<TTableValue> : ITable<TTableValue>
     where TTableValue : class, ITableValue, new()
     {
 
@@ -71,12 +39,30 @@ namespace inonego
 
     #region IReadOnlyTable 인터페이스 구현
 
+        IReadOnlyDictionary<string, TTableValue> IReadOnlyTable<TTableValue>.Dictionary => Dictionary;
+        Dictionary<string, TTableValue> ITable<TTableValue>.Dictionary => Dictionary;
+
         int IReadOnlyTable.Count => Dictionary.Count;
 
         IEnumerable<string> IReadOnlyTable.Keys => Dictionary.Keys;
+
         IEnumerable<ITableValue> IReadOnlyTable.Values => Dictionary.Values;
+        IEnumerable<TTableValue> IReadOnlyTable<TTableValue>.Values => Dictionary.Values;
 
         ITableValue IReadOnlyTable.this[string key] 
+        {
+            get
+            {
+                if (Dictionary.TryGetValue(key, out var value))
+                {
+                    return value;
+                }
+
+                return null;
+            }
+        }
+
+        TTableValue IReadOnlyTable<TTableValue>.this[string key]
         {
             get
             {
@@ -135,6 +121,16 @@ namespace inonego
         /// </summary>
         // ------------------------------------------------------------
         public void Merge(Table<TTableValue> other)
+        {
+            Merge(other as ITable<TTableValue>);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 다른 데이터베이스와 합칩니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void Merge(ITable<TTableValue> other)
         {
             if (other == null)
             {

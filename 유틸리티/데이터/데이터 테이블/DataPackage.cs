@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Linq;
 
 using UnityEngine;
 
@@ -18,6 +19,9 @@ namespace inonego
     public interface IReadOnlyDataPackage
     {
         public TTableValue Read<TTableValue>(string key)
+        where TTableValue : class, ITableValue, new();
+
+        public IReadOnlyTable<TTableValue> Table<TTableValue>()
         where TTableValue : class, ITableValue, new();
     }
     
@@ -82,13 +86,24 @@ namespace inonego
         public TTableValue Read<TTableValue>(string key)
         where TTableValue : class, ITableValue, new()
         {
+            var lTable = Table<TTableValue>();
+
+            return lTable[key];
+        }
+
+        // ----------------------------------------------------------------
+        /// <summary>
+        /// 데이터 패키지에서 데이터 테이블을 사용합니다.
+        /// </summary>
+        // ----------------------------------------------------------------
+        public IReadOnlyTable<TTableValue> Table<TTableValue>()
+        where TTableValue : class, ITableValue, new()
+        {
             var valueType = typeof(TTableValue);
 
             if (dictionary.TryGetValue(valueType, out var lTableSR))
             {
-                var lTable = lTableSR.Value;
-
-                return lTable[key] as TTableValue;
+                return lTableSR.Value as IReadOnlyTable<TTableValue>;
             }
 
             throw new InvalidOperationException($"데이터 패키지에 {valueType.Name} 타입의 데이터 테이블이 존재하지 않습니다.");

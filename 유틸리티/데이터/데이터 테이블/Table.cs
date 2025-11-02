@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml;
+using System.Xml.Serialization;
 
 using UnityEngine;
 
@@ -17,10 +19,10 @@ namespace inonego
 
     // ============================================================
     /// <summary>
-    /// 테이블을 위한 인터페이스입니다.
+    /// 읽기 전용 테이블을 위한 인터페이스입니다.
     /// </summary>
     // ============================================================
-    public interface ITable
+    public interface IReadOnlyTable
     {
         public int Count { get; }
 
@@ -32,6 +34,19 @@ namespace inonego
         public bool Has(string key);
 
         public IEnumerator GetEnumerator();
+
+        public Type ValueType { get; }
+    }
+
+    // ============================================================
+    /// <summary>
+    /// 테이블을 위한 인터페이스입니다.
+    /// </summary>
+    // ============================================================
+    public interface ITable : IReadOnlyTable
+    {
+        public void Reload();
+        public void Merge(ITable other);
     }
 
     // ============================================================
@@ -48,18 +63,20 @@ namespace inonego
 
         [SerializeField]
         private XDictionary<string, TTableValue> dictionary = new();
+
+        [XmlIgnore]
         public virtual Dictionary<string, TTableValue> Dictionary => dictionary;
 
     #endregion
 
-    #region ITable 인터페이스 구현
+    #region IReadOnlyTable 인터페이스 구현
 
-        int ITable.Count => Dictionary.Count;
+        int IReadOnlyTable.Count => Dictionary.Count;
 
-        IEnumerable<string> ITable.Keys => Dictionary.Keys;
-        IEnumerable<ITableValue> ITable.Values => Dictionary.Values;
+        IEnumerable<string> IReadOnlyTable.Keys => Dictionary.Keys;
+        IEnumerable<ITableValue> IReadOnlyTable.Values => Dictionary.Values;
 
-        ITableValue ITable.this[string key] 
+        ITableValue IReadOnlyTable.this[string key] 
         {
             get
             {
@@ -72,9 +89,66 @@ namespace inonego
             }
         }
 
-        bool ITable.Has(string key) => Dictionary.ContainsKey(key);
+        bool IReadOnlyTable.Has(string key) => Dictionary.ContainsKey(key);
 
-        IEnumerator ITable.GetEnumerator() => Dictionary.GetEnumerator();
+        IEnumerator IReadOnlyTable.GetEnumerator() => Dictionary.GetEnumerator();
+
+        Type IReadOnlyTable.ValueType => typeof(TTableValue);
+
+    #endregion
+
+    #region 메서드
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 데이터를 다시 로드합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public virtual void Reload()
+        {
+            // NONE
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// ITable 인터페이스 구현: 다른 테이블과 합칩니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        void ITable.Merge(ITable other)
+        {
+            if (other == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            if (other is not Table<TTableValue> otherTable)
+            {
+                throw new InvalidOperationException($"병합하려는 테이블이 {typeof(TTableValue).Name} 타입이 아닙니다.");
+            }
+
+            Merge(otherTable);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 다른 데이터베이스와 합칩니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void Merge(Table<TTableValue> other)
+        {
+            if (other == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            foreach (var (key, item) in other.Dictionary)
+            {
+                if (item.HasKey)
+                {
+                    Dictionary.Add(key, item);
+                }
+            }
+        }
 
     #endregion
 

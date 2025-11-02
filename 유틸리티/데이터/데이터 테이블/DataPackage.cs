@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml;
+using System.Xml.Serialization;
 
 using UnityEngine;
 
@@ -65,7 +67,8 @@ namespace inonego
         [SerializeField]
         private XDictionary<XType, SerializeReferenceWrapper<ITable>> dictionary = new();
 
-        public IEnumerable<XType> Keys => dictionary.Keys;
+        [XmlIgnore]
+        public Dictionary<XType, SerializeReferenceWrapper<ITable>> Dictionary => dictionary;
 
     #endregion
 

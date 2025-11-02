@@ -75,8 +75,8 @@ public class TEST_DataPackage
         var testData1 = new TestData { Key = "key1", Value = 100 };
         var testData2 = new TestData { Key = "key2", Value = 200 };
         
-        testTable.Add("key1", testData1);
-        testTable.Add("key2", testData2);
+        testTable.Dictionary.Add("key1", testData1);
+        testTable.Dictionary.Add("key2", testData2);
 
         // ------------------------------------------------------------
         // 테이블 추가
@@ -116,7 +116,7 @@ public class TEST_DataPackage
         var testTable = new TestTable();
         
         var testData = new TestData { Key = "key1", Value = 100 };
-        testTable.Add("key1", testData);
+        testTable.Dictionary.Add("key1", testData);
         package.AddTable<TestTable, TestData>(testTable);
 
         // ------------------------------------------------------------
@@ -155,7 +155,7 @@ public class TEST_DataPackage
         var testTable = new TestTable();
         
         var testData = new TestData { Key = "key1", Value = 100 };
-        testTable.Add("key1", testData);
+        testTable.Dictionary.Add("key1", testData);
         package.AddTable<TestTable, TestData>(testTable);
 
         var readData = package.Read<TestData>("key1");
@@ -196,7 +196,7 @@ public class TEST_DataPackage
         
         var testTable = new TestTable();
         var testData = new TestData { Key = "key1", Value = 100 };
-        testTable.Add("key1", testData);
+        testTable.Dictionary.Add("key1", testData);
         package.AddTable<TestTable, TestData>(testTable);
 
         // ------------------------------------------------------------
@@ -250,8 +250,8 @@ public class TEST_DataPackage
         var testData1 = new TestData { Key = "key1", Value = 100 };
         var testData2 = new TestData2 { Key = "key2", Name = "TestName" };
         
-        testTable1.Add("key1", testData1);
-        testTable2.Add("key2", testData2);
+        testTable1.Dictionary.Add("key1", testData1);
+        testTable2.Dictionary.Add("key2", testData2);
 
         // ------------------------------------------------------------
         // 다중 타입 테이블 추가
@@ -289,8 +289,8 @@ public class TEST_DataPackage
         var testData1 = new TestData { Key = "key1", Value = 100 };
         var testData2 = new TestData { Key = "key2", Value = 200 };
         
-        testTable.Add("key1", testData1);
-        testTable.Add("key2", testData2);
+        testTable.Dictionary.Add("key1", testData1);
+        testTable.Dictionary.Add("key2", testData2);
         originalPackage.AddTable<TestTable, TestData>(testTable);
 
         // ------------------------------------------------------------
@@ -340,13 +340,13 @@ public class TEST_DataPackage
         
         var player1 = new TestData { Key = "player1", Value = 1000 };
         var player2 = new TestData { Key = "player2", Value = 1500 };
-        playerTable.Add("player1", player1);
-        playerTable.Add("player2", player2);
+        playerTable.Dictionary.Add("player1", player1);
+        playerTable.Dictionary.Add("player2", player2);
         
         var item1 = new TestData2 { Key = "item1", Name = "Sword" };
         var item2 = new TestData2 { Key = "item2", Name = "Shield" };
-        itemTable.Add("item1", item1);
-        itemTable.Add("item2", item2);
+        itemTable.Dictionary.Add("item1", item1);
+        itemTable.Dictionary.Add("item2", item2);
         
         // ------------------------------------------------------------
         // 테이블 추가

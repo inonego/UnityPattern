@@ -85,12 +85,7 @@ namespace inonego
             {
                 var lTable = lTableSR.Value;
 
-                if (lTable.TryGetValue(key, out var value))
-                {
-                    return value as TTableValue;
-                }
-
-                return null;
+                return lTable[key] as TTableValue;
             }
 
             throw new InvalidOperationException($"데이터 패키지에 {valueType.Name} 타입의 데이터 테이블이 존재하지 않습니다.");

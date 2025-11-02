@@ -8,32 +8,33 @@ namespace inonego.Serializable
 {
     // ========================================================================
     /// <summary>
-    /// 직렬화 가능한 Queue입니다.
+    /// 직렬화 가능한 HashSet입니다.
     /// </summary>
     // ========================================================================
     [Serializable]
-    public class XQueue<T> : Queue<T>, ISerializationCallbackReceiver
+    public class XHashSet<T> : HashSet<T>, ISerializationCallbackReceiver
     {
         [SerializeField]
-        private List<T> items = new();
+        private List<T> serialized = new();
+        protected virtual List<T> Serialized => serialized;
 
         public virtual void OnBeforeSerialize()
         {
-            items.Clear();
+            Serialized.Clear();
 
             foreach (var item in this)
             {
-                items.Add(item);
+                Serialized.Add(item);
             }
         }
 
         public virtual void OnAfterDeserialize()
         {
             Clear();
-            
-            for (int i = 0; i < items.Count; i++)
+
+            for (int i = 0; i < Serialized.Count; i++)
             {
-                Enqueue(items[i]);
+                Add(Serialized[i]);
             }
         }
     }

@@ -11,6 +11,11 @@ namespace inonego.Serializable
     {
         public TKey Key;
         public TValue Value;
+
+        public XKeyValuePair(TKey key, TValue value)
+        {
+            Key = key; Value = value;
+        }
     }
     
     // ========================================================================
@@ -22,21 +27,18 @@ namespace inonego.Serializable
     public class XDictionary<TKey, TValue> : Dictionary<TKey, TValue>, ISerializationCallbackReceiver
     {
         [SerializeField]
-        private List<XKeyValuePair<TKey, TValue>> items = new();
+        private List<XKeyValuePair<TKey, TValue>> serialized = new();
+        protected virtual List<XKeyValuePair<TKey, TValue>> Serialized => serialized;
 
         public virtual void OnBeforeSerialize()
         {
-            items.Clear();
+            Serialized.Clear();
 
-            foreach (var kvp in this)
+            foreach (var (key, value) in this)
             {
-                var pair = new XKeyValuePair<TKey, TValue> 
-                {
-                    Key = kvp.Key,
-                    Value = kvp.Value
-                };
+                var pair = new XKeyValuePair<TKey, TValue>(key, value);
 
-                items.Add(pair);
+                Serialized.Add(pair);
             }
         }
 
@@ -44,9 +46,9 @@ namespace inonego.Serializable
         {
             Clear();
 
-            for (int i = 0; i < items.Count; i++)
+            for (int i = 0; i < Serialized.Count; i++)
             {
-                var pair = items[i];
+                var pair = Serialized[i];
 
                 this[pair.Key] = pair.Value;
             }

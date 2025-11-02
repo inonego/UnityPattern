@@ -8,32 +8,34 @@ namespace inonego.Serializable
 {
     // ========================================================================
     /// <summary>
-    /// 직렬화 가능한 HashSet입니다.
+    /// 직렬화 가능한 Stack입니다.
     /// </summary>
     // ========================================================================
     [Serializable]
-    public class XHashSet<T> : HashSet<T>, ISerializationCallbackReceiver
+    public class XStack<T> : Stack<T>, ISerializationCallbackReceiver
     {
         [SerializeField]
-        private List<T> items = new();
+        private List<T> serialized = new();
+        protected virtual List<T> Serialized => serialized;
 
         public virtual void OnBeforeSerialize()
         {
-            items.Clear();
-
+            Serialized.Clear();
+            
+            // 스택은 역순으로 직렬화
             foreach (var item in this)
             {
-                items.Add(item);
+                Serialized.Add(item);
             }
         }
 
         public virtual void OnAfterDeserialize()
         {
             Clear();
-
-            for (int i = 0; i < items.Count; i++)
+            
+            for (int i = Serialized.Count - 1; i >= 0; i--)
             {
-                Add(items[i]);
+                Push(Serialized[i]);
             }
         }
     }

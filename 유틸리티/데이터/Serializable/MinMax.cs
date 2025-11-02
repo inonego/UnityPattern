@@ -2,7 +2,7 @@ using System;
 
 using UnityEngine;
 
-namespace inonego
+namespace inonego.Serializable
 {
     [Serializable]
     public struct MinMax<T> where T : struct, IComparable<T>

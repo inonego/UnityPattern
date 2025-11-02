@@ -7,6 +7,8 @@ using DG.Tweening;
 
 namespace inonego
 {
+    using Serializable;
+
     [ExecuteInEditMode]
     public class BarUI : MonoBehaviour
     {

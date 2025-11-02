@@ -2,6 +2,8 @@ using System;
 
 namespace inonego
 {
+    using Serializable;
+
     // ===================================================================
     /// <summary>
     /// 읽기 전용 RangeValue 인터페이스입니다.

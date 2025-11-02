@@ -4,6 +4,8 @@ using UnityEngine;
 
 namespace inonego
 {
+    using Serializable;
+
     // ============================================================
     /// <summary>
     /// 값에 범위를 두고 관리하는 클래스입니다.

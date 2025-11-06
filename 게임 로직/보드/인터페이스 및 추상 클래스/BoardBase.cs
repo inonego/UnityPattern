@@ -41,7 +41,7 @@ namespace inonego
     /// </summary>
     // ============================================================
     [Serializable]
-    public abstract class BoardBase<TPoint, TBoardSpace, TPlaceable> : BoardBase, IBoard<TPoint, TBoardSpace, TPlaceable>, IEnumerable<TBoardSpace>, IEnumerable
+    public abstract class BoardBase<TPoint, TBoardSpace, TPlaceable> : BoardBase, IBoard<TPoint, TBoardSpace, TPlaceable>, IEnumerable<KeyValuePair<TPoint, TBoardSpace>>, IEnumerable
     where TPoint : struct
     where TBoardSpace : BoardSpace<TPlaceable>, new()
     where TPlaceable : class, new()
@@ -99,20 +99,15 @@ namespace inonego
         public event Action<TPoint, TBoardSpace, TPlaceable> OnPlace = null;
         public event Action<TPoint, TBoardSpace, TPlaceable> OnRemove = null;
 
+        public event Action<TPoint> OnAddSpace = null;
+        public event Action<TPoint> OnRemoveSpace = null;
+
     #endregion
 
     #region 인터페이스 구현
 
-        public IEnumerator<TBoardSpace> GetEnumerator()
-        {
-            foreach (var kv in spaceMap)
-            {
-                yield return kv.Value;
-            }
-        }
-
-        IEnumerator<TBoardSpace> IEnumerable<TBoardSpace>.GetEnumerator() => GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        IEnumerator<KeyValuePair<TPoint, TBoardSpace>> IEnumerable<KeyValuePair<TPoint, TBoardSpace>>.GetEnumerator() => spaceMap.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => spaceMap.GetEnumerator();
 
     #endregion
         
@@ -136,7 +131,7 @@ namespace inonego
         /// 지정된 위치에 공간을 추가합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public virtual void AddSpace(TPoint point)
+        public virtual void AddSpace(TPoint point, bool invokeEvent = true)
         {
             if (!IsValidPoint(point)) return;
 
@@ -147,6 +142,11 @@ namespace inonego
             }
 
             spaceMap[point] = CreateSpace();
+
+            if (invokeEvent)
+            {
+                OnAddSpace?.Invoke(point);
+            }
         }
 
         // ---------------------------------------------------------------
@@ -154,22 +154,45 @@ namespace inonego
         /// 지정된 위치의 공간을 제거합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public virtual void RemoveSpace(TPoint point)
+        public void RemoveSpace(TPoint point, bool invokeEvent = true)
+        {
+            RemoveSpace(point, invokeEvent, removeFromMap: true);
+        }
+
+        protected virtual void RemoveSpace(TPoint point, bool invokeEvent = true, bool removeFromMap = true)
         {
             if (!IsValidPoint(point)) return;
 
             if (!spaceMap.TryGetValue(point, out var space)) return;
 
-            spaceMap.Remove(point);
+            // 공간에 있는 객체를 제거합니다.
+            Remove(space.Placed);
 
-            // 공간을 제거하기 전에 해당 위치의 객체가 있다면
-            // 객체 -> 포인트 인덱스 맵에서도 제거합니다.
-            var placed = space.Placed;
-
-            if (placed != null)
+            if (removeFromMap)
             {
-                pointMap.Remove(placed);
+            // 공간을 제거합니다.
+                spaceMap.Remove(point);
             }
+
+            if (invokeEvent)
+            {
+                OnRemoveSpace?.Invoke(point);
+            }
+        }
+
+        // ---------------------------------------------------------------
+        /// <summary>
+        /// 모든 공간을 제거합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public virtual void RemoveSpaceAll()
+        {
+            foreach (var point in spaceMap.Keys)
+            {
+                RemoveSpace(point, removeFromMap: false);
+            }
+
+            spaceMap.Clear();
         }
 
     #endregion

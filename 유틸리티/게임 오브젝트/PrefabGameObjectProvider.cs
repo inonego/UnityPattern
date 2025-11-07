@@ -60,6 +60,20 @@ namespace inonego
 
    #endregion
 
+   #region 생성자
+
+      public PrefabGameObjectProvider() : base() {}
+
+      public PrefabGameObjectProvider(GameObject prefab, Transform parent, bool worldPositionStays = true) : this()
+      {
+         this.prefab = prefab;
+         this.parent = parent;
+
+         this.worldPositionStays = worldPositionStays;
+      }
+
+   #endregion
+
    #region 메서드
 
       // ------------------------------------------------------------

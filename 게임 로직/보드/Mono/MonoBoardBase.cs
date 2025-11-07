@@ -56,7 +56,7 @@ namespace inonego
 
             this.board = board;
 
-            InitTileMap(board);
+            InitTileMap();
 
             board.OnAddSpace += OnAddSpace;
             board.OnRemoveSpace += OnRemoveSpace;
@@ -171,7 +171,12 @@ namespace inonego
 
     #region 새로고침
 
-        public void ReBuildTileMap()
+        /// ------------------------------------------------------------
+        /// <summary>
+        /// 타일 맵을 새로 구성합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void ReloadTileMap()
         {
             if (board == null)
             {
@@ -179,14 +184,15 @@ namespace inonego
             }
 
             ReleaseTileMap();
-            InitTileMap(board);
+
+            InitTileMap();
         }
 
-        protected void InitTileMap(BoardBase<TPoint, TBoardSpace, TPlaceable> board)
+        protected void InitTileMap()
         {
             if (board == null)
             {
-                throw new ArgumentNullException("보드가 null입니다.");
+                throw new InvalidOperationException("보드가 null입니다.");
             }
 
             foreach (var (point, space) in board)

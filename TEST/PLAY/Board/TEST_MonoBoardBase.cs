@@ -67,7 +67,7 @@ public class TEST_MonoBoardBase
     /// 테스트용 MonoBoardBase 구현체입니다.
     /// </summary>
     // ------------------------------------------------------------
-    public class TestMonoBoard2D : MonoBoardBase<Vector2Int, TestSpace, TestPiece>
+    public class TestMonoBoard2D : MonoBoardBase<Board2D<TestSpace, TestPiece>, Vector2Int, TestSpace, TestPiece>
     {
         [SerializeField]
         private float lTileSize = 1f;

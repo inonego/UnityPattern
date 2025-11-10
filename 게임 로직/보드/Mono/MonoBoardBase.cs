@@ -12,7 +12,8 @@ namespace inonego
     /// </summary>
     // --------------------------------------------------------------------------------
     [Serializable]
-    public abstract class MonoBoardBase<TPoint, TBoardSpace, TPlaceable> : MonoBehaviour, IMonoBoard<TPoint, TBoardSpace, TPlaceable>, IInitNeeded<BoardBase<TPoint, TBoardSpace, TPlaceable>>
+    public abstract class MonoBoardBase<TBoard, TPoint, TBoardSpace, TPlaceable> : MonoBehaviour, IMonoBoard<TBoard, TPoint, TBoardSpace, TPlaceable>, IInitNeeded<TBoard>
+    where TBoard : BoardBase<TPoint, TBoardSpace, TPlaceable>
     where TPoint : struct
     where TBoardSpace : BoardSpace<TPlaceable>, new()
     where TPlaceable : class, new()
@@ -21,10 +22,8 @@ namespace inonego
     #region 원본 보드
 
         [SerializeReference, HideInInspector]
-        protected BoardBase<TPoint, TBoardSpace, TPlaceable> board;
-        public BoardBase<TPoint, TBoardSpace, TPlaceable> Board => board;
-
-        IBoard<TPoint, TBoardSpace, TPlaceable> IMonoBoard<TPoint, TBoardSpace, TPlaceable>.Board => board;
+        protected TBoard board;
+        public TBoard Board => board;
 
     #endregion
 
@@ -42,7 +41,7 @@ namespace inonego
 
     #region 초기 설정 및 초기화
 
-        public virtual void Init(BoardBase<TPoint, TBoardSpace, TPlaceable> board)
+        public virtual void Init(TBoard board)
         {
             if (board == null)
             {

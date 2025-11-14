@@ -108,6 +108,16 @@ namespace inonego
 
         /// ------------------------------------------------------------
         /// <summary>
+        /// 보드상의 포인트를 월드상의 좌표로 변환합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public Vector3 ToPos(IBoardPoint<TVector, TIndex> point)
+        {
+            return ToPos(point.Vector, point.Index);
+        }
+
+        /// ------------------------------------------------------------
+        /// <summary>
         /// 지정된 벡터에 타일을 배치할 수 있는지 확인합니다.
         /// </summary>
         // ------------------------------------------------------------
@@ -132,6 +142,8 @@ namespace inonego
                 lTileMap[vector] = lTile;
 
                 lTile.transform.position = ToPos(vector);
+
+                lTile.SetActive(true);
             }
         }
 
@@ -155,6 +167,10 @@ namespace inonego
                 {
                     lTileMap.Remove(vector);
                 }
+
+                lTile.transform.position = Vector3.zero;
+
+                lTile.SetActive(false);
             }
         }
 

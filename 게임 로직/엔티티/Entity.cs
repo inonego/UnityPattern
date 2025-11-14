@@ -49,10 +49,10 @@ namespace inonego
     #region 체력 관련
 
         [SerializeField]
-        protected HP hp = new HP();
+        private HP hp = new HP();
         public HP HP => hp;
 
-        protected void InitHP()
+        private void InitHP()
         {
             if (hp == null)
             {
@@ -67,7 +67,7 @@ namespace inonego
             }
         }
 
-        protected void ReleaseHP()
+        private void ReleaseHP()
         {
             if (hp == null)
             {

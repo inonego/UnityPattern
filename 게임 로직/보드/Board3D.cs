@@ -13,7 +13,7 @@ namespace inonego
     /// </summary>
     // ============================================================
     [Serializable]
-    public class Board3D<TPlaceable> : Board3D<BoardSpace<TPlaceable>, TPlaceable>
+    public class Board3D<TPlaceable> : Board3D<int, BoardSpace<TPlaceable>, TPlaceable>
     where TPlaceable : class, new()
     {
         public Board3D(int width, int height, int depth, bool init = true) : base(width, height, depth, init) {}
@@ -25,8 +25,9 @@ namespace inonego
     /// </summary>
     // ============================================================
     [Serializable]
-    public class Board3D<TBoardSpace, TPlaceable> : BoardBase<Vector3Int, TBoardSpace, TPlaceable>
-    where TBoardSpace : BoardSpace<TPlaceable>, new()
+    public class Board3D<TIndex, TSpace, TPlaceable> : BoardBase<Vector3Int, TIndex, TSpace, TPlaceable>
+    where TIndex : struct
+    where TSpace : BoardSpaceBase<TIndex, TPlaceable>, new()
     where TPlaceable : class, new()
     {
         [SerializeField]
@@ -68,12 +69,12 @@ namespace inonego
 
         // ------------------------------------------------------------
         /// <summary>
-        /// 포인트가 유효한 보드 범위 내에 있는지 확인합니다.
+        /// 벡터가 유효한 보드 범위 내에 있는지 확인합니다.
         /// </summary>
         // ------------------------------------------------------------
-        protected override bool IsValidPoint(Vector3Int point)
+        protected override bool IsValidVector(Vector3Int vector)
         {
-            return 0 <= point.x && point.x < width && 0 <= point.y && point.y < height && 0 <= point.z && point.z < depth;
+            return 0 <= vector.x && vector.x < width && 0 <= vector.y && vector.y < height && 0 <= vector.z && vector.z < depth;
         }
 
         // ------------------------------------------------------------

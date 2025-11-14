@@ -6,14 +6,13 @@ using UnityEngine;
 
 namespace inonego
 {
-
     // ============================================================
     /// <summary>
     /// 2D 크기(Width, Height) 범위 내에서 동작하는 보드입니다.
     /// </summary>
     // ============================================================
     [Serializable]
-    public class Board2D<TPlaceable> : Board2D<BoardSpace<TPlaceable>, TPlaceable>
+    public class Board2D<TPlaceable> : Board2D<int, BoardSpace<TPlaceable>, TPlaceable>
     where TPlaceable : class, new()
     {
         public Board2D(int width, int height, bool init = true) : base(width, height, init) {}
@@ -25,8 +24,9 @@ namespace inonego
     /// </summary>
     // ============================================================
     [Serializable]
-    public class Board2D<TBoardSpace, TPlaceable> : BoardBase<Vector2Int, TBoardSpace, TPlaceable>
-    where TBoardSpace : BoardSpace<TPlaceable>, new()
+    public class Board2D<TIndex, TSpace, TPlaceable> : BoardBase<Vector2Int, TIndex, TSpace, TPlaceable>
+    where TIndex : struct
+    where TSpace : BoardSpaceBase<TIndex, TPlaceable>, new()
     where TPlaceable : class, new()
     {
         [SerializeField]
@@ -58,12 +58,12 @@ namespace inonego
 
         // ------------------------------------------------------------
         /// <summary>
-        /// 포인트가 유효한 보드 범위 내에 있는지 확인합니다.
+        /// 벡터가 유효한 보드 범위 내에 있는지 확인합니다.
         /// </summary>
         // ------------------------------------------------------------
-        protected override bool IsValidPoint(Vector2Int point)
+        protected override bool IsValidVector(Vector2Int vector)
         {
-            return 0 <= point.x && point.x < width && 0 <= point.y && point.y < height;
+            return 0 <= vector.x && vector.x < width && 0 <= vector.y && vector.y < height;
         }
 
         // ------------------------------------------------------------

@@ -12,10 +12,10 @@ namespace inonego
     /// </summary>
     // --------------------------------------------------------------------------------
     [Serializable]
-    public abstract class MonoBoardBase<TBoard, TPoint, TBoardSpace, TPlaceable> : MonoBehaviour, IMonoBoard<TBoard, TPoint, TBoardSpace, TPlaceable>, IInitNeeded<TBoard>
-    where TBoard : BoardBase<TPoint, TBoardSpace, TPlaceable>
-    where TPoint : struct
-    where TBoardSpace : BoardSpace<TPlaceable>, new()
+    public abstract class MonoBoardBase<TBoard, TVector, TIndex, TSpace, TPlaceable> : MonoBehaviour, IMonoBoard<TBoard, TVector, TIndex, TSpace, TPlaceable>, IInitNeeded<TBoard>
+    where TBoard : BoardBase<TVector, TIndex, TSpace, TPlaceable>
+    where TVector : struct where TIndex : struct
+    where TSpace : BoardSpaceBase<TIndex, TPlaceable>, new()
     where TPlaceable : class, new()
     {
 
@@ -30,8 +30,8 @@ namespace inonego
     #region 필드
 
         [NonSerialized]
-        protected Dictionary<TPoint, GameObject> lTileMap = new();
-        public IReadOnlyDictionary<TPoint, GameObject> TileMap => lTileMap;
+        protected Dictionary<TVector, GameObject> lTileMap = new();
+        public IReadOnlyDictionary<TVector, GameObject> TileMap => lTileMap;
 
         [SerializeReference]
         protected IGameObjectProvider lTileProvider = new PrefabGameObjectProvider();
@@ -78,14 +78,14 @@ namespace inonego
 
     #region 이벤트 핸들러
 
-        protected virtual void OnAddSpace(TPoint point)
+        protected virtual void OnAddSpace(TVector vector)
         {
-            PlaceTile(point);
+            PlaceTile(vector);
         }
 
-        protected virtual void OnRemoveSpace(TPoint point)
+        protected virtual void OnRemoveSpace(TVector vector)
         {
-            RemoveTile(point);
+            RemoveTile(vector);
         }
 
     #endregion
@@ -94,59 +94,66 @@ namespace inonego
 
         /// ------------------------------------------------------------
         /// <summary>
-        /// 보드상의 좌표를 월드상의 좌표로 변환합니다.
+        /// 보드상의 벡터를 월드상의 좌표로 변환합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public abstract Vector3 ToPos(TPoint point);
+        public abstract Vector3 ToPos(TVector vector);
 
         /// ------------------------------------------------------------
         /// <summary>
-        /// 지정된 좌표에 타일을 배치할 수 있는지 확인합니다.
+        /// 보드상의 벡터와 인덱스를 월드상의 좌표로 변환합니다.
         /// </summary>
         // ------------------------------------------------------------
-        protected virtual bool CanPlaceTile(TPoint point) => true;
+        public abstract Vector3 ToPos(TVector vector, TIndex index);
 
         /// ------------------------------------------------------------
         /// <summary>
-        /// 지정된 좌표에 타일을 배치합니다.
+        /// 지정된 벡터에 타일을 배치할 수 있는지 확인합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public virtual void PlaceTile(TPoint point)
+        protected virtual bool CanPlaceTile(TVector vector) => true;
+
+        /// ------------------------------------------------------------
+        /// <summary>
+        /// 지정된 벡터에 타일을 배치합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public virtual void PlaceTile(TVector vector)
         {
-            bool isPlaced = lTileMap.ContainsKey(point);
+            bool isPlaced = lTileMap.ContainsKey(vector);
 
-            bool canPlace = CanPlaceTile(point);
+            bool canPlace = CanPlaceTile(vector);
 
             // 타일이 배치되어 있지 않고 배치할 수 있는 경우 타일을 배치합니다.
             if (!isPlaced && canPlace)
             {
                 var lTile = TileProvider.Acquire();
 
-                lTileMap[point] = lTile;
+                lTileMap[vector] = lTile;
 
-                lTile.transform.position = ToPos(point);
+                lTile.transform.position = ToPos(vector);
             }
         }
 
         /// ------------------------------------------------------------
         /// <summary>
-        /// 지정된 좌표의 타일을 제거합니다.
+        /// 지정된 벡터의 타일을 제거합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void RemoveTile(TPoint point)
+        public void RemoveTile(TVector vector)
         {
-            RemoveTile(point, removeFromMap: true);
+            RemoveTile(vector, removeFromMap: true);
         }
 
-        protected virtual void RemoveTile(TPoint point, bool removeFromMap = true)
+        protected virtual void RemoveTile(TVector vector, bool removeFromMap = true)
         {
-            if (lTileMap.TryGetValue(point, out var lTile))
+            if (lTileMap.TryGetValue(vector, out var lTile))
             {
                 TileProvider.Release(lTile);
 
                 if (removeFromMap)
                 {
-                    lTileMap.Remove(point);
+                    lTileMap.Remove(vector);
                 }
             }
         }
@@ -158,9 +165,9 @@ namespace inonego
         // ------------------------------------------------------------
         public void RemoveTileAll()
         {
-            foreach (var point in lTileMap.Keys)
+            foreach (var vector in lTileMap.Keys)
             {
-                RemoveTile(point, removeFromMap: false);
+                RemoveTile(vector, removeFromMap: false);
             }
 
             lTileMap.Clear();
@@ -194,9 +201,9 @@ namespace inonego
                 throw new InvalidOperationException("보드가 null입니다.");
             }
 
-            foreach (var (point, space) in board)
+            foreach (var (vector, space) in board)
             {
-                PlaceTile(point);
+                PlaceTile(vector);
             }
         }
 

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 using UnityEngine;
 
@@ -11,102 +10,155 @@ namespace inonego
 
     // ============================================================
     /// <summary>
-    /// 보드 공간을 표현하기 위한 추상 클래스입니다.
-    /// </summary>
-    // ============================================================
-    [Serializable]
-    public class BoardSpace<TPlaceable> : IBoardSpace<TPlaceable>
-    where TPlaceable : class, new()
-    {
-        [SerializeReference]
-        protected TPlaceable placed;
-        public TPlaceable Placed
-        {
-            get => placed;
-            set => placed = value;
-        }
-
-        public bool IsFull => Placed != null;
-    }
-
-    [Serializable]
-    public abstract partial class BoardBase
-    {
-        public BoardBase() {}
-    }
-
-    // ============================================================
-    /// <summary>
     /// 보드를 표현하기 위한 추상 클래스입니다.
     /// </summary>
     // ============================================================
     [Serializable]
-    public abstract class BoardBase<TPoint, TBoardSpace, TPlaceable> : BoardBase, IBoard<TPoint, TBoardSpace, TPlaceable>, IEnumerable<KeyValuePair<TPoint, TBoardSpace>>, IEnumerable
-    where TPoint : struct
-    where TBoardSpace : BoardSpace<TPlaceable>, new()
+    public abstract class BoardBase<TVector, TIndex, TSpace, TPlaceable> : IBoard<TVector, TIndex, TPlaceable>, IEnumerable<KeyValuePair<TVector, TSpace>>, IEnumerable
+    where TVector : struct where TIndex : struct
+    where TSpace : BoardSpaceBase<TIndex, TPlaceable>, new()
     where TPlaceable : class, new()
     {
+
+    #region 내부 구조체
+
+        [Serializable]
+        public struct Point : IBoardPoint<TVector, TIndex>, IEquatable<Point>
+        {
+            public TVector Vector;
+            public TIndex Index;
+
+            TVector IBoardPoint<TVector, TIndex>.Vector => Vector;
+            TIndex IBoardPoint<TVector, TIndex>.Index => Index;
+
+            public Point(TVector vector, TIndex index) => (Vector, Index) = (vector, index);
+
+            public static implicit operator TVector(Point point) => point.Vector;
+            public static implicit operator TIndex(Point point) => point.Index;
+
+            public static implicit operator (TVector Vector, TIndex Index)(Point point) => (point.Vector, point.Index);
+            public static implicit operator Point((TVector Vector, TIndex Index) point) => new Point(point.Vector, point.Index);
+
+            public static bool operator ==(Point left, Point right) => left.Equals(right);
+            public static bool operator !=(Point left, Point right) => !left.Equals(right);
+
+        #region 기본 메서드
+
+            public bool Equals(Point other) => Equals(Vector, other.Vector) && Equals(Index, other.Index);
+            public override bool Equals(object obj) => obj is Point other && Equals(other);
+            public override int GetHashCode() => HashCode.Combine(Vector, Index);
+            public override string ToString() => $"({Vector} / {Index})";
+            
+        #endregion
+
+        }
+    
+    #endregion
 
     #region 필드
 
         [SerializeField]
-        protected XDictionary<TPoint, TBoardSpace> spaceMap = new();
+        protected XDictionary<TVector, TSpace> spaceMap = new();
 
         [SerializeField]
-        protected XDictionary<SerializeReferenceWrapper<TPlaceable>, TPoint> pointMap = new();
+        protected XDictionary<SerializeReferenceWrapper<TPlaceable>, Point> pointMap = new();
 
-        protected virtual bool IsValidPoint(TPoint point) => true;
+        protected virtual bool IsValidVector(TVector vector) => true;
 
         //------------------------------------------------------------
         /// <summary>
-        /// 지정된 좌표에 있는 공간을 반환합니다.
+        /// 지정된 벡터에 있는 공간을 반환합니다.
         /// </summary>
         //------------------------------------------------------------
-        public TBoardSpace this[TPoint point]
+        public TSpace this[TVector vector]
         {
             get
             {
-                if (!IsValidPoint(point)) return null;
+                var isValidVector = IsValidVector(vector);
 
-                return spaceMap.TryGetValue(point, out var space) ? space : null;
+                if (isValidVector)
+                {
+                    return spaceMap.TryGetValue(vector, out var space) ? space : null;
+                }
+
+                return null;
             }
         }
 
         //------------------------------------------------------------
         /// <summary>
-        /// 지정된 객체가 있는 좌표를 반환합니다.
+        /// 지정된 벡터와 인덱스에 있는 객체를 반환합니다.
         /// </summary>
         //------------------------------------------------------------
-        public TPoint? this[TPlaceable placeable]
+        public TPlaceable this[TVector vector, TIndex index]
         {
             get
             {
-                return pointMap.TryGetValue(placeable, out var point) ? point : null;
+                TSpace space = this[vector];
+
+                if (space != null) 
+                {
+                    return space[index];
+                }
+
+                return null;
             }
         }
 
         //------------------------------------------------------------
         /// <summary>
-        /// 모든 공간이 차있는지 확인합니다.
+        /// 지정된 포인트에 있는 객체를 반환합니다.
         /// </summary>
         //------------------------------------------------------------
-        public bool IsAllSpaceFull => spaceMap.Values.All(space => space.IsFull);
+        public TPlaceable this[IBoardPoint<TVector, TIndex> point]
+        {
+            get
+            {
+                if (point != null) 
+                {
+                    return this[point.Vector, point.Index];
+                }
+
+                return null;
+            }
+        }
+
+        //------------------------------------------------------------
+        /// <summary>
+        /// 지정된 객체의 위치를 반환합니다.
+        /// </summary>
+        //------------------------------------------------------------
+        public Point? this[TPlaceable placeable]
+        {
+            get => pointMap.TryGetValue(placeable, out var point) ? point : null;
+        }
+
+        IBoardPoint<TVector, TIndex> IBoard<TVector, TIndex, TPlaceable>.this[TPlaceable placeable] => this[placeable];
 
     #endregion
 
     #region 이벤트
 
-        public event Action<TPoint, TBoardSpace, TPlaceable> OnPlace = null;
-        public event Action<TPoint, TBoardSpace, TPlaceable> OnRemove = null;
+        public event Action<TVector, TIndex, TPlaceable> OnPlace = null;
+        public event Action<TVector, TIndex, TPlaceable> OnRemove = null;
 
-        public event Action<TPoint> OnAddSpace = null;
-        public event Action<TPoint> OnRemoveSpace = null;
+        public event Action<TVector> OnAddSpace = null;
+        public event Action<TVector> OnRemoveSpace = null;
 
     #endregion
 
     #region 인터페이스 구현
 
-        IEnumerator<KeyValuePair<TPoint, TBoardSpace>> IEnumerable<KeyValuePair<TPoint, TBoardSpace>>.GetEnumerator() => spaceMap.GetEnumerator();
+        IBoardSpace<TIndex, TPlaceable> IBoard<TVector, TIndex, TPlaceable>.this[TVector vector] => this[vector];
+
+        IEnumerator<KeyValuePair<TVector, TSpace>> IEnumerable<KeyValuePair<TVector, TSpace>>.GetEnumerator()
+        {
+            foreach (var (vector, space) in spaceMap)
+            {
+                yield return new KeyValuePair<TVector, TSpace>(vector, space);
+            }
+        }
+
         IEnumerator IEnumerable.GetEnumerator() => spaceMap.GetEnumerator();
 
     #endregion
@@ -124,28 +176,28 @@ namespace inonego
         /// 공간을 생성합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public virtual TBoardSpace CreateSpace() => new TBoardSpace();
+        public virtual TSpace CreateSpace() => new TSpace();
 
         // ---------------------------------------------------------------
         /// <summary>
         /// 지정된 위치에 공간을 추가합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public virtual void AddSpace(TPoint point, bool invokeEvent = true)
+        public virtual void AddSpace(TVector vector, bool invokeEvent = true)
         {
-            if (!IsValidPoint(point)) return;
+            if (!IsValidVector(vector)) return;
 
             // 이미 공간이 존재하면 중복 생성하지 않습니다.
-            if (spaceMap.ContainsKey(point))
+            if (spaceMap.ContainsKey(vector))
             {
-                throw new SpaceAlreadyExistsException();
+                throw new InvalidOperationException("이미 해당 위치에 공간이 존재합니다. RemoveSpace() 메서드를 사용하여 제거 후 다시 추가해주세요.");
             }
 
-            spaceMap[point] = CreateSpace();
+            spaceMap[vector] = CreateSpace();
 
             if (invokeEvent)
             {
-                OnAddSpace?.Invoke(point);
+                OnAddSpace?.Invoke(vector);
             }
         }
 
@@ -154,29 +206,29 @@ namespace inonego
         /// 지정된 위치의 공간을 제거합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void RemoveSpace(TPoint point, bool invokeEvent = true)
+        public void RemoveSpace(TVector vector, bool invokeEvent = true)
         {
-            RemoveSpace(point, invokeEvent, removeFromMap: true);
+            RemoveSpace(vector, invokeEvent, removeFromMap: true);
         }
 
-        protected virtual void RemoveSpace(TPoint point, bool invokeEvent = true, bool removeFromMap = true)
+        protected virtual void RemoveSpace(TVector vector, bool invokeEvent = true, bool removeFromMap = true)
         {
-            if (!IsValidPoint(point)) return;
+            if (!IsValidVector(vector)) return;
 
-            if (!spaceMap.TryGetValue(point, out var space)) return;
+            if (!spaceMap.TryGetValue(vector, out var space)) return;
 
-            // 공간에 있는 객체를 제거합니다.
-            Remove(space.Placed);
+            // 공간에 있는 모든 객체를 제거합니다.
+            Remove(vector, invokeEvent);
 
             if (removeFromMap)
             {
-            // 공간을 제거합니다.
-                spaceMap.Remove(point);
+                // 공간을 제거합니다.
+                spaceMap.Remove(vector);
             }
 
             if (invokeEvent)
             {
-                OnRemoveSpace?.Invoke(point);
+                OnRemoveSpace?.Invoke(vector);
             }
         }
 
@@ -185,11 +237,11 @@ namespace inonego
         /// 모든 공간을 제거합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public virtual void RemoveSpaceAll()
+        public virtual void RemoveSpaceAll(bool invokeEvent = true)
         {
-            foreach (var point in spaceMap.Keys)
+            foreach (var (vector, _) in spaceMap)
             {
-                RemoveSpace(point, removeFromMap: false);
+                RemoveSpace(vector, invokeEvent, removeFromMap: false);
             }
 
             spaceMap.Clear();
@@ -199,98 +251,188 @@ namespace inonego
 
     #region 배치 및 제거 메서드
 
-        /// ---------------------------------------------------------------
+        // ---------------------------------------------------------------
         /// <summary>
         /// 지정된 위치에 객체를 배치할 수 있는지 확인합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public bool CanPlace(TPoint point, TPlaceable placeable = null)
+        public bool CanPlace(TVector vector, TIndex index, TPlaceable placeable = null)
         {
-            TBoardSpace space = this[point];
+            TSpace space = this[vector];
 
-            // 비어있거나 같은 기물이라면 배치할 수 있습니다.
-            return space != null && (space.Placed == null || space.Placed == placeable);
+            // 공간이 존재하고 배치 가능한지 확인합니다.
+            return space != null && space.CanPlace(index, placeable);
         }
 
-        /// ---------------------------------------------------------------
+        // ---------------------------------------------------------------
         /// <summary>
         /// 지정된 위치에 객체를 배치합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void Place(TPoint point, TPlaceable placeable)
+        public void Place(TVector vector, TIndex index, TPlaceable placeable, bool invokeEvent = true)
         {    
-            if (placeable == null) throw new ArgumentNullException("배치할 객체를 설정해주세요.");
+            if (placeable == null) throw new ArgumentNullException(nameof(placeable), "배치할 객체를 설정해주세요.");
 
-            TBoardSpace space = this[point];
+            TSpace space = this[vector];
             
             if (space == null) 
             {
-                throw new SpaceNotFoundException();
+                throw new InvalidOperationException("해당 위치에 공간이 존재하지 않습니다. AddSpace() 메서드를 사용하여 추가해주세요.");
             }
 
-            if (!CanPlace(point, placeable))
+            if (!CanPlace(vector, index, placeable))
             {
-                throw new InvalidPlacementException();
+                throw new InvalidOperationException("해당 위치에 객체를 배치할 수 없습니다. CanPlace() 메서드를 사용하여 배치 가능한지 확인해주세요.");
             }
 
             // 원래 위치에서 객체를 제거합니다.
-            Remove(placeable);
+            Remove(placeable, invokeEvent);
 
-            space.Placed = placeable;
-            pointMap[placeable] = point;
+            // 공간에 객체를 배치합니다.
+            space.Place(index, placeable);
+            
+            // 객체의 위치를 업데이트합니다.
+            pointMap[placeable] = new Point(vector, index);
 
-            OnPlace?.Invoke(point, space, placeable);
+            if (invokeEvent)
+            {
+                OnPlace?.Invoke(vector, index, placeable);
+            }
         }
 
-        // ------------------------------------------------------------
+        // ---------------------------------------------------------------
         /// <summary>
         /// 지정된 위치의 객체를 제거합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void Remove(TPoint point)
+        public void Remove(TVector vector, TIndex index, bool invokeEvent = true)
         {
-            TBoardSpace space = this[point];
-            if (space == null) return;
-
-            var placeable = space.Placed;
-            if (placeable == null) return;
-
-            space.Placed = null;
-            pointMap.Remove(placeable);
-
-            OnRemove?.Invoke(point, space, placeable);
+            Remove(vector, index, invokeEvent, removeFromSpace: true);
         }
 
-        /// ---------------------------------------------------------------
+        protected virtual void Remove(TVector vector, TIndex index, bool invokeEvent = true, bool removeFromSpace = true)
+        {
+            TSpace space = this[vector];
+            if (space == null) return;
+
+            var placeable = space[index];
+            if (placeable == null) return;
+
+            if (removeFromSpace)
+            {
+                // 공간에서 객체를 제거합니다.
+                space.Remove(index);
+            }
+            
+            // 객체의 위치를 제거합니다.
+            pointMap.Remove(placeable);
+
+            if (invokeEvent)
+            {
+                OnRemove?.Invoke(vector, index, placeable);
+            }
+        }
+
+        // ---------------------------------------------------------------
         /// <summary>
         /// 지정된 객체를 제거합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void Remove(TPlaceable placeable)
+        public void Remove(TPlaceable placeable, bool invokeEvent = true)
         {
-            if (placeable == null) return;
-
-            var point = this[placeable];
-
-            if (point.HasValue)
+            if (placeable == null)
             {
-                Remove(point.Value);
+                throw new ArgumentNullException("제거할 객체를 설정해주세요.");
+            }
+
+            if (pointMap.TryGetValue(placeable, out var point))
+            {
+                Remove(point.Vector, point.Index, invokeEvent);
             }
         }
 
-        /// ---------------------------------------------------------------
+        // ---------------------------------------------------------------
+        /// <summary>
+        /// 지정된 벡터의 모든 객체를 제거합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void Remove(TVector vector, bool invokeEvent = true)
+        {
+            TSpace space = this[vector];
+            if (space == null) return;
+
+            // 해당 공간의 모든 객체를 제거합니다.
+            foreach (var (index, _) in space)
+            {
+                Remove(vector, index, invokeEvent, removeFromSpace: false);
+            }
+
+            // 공간의 모든 객체를 한 번에 제거합니다.
+            space.RemoveAll();
+        }
+
+        // ---------------------------------------------------------------
         /// <summary>
         /// 모든 객체를 제거합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void RemoveAll()
+        public void RemoveAll(bool invokeEvent = true)
         {
-            foreach (var point in spaceMap.Keys)
+            foreach (var (vector, _) in spaceMap)
             {
-                Remove(point);
+                Remove(vector, invokeEvent);
             }
         }
         
+    #endregion
+
+    #region IBoardPoint를 통한 배치 및 제거 메서드
+
+        // ---------------------------------------------------------------
+        /// <summary>
+        /// 지정된 포인트에 객체를 배치할 수 있는지 확인합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public bool CanPlace(IBoardPoint<TVector, TIndex> point, TPlaceable placeable = null)
+        {
+            if (point == null)
+            {
+                throw new ArgumentNullException("포인트를 설정해주세요.");
+            }
+
+            return CanPlace(point.Vector, point.Index, placeable);
+        }
+
+        // ---------------------------------------------------------------
+        /// <summary>
+        /// 지정된 포인트에 객체를 배치합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void Place(IBoardPoint<TVector, TIndex> point, TPlaceable placeable, bool invokeEvent = true)
+        {
+            if (point == null) 
+            {
+                throw new ArgumentNullException("포인트를 설정해주세요.");
+            }
+
+            Place(point.Vector, point.Index, placeable, invokeEvent);
+        }
+        
+        // ---------------------------------------------------------------
+        /// <summary>
+        /// 지정된 포인트의 객체를 제거합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void Remove(IBoardPoint<TVector, TIndex> point, bool invokeEvent = true)
+        {
+            if (point == null)
+            {
+                throw new ArgumentNullException("포인트를 설정해주세요.");
+            }
+
+            Remove(point.Vector, point.Index, invokeEvent);
+        }
+
     #endregion
 
     }

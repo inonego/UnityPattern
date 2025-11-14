@@ -67,14 +67,19 @@ public class TEST_MonoBoardBase
     /// 테스트용 MonoBoardBase 구현체입니다.
     /// </summary>
     // ------------------------------------------------------------
-    public class TestMonoBoard2D : MonoBoardBase<Board2D<TestSpace, TestPiece>, Vector2Int, TestSpace, TestPiece>
+    public class TestMonoBoard2D : MonoBoardBase<Board2D<int, TestSpace, TestPiece>, Vector2Int, int, TestSpace, TestPiece>
     {
         [SerializeField]
         private float lTileSize = 1f;
 
-        public override Vector3 ToPos(Vector2Int point)
+        public override Vector3 ToPos(Vector2Int vector)
         {
-            return new Vector3(point.x * lTileSize, 0f, point.y * lTileSize);
+            return new Vector3(vector.x * lTileSize, 0f, vector.y * lTileSize);
+        }
+
+        public override Vector3 ToPos(Vector2Int vector, int index)
+        {
+            return ToPos(vector) + Vector3.zero;
         }
 
         // ------------------------------------------------------------
@@ -213,7 +218,7 @@ public class TEST_MonoBoardBase
         // 테스트 준비
         // 3x3 보드 생성 (초기 자동 공간 생성 비활성화)
         // ------------------------------------------------------------
-        var board = new Board2D<TestSpace, TestPiece>(3, 3, init: false);
+        var board = new Board2D<int, TestSpace, TestPiece>(3, 3, init: false);
         var monoBoard = CreateMonoBoard();
 
         var basePoints = new[]
@@ -286,8 +291,11 @@ public class TEST_MonoBoardBase
 
         int spaceCount = 0;
 
-        foreach (var (point, space) in board)
+        foreach (var kvp in board)
         {
+            var point = kvp.Key;
+            var space = kvp.Value;
+            
             spaceCount++;
 
             var lTile = monoBoard.TileMap[point];

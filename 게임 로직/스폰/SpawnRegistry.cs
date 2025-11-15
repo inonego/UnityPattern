@@ -45,7 +45,7 @@ namespace inonego
 
     #region 필드
 
-        [SerializeField]
+        [SerializeField, HideInInspector]
         private SpawnedDictionary<TKey, T> spawned = new();
         public ISpawnedDictionary<TKey, T> Spawned => spawned;
 
@@ -70,10 +70,8 @@ namespace inonego
         /// 공통 스폰 등록 로직을 수행합니다.
         /// </summary>
         // --------------------------------------------------------------------------------
-        protected T SpawnInternal(Action<T> initAction = null)
+        protected T SpawnInternal(T spawnable, Action<T> initAction = null)
         {
-            var spawnable = Acquire();
-
             // ------------------------------------------------------------
             /// 예외 처리
             // ------------------------------------------------------------
@@ -86,7 +84,7 @@ namespace inonego
             {
                 throw new InvalidOperationException("이미 스폰된 객체입니다.");
             }
-    
+
             // ------------------------------------------------------------
             /// 스폰 처리
             // ------------------------------------------------------------
@@ -94,6 +92,11 @@ namespace inonego
             {
                 OnBeforeSpawn(spawnable);
                 spawnable.OnBeforeSpawn();
+
+                if (initAction != null)
+                {
+                    initAction.Invoke(spawnable);
+                }
 
                 if (!spawnable.HasKey)
                 {
@@ -103,11 +106,6 @@ namespace inonego
                 if (spawned.ContainsKey(spawnable.Key))
                 {
                     throw new InvalidOperationException($"이미 동일 키({spawnable.Key})가 등록되어 있습니다.");
-                }
-
-                if (initAction != null)
-                {
-                    initAction.Invoke(spawnable);
                 }
             }
             catch (Exception)
@@ -177,7 +175,10 @@ namespace inonego
 
             if (removeFromDictionary)
             {
-                spawned.Remove(despawnable.Key);
+                if (despawnable.HasKey)
+                {
+                    spawned.Remove(despawnable.Key);
+                }
             }
 
             despawnable.OnAfterDespawn();
@@ -235,7 +236,21 @@ namespace inonego
         // ------------------------------------------------------------
         public T Spawn()
         {
-            return SpawnInternal();
+            var spawnable = Acquire();
+
+            SpawnUsingAquired(spawnable);
+
+            return spawnable;
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 만들어진 객체를 이용하여 스폰합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void SpawnUsingAquired(T spawnable)
+        {
+            SpawnInternal(spawnable);
         }
     }
 
@@ -261,13 +276,27 @@ namespace inonego
         // ------------------------------------------------------------
         public T Spawn(TParam param)
         {
+            var spawnable = Acquire();
+
+            SpawnUsingAquired(spawnable, param);
+
+            return spawnable;
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 만들어진 객체를 이용하여 스폰합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void SpawnUsingAquired(T spawnable, TParam param)
+        {
             void InitAction(T spawnable)
             {
                 OnInit(spawnable, param);
                 spawnable.Init(param);
             }
 
-            return SpawnInternal(InitAction);
+            SpawnInternal(spawnable, InitAction);
         }
     }
 }

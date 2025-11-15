@@ -55,7 +55,19 @@ namespace inonego
             return monoEntity;
         }
 
+        protected virtual void OnBeforeDespawn(TMonoEntity despawnable)
+        {
+            base.OnBeforeSpawn(despawnable);
+        }
+
         protected virtual void OnInit(TMonoEntity spawnable, TEntity entity) {}
+
+        protected override void OnAfterDespawn(TMonoEntity despawnable)
+        {
+            base.OnAfterDespawn(despawnable);
+
+            gameObjectProvider.Release(despawnable.gameObject);
+        }
 
         // --------------------------------------------------------------------------------
         /// <summary>
@@ -64,31 +76,45 @@ namespace inonego
         // --------------------------------------------------------------------------------
         public TMonoEntity Spawn(TEntity entity)
         {
+            var monoEntity = Acquire();
+
+            SpawnUsingAquired(monoEntity, entity);
+
+            return monoEntity;
+        }
+
+        // --------------------------------------------------------------------------------
+        /// <summary>
+        /// 만들어진 모노 엔티티를 이용하여 스폰합니다.
+        /// </summary>
+        // --------------------------------------------------------------------------------
+        public void SpawnUsingAquired(TMonoEntity monoEntity, TEntity entity)
+        {
             void InitAction(TMonoEntity spawnable)
             {
                 OnInit(spawnable, entity);
                 spawnable.Init(entity);
             }
 
-            return SpawnInternal(InitAction);
+            SpawnInternal(monoEntity, InitAction);
         }
 
     #endregion
 
     #region 스폰 레지스트리 연결 메서드
 
-        [SerializeReference]
-        private EntitySpawnRegistry<TEntity> linkedRegistry = null;
-        public EntitySpawnRegistry<TEntity> LinkedRegistry => linkedRegistry;
+        [SerializeReference, HideInInspector]
+        private EntitySpawnRegistryBase<TEntity> connectedRegistry = null;
+        public EntitySpawnRegistryBase<TEntity> ConnectedRegistry => connectedRegistry;
 
         // --------------------------------------------------------------------------------
         /// <summary>
         /// 엔티티 스폰 레지스트리와 연동하여 엔티티의 상태를 동기화합니다.
         /// </summary>
         // --------------------------------------------------------------------------------
-        public void LinkTo(EntitySpawnRegistry<TEntity> registry, bool reSpawnAll = false)
+        public void Connect(EntitySpawnRegistryBase<TEntity> registry, bool spawnAll = true)
         {
-            RemoveLink();
+            Disconnect();
             
             if (registry == null)
             {
@@ -98,11 +124,11 @@ namespace inonego
             registry.OnSpawn += OnEntitySpawn;
             registry.OnDespawn += OnEntityDespawn;
 
-            linkedRegistry = registry;
+            connectedRegistry = registry;
 
-            if (reSpawnAll)
+            if (spawnAll)
             {
-                ReSpawnAll();
+                SpawnAll();
             }
         }
 
@@ -111,15 +137,17 @@ namespace inonego
         /// 엔티티 스폰 레지스트리와의 연동을 해제합니다.
         /// </summary>
         // --------------------------------------------------------------------------------
-        public void RemoveLink()
+        public void Disconnect()
         {
-            if (linkedRegistry != null)
+            if (connectedRegistry != null)
             {
-                linkedRegistry.OnSpawn -= OnEntitySpawn;
-                linkedRegistry.OnDespawn -= OnEntityDespawn;
+                connectedRegistry.OnSpawn -= OnEntitySpawn;
+                connectedRegistry.OnDespawn -= OnEntityDespawn;
 
-                linkedRegistry = null;
+                connectedRegistry = null;
             }
+            
+            DespawnAll();
         }
 
         // --------------------------------------------------------------------------------
@@ -129,14 +157,19 @@ namespace inonego
         // --------------------------------------------------------------------------------
         public void ReSpawnAll()
         {
-            if (linkedRegistry == null)
+            if (connectedRegistry == null)
             {
                 throw new InvalidOperationException("엔티티 스폰 레지스트리와 연결되어 있지 않습니다.");
             }
 
             DespawnAll();
             
-            foreach (var (key, entity) in linkedRegistry.Spawned)
+            SpawnAll();
+        }
+
+        private void SpawnAll()
+        {
+            foreach (var (key, entity) in connectedRegistry.Spawned)
             {
                 Spawn(entity);
             }

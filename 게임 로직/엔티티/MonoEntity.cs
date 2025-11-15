@@ -45,7 +45,7 @@ namespace inonego
             protected bool isSpawned = false;
             public bool IsSpawned => isSpawned;
 
-            [SerializeReference]
+            [SerializeReference, HideInInspector]
             protected TEntity entity = null;
             public TEntity Entity => entity;
 

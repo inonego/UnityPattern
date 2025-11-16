@@ -42,7 +42,6 @@ namespace inonego
 
         #region 필드
 
-            [Header("상태")]
             [SerializeField, ReadOnly]
             protected bool isSpawned = false;
             public bool IsSpawned => isSpawned;

@@ -7,6 +7,34 @@ using UnityEngine;
 namespace inonego.Serializable
 {
     [Serializable]
+    public struct XVec2B
+    {
+        [SerializeField, XmlAttribute("X")] public bool X;
+        [SerializeField, XmlAttribute("Y")] public bool Y;
+
+        public XVec2B(bool x, bool y)
+        {
+            this.X = x;
+            this.Y = y;
+        }
+    }
+
+    [Serializable]
+    public struct XVec3B
+    {
+        [SerializeField, XmlAttribute("X")] public bool X;
+        [SerializeField, XmlAttribute("Y")] public bool Y;
+        [SerializeField, XmlAttribute("Z")] public bool Z;
+
+        public XVec3B(bool x, bool y, bool z)
+        {
+            this.X = x;
+            this.Y = y;
+            this.Z = z;
+        }
+    }
+
+    [Serializable]
     public struct XVec2I
     {
         [SerializeField, XmlAttribute("X")] public int X;

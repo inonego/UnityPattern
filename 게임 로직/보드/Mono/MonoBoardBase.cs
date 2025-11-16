@@ -12,7 +12,7 @@ namespace inonego
     /// </summary>
     // --------------------------------------------------------------------------------
     [Serializable]
-    public abstract class MonoBoardBase<TBoard, TVector, TIndex, TSpace, TPlaceable> : MonoBehaviour, IMonoBoard<TBoard, TVector, TIndex, TSpace, TPlaceable>, IInitNeeded<TBoard>
+    public abstract class MonoBoardBase<TBoard, TVector, TIndex, TSpace, TPlaceable> : MonoBehaviour, IMonoBoard<TBoard, TVector, TIndex, TSpace, TPlaceable>
     where TBoard : BoardBase<TVector, TIndex, TSpace, TPlaceable>
     where TVector : struct where TIndex : struct
     where TSpace : BoardSpaceBase<TIndex, TPlaceable>, new()
@@ -41,7 +41,7 @@ namespace inonego
 
     #region 초기 설정 및 초기화
 
-        public virtual void Init(TBoard board)
+        public virtual void Connect(TBoard board)
         {
             if (board == null)
             {
@@ -50,7 +50,7 @@ namespace inonego
             
             if (this.board != null)
             {
-                Release();
+                Disconnect();
             }
 
             this.board = board;
@@ -61,7 +61,7 @@ namespace inonego
             board.OnRemoveSpace += OnRemoveSpace;
         }
 
-        public virtual void Release()
+        public virtual void Disconnect()
         {
             ReleaseTileMap();
 

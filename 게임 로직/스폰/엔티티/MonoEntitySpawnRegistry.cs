@@ -41,6 +41,13 @@ namespace inonego
 
     #region 메서드
 
+        private void ReleaseGO(GameObject go)
+        {
+            go.SetActive(false);
+
+            gameObjectProvider.Release(go);
+        }
+
         protected override TMonoEntity Acquire()
         {
             var go = GameObjectProvider.Acquire();
@@ -51,6 +58,8 @@ namespace inonego
 
             if (monoEntity == null)
             {
+                ReleaseGO(go);
+
                 throw new InvalidOperationException($"모노 엔티티 컴포넌트가 {go.name}에 없습니다.");
             }
 
@@ -70,9 +79,7 @@ namespace inonego
 
             var go = despawnable.gameObject;
 
-            go.SetActive(false);
-
-            gameObjectProvider.Release(go);
+            ReleaseGO(go);
         }
 
         // --------------------------------------------------------------------------------

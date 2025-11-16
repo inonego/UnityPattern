@@ -11,7 +11,7 @@ namespace inonego
     /// 월드상에 게임 오브젝트로 존재할 수 있는 보드를 표현하기 위한 인터페이스입니다.
     /// </summary>
     // --------------------------------------------------------------------------------
-    public interface IMonoBoard<TBoard, TVector, TIndex, TBoardSpace, TPlaceable>
+    public interface IMonoBoard<TBoard, TVector, TIndex, TBoardSpace, TPlaceable> : IConnectable<TBoard>
     where TBoard : class, IBoard<TVector, TIndex, TPlaceable>
     where TVector : struct where TIndex : struct
     where TBoardSpace : class, IBoardSpace<TIndex, TPlaceable>, new()

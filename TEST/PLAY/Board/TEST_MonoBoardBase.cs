@@ -240,7 +240,7 @@ public class TEST_MonoBoardBase
         Assert.That(monoBoard.Board, Is.Null);
         Assert.That(monoBoard.TileMap.Count, Is.EqualTo(0));
 
-        monoBoard.Init(board);
+        monoBoard.Connect(board);
 
         yield return new WaitForSeconds(0.5f);
 
@@ -309,9 +309,9 @@ public class TEST_MonoBoardBase
         Assert.That(monoBoard.TileMap.Count, Is.EqualTo(spaceCount));
 
         // ------------------------------------------------------------
-        // Release 검증
+        // Disconnect 검증
         // ------------------------------------------------------------
-        monoBoard.Release();
+        monoBoard.Disconnect();
 
         yield return null;
 

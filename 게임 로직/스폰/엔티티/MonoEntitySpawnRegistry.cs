@@ -10,7 +10,7 @@ namespace inonego
     /// </summary>
     // ========================================================================
     [Serializable]
-    public abstract class MonoEntitySpawnRegistry<TMonoEntity, TEntity> : SpawnRegistryBase<ulong, TMonoEntity>
+    public abstract class MonoEntitySpawnRegistry<TMonoEntity, TEntity> : SpawnRegistryBase<ulong, TMonoEntity>, IConnectable<EntitySpawnRegistryBase<TEntity>>
     where TMonoEntity : MonoEntity<TEntity>
     where TEntity : Entity
     {
@@ -43,13 +43,15 @@ namespace inonego
 
         protected override TMonoEntity Acquire()
         {
-            var gameObject = GameObjectProvider.Acquire();
+            var go = GameObjectProvider.Acquire();
 
-            var monoEntity = gameObject.GetComponent<TMonoEntity>();
+            go.SetActive(true);
+
+            var monoEntity = go.GetComponent<TMonoEntity>();
 
             if (monoEntity == null)
             {
-                throw new InvalidOperationException($"모노 엔티티 컴포넌트가 {gameObject.name}에 없습니다.");
+                throw new InvalidOperationException($"모노 엔티티 컴포넌트가 {go.name}에 없습니다.");
             }
 
             return monoEntity;
@@ -66,7 +68,11 @@ namespace inonego
         {
             base.OnAfterDespawn(despawnable);
 
-            gameObjectProvider.Release(despawnable.gameObject);
+            var go = despawnable.gameObject;
+
+            go.SetActive(false);
+
+            gameObjectProvider.Release(go);
         }
 
         // --------------------------------------------------------------------------------
@@ -112,7 +118,7 @@ namespace inonego
         /// 엔티티 스폰 레지스트리와 연동하여 엔티티의 상태를 동기화합니다.
         /// </summary>
         // --------------------------------------------------------------------------------
-        public void Connect(EntitySpawnRegistryBase<TEntity> registry, bool spawnAll = true)
+        public virtual void Connect(EntitySpawnRegistryBase<TEntity> registry)
         {
             Disconnect();
             
@@ -126,10 +132,7 @@ namespace inonego
 
             connectedRegistry = registry;
 
-            if (spawnAll)
-            {
-                SpawnAll();
-            }
+            SpawnAll();
         }
 
         // --------------------------------------------------------------------------------
@@ -137,7 +140,7 @@ namespace inonego
         /// 엔티티 스폰 레지스트리와의 연동을 해제합니다.
         /// </summary>
         // --------------------------------------------------------------------------------
-        public void Disconnect()
+        public virtual void Disconnect()
         {
             if (connectedRegistry != null)
             {
@@ -148,6 +151,14 @@ namespace inonego
             }
             
             DespawnAll();
+        }
+
+        private void SpawnAll()
+        {
+            foreach (var (key, entity) in connectedRegistry.Spawned)
+            {
+                Spawn(entity);
+            }
         }
 
         // --------------------------------------------------------------------------------
@@ -165,14 +176,6 @@ namespace inonego
             DespawnAll();
             
             SpawnAll();
-        }
-
-        private void SpawnAll()
-        {
-            foreach (var (key, entity) in connectedRegistry.Spawned)
-            {
-                Spawn(entity);
-            }
         }
     
     #endregion

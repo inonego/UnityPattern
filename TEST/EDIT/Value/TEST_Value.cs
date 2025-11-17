@@ -28,7 +28,7 @@ public class TEST_Value
         var value = new Value<int>();
 
         // Assert
-        Assert.AreEqual(0, value.Current);
+        Assert.AreEqual(0, value.Base);
     }
 
     // ------------------------------------------------------------
@@ -54,7 +54,7 @@ public class TEST_Value
             valueChangeEventArgs = default;
         }
 
-        value.OnCurrentChange += (sender, e) => 
+        value.OnBaseChange += (sender, e) => 
         {
             valueChangeEventFired = true;
             valueChangeSender = sender as Value<int>;
@@ -64,8 +64,8 @@ public class TEST_Value
         // ------------------------------------------------------------
         // 일반 값 변경 - 이벤트 발생 확인
         // ------------------------------------------------------------
-        value.Current = 10;
-        Assert.AreEqual(10, value.Current);
+        value.Base = 10;
+        Assert.AreEqual(10, value.Base);
         Assert.IsTrue(valueChangeEventFired, "일반 값 변경 시 이벤트가 발생해야 합니다");
 
         Assert.AreEqual(value, valueChangeSender);
@@ -77,8 +77,8 @@ public class TEST_Value
         // ------------------------------------------------------------
         // 동일한 값 설정 - 이벤트 미발생 확인
         // ------------------------------------------------------------
-        value.Current = 10;
-        Assert.AreEqual(10, value.Current);
+        value.Base = 10;
+        Assert.AreEqual(10, value.Base);
         Assert.IsFalse(valueChangeEventFired, "동일한 값 설정 시 이벤트가 발생하지 않아야 합니다");
         
         Reset();
@@ -86,8 +86,8 @@ public class TEST_Value
         // ------------------------------------------------------------
         // 다른 값 설정 - 이벤트 발생 확인
         // ------------------------------------------------------------
-        value.Current = 20;
-        Assert.AreEqual(20, value.Current);
+        value.Base = 20;
+        Assert.AreEqual(20, value.Base);
         Assert.IsTrue(valueChangeEventFired);
 
         Assert.AreEqual(10, valueChangeEventArgs.Previous);
@@ -99,7 +99,7 @@ public class TEST_Value
         // Set 메서드 invokeEvent: false - 이벤트 미발생 확인
         // ------------------------------------------------------------
         value.Set(30, invokeEvent: false);
-        Assert.AreEqual(30, value.Current);
+        Assert.AreEqual(30, value.Base);
         Assert.IsFalse(valueChangeEventFired, "Set에서 invokeEvent가 False일 때 이벤트가 발생하지 않아야 합니다");
         
         Reset();
@@ -108,7 +108,7 @@ public class TEST_Value
         // Set 메서드 invokeEvent: true - 이벤트 발생 확인
         // ------------------------------------------------------------
         value.Set(40, invokeEvent: true);
-        Assert.AreEqual(40, value.Current);
+        Assert.AreEqual(40, value.Base);
         Assert.IsTrue(valueChangeEventFired, "Set에서 invokeEvent가 True일 때 이벤트가 발생해야 합니다");
         
         Reset();
@@ -150,11 +150,11 @@ public class TEST_Value
 
     // ------------------------------------------------------------
     /// <summary>
-    /// Value 상속 클래스의 ProcessValue 오버라이드를 테스트합니다.
+    /// Value 상속 클래스의 ProcessBase 오버라이드를 테스트합니다.
     /// </summary>
     // ------------------------------------------------------------
     [Test]
-    public void Value_04_상속_ProcessValue_테스트()
+    public void Value_04_상속_ProcessBase_테스트()
     {
         // ------------------------------------------------------------
         // 테스트 준비
@@ -162,18 +162,18 @@ public class TEST_Value
         var customValue = new CustomValue();
 
         // ------------------------------------------------------------
-        // ProcessValue 오버라이드 - 값 변환 처리
+        // ProcessBase 오버라이드 - 값 변환 처리
         // ------------------------------------------------------------
-        customValue.Current = 5;
+        customValue.Base = 5;
         
-        Assert.AreEqual(10, customValue.Current, "ProcessValue에서 값이 2배로 처리되어야 합니다");
+        Assert.AreEqual(10, customValue.Base, "ProcessBase에서 값이 2배로 처리되어야 합니다");
 
         // ------------------------------------------------------------
-        // ProcessValue 오버라이드 - 음수 처리
+        // ProcessBase 오버라이드 - 음수 처리
         // ------------------------------------------------------------
-        customValue.Current = -3;
+        customValue.Base = -3;
         
-        Assert.AreEqual(0, customValue.Current, "ProcessValue에서 음수는 0으로 처리되어야 합니다");
+        Assert.AreEqual(0, customValue.Base, "ProcessBase에서 음수는 0으로 처리되어야 합니다");
     }
 
 #endregion
@@ -182,12 +182,12 @@ public class TEST_Value
 
     // ------------------------------------------------------------
     /// <summary>
-    /// ProcessValue를 오버라이드하는 커스텀 Value 클래스
+    /// ProcessBase를 오버라이드하는 커스텀 Value 클래스
     /// </summary>
     // ------------------------------------------------------------
     private class CustomValue : Value<int>
     {
-        protected override void ProcessValue(in int prev, ref int next)
+        protected override void ProcessBase(in int prev, ref int next)
         {
             // 값에 2를 곱하고, 음수는 0으로 처리
             next = Math.Max(0, next * 2);
@@ -210,7 +210,7 @@ public class TEST_Value
         // 테스트 준비
         // ------------------------------------------------------------
         var originalValue = new CustomValue();
-        originalValue.Current = 5; // ProcessValue에서 2배로 처리되어 10이 됨
+        originalValue.Base = 5; // ProcessBase에서 2배로 처리되어 10이 됨
 
         // ------------------------------------------------------------
         // JSON 직렬화/역직렬화 - 상태 복원 확인
@@ -218,14 +218,14 @@ public class TEST_Value
         string json = JsonUtility.ToJson(originalValue);
         var deserializedValue = JsonUtility.FromJson<CustomValue>(json);
         
-        Assert.AreEqual(originalValue.Current, deserializedValue.Current, "현재 값이 올바르게 복원되어야 합니다");
+        Assert.AreEqual(originalValue.Base, deserializedValue.Base, "현재 값이 올바르게 복원되어야 합니다");
         
         // ------------------------------------------------------------
-        // 역직렬화 후 ProcessValue 동작 확인
+        // 역직렬화 후 ProcessBase 동작 확인
         // ------------------------------------------------------------
-        deserializedValue.Current = 3; // 3 * 2 = 6
+        deserializedValue.Base = 3; // 3 * 2 = 6
         
-        Assert.AreEqual(6, deserializedValue.Current, "ProcessValue 오버라이드가 올바르게 동작해야 합니다");
+        Assert.AreEqual(6, deserializedValue.Base, "ProcessBase 오버라이드가 올바르게 동작해야 합니다");
     }
 
 #endregion

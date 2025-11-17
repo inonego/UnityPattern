@@ -33,14 +33,14 @@ namespace inonego
         /// 최소값입니다.
         /// </summary>
         // ------------------------------------------------------------
-        public T Min => range.Current.Min;
+        public T Min => range.Base.Min;
 
         // ------------------------------------------------------------
         /// <summary>
         /// 최대값입니다.
         /// </summary>
         // ------------------------------------------------------------
-        public T Max => range.Current.Max;
+        public T Max => range.Base.Max;
 
     #endregion
 
@@ -48,14 +48,14 @@ namespace inonego
 
         public RangeValue() : this(default, (default, default)) {}
 
-        public RangeValue(T current, MinMax<T> range)
+        public RangeValue(T @base, MinMax<T> range)
         {  
-            this.range.Current = range;
+            this.range.Base = range;
             
-            this.current = current;
-            ProcessValue(default, ref base.current);
+            this.@base = @base;
+            ProcessBase(default, ref base.@base);
             
-            this.range.OnCurrentChange += OnRangeChange;
+            this.range.OnBaseChange += OnRangeChange;
         }
 
     #endregion
@@ -65,7 +65,7 @@ namespace inonego
         private void OnRangeChange(object sender, ValueChangeEventArgs<MinMax<T>> e)
         {
             // 값을 다시 적용합니다.
-            Current = Current;
+            Base = Base;
         }
 
     #endregion
@@ -77,9 +77,9 @@ namespace inonego
         /// 값을 설정하기 전에 처리하는 메서드입니다.
         /// </summary>
         // ------------------------------------------------------------
-        protected override void ProcessValue(in T prev, ref T next)
+        protected override void ProcessBase(in T prev, ref T next)
         {
-            next = range.Current.Clamp(next);
+            next = range.Base.Clamp(next);
         }
 
     #endregion
@@ -111,7 +111,7 @@ namespace inonego
 
     #region 암시적 변환
 
-        public int CompareTo(T other) => current.CompareTo(other);
+        public int CompareTo(T other) => @base.CompareTo(other);
 
         // ------------------------------------------------------------
         /// <summary>
@@ -120,7 +120,7 @@ namespace inonego
         // ------------------------------------------------------------
         public static implicit operator T(RangeValue<T> wrapper)
         {
-            return wrapper != null ? wrapper.current : default;
+            return wrapper != null ? wrapper.@base : default;
         }
 
     #endregion
@@ -130,15 +130,15 @@ namespace inonego
         public override bool Equals(object obj)
         {
             if (obj is RangeValue<T> other)
-                return Equals(current, other.current);
+                return Equals(@base, other.@base);
             if (obj is T directValue)
-                return Equals(current, directValue);
+                return Equals(@base, directValue);
             return false;
         }
 
-        public override int GetHashCode() => current.GetHashCode();
+        public override int GetHashCode() => @base.GetHashCode();
 
-        public override string ToString() => $"{current} {range.Current}";
+        public override string ToString() => $"{@base} {range.Base}";
 
     #endregion
 

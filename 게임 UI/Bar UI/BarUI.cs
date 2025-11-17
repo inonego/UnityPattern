@@ -31,7 +31,7 @@ namespace inonego
         /// 현재 값이 범위 내에서 차지하는 비율입니다. (0.0 - 1.0)
         /// </summary>
         // ------------------------------------------------------------
-        public float Ratio => (Value.Current - Value.Min) / (Value.Max - Value.Min);
+        public float Ratio => (Value.Base - Value.Min) / (Value.Max - Value.Min);
 
         [Header("Animation")]
         [SerializeField] private TweenCurve changeCurve;
@@ -62,8 +62,8 @@ namespace inonego
 
         private void OnEnable()
         {
-            value.OnCurrentChange += OnValueChange;
-            value.Range.OnCurrentChange += OnRangeChange;
+            value.OnBaseChange += OnBaseChange;
+            value.Range.OnBaseChange += OnRangeChange;
 
             // 초기화
             UpdateBarInstantly();
@@ -71,8 +71,8 @@ namespace inonego
 
         private void OnDisable()
         {
-            value.OnCurrentChange -= OnValueChange;
-            value.Range.OnCurrentChange -= OnRangeChange;
+            value.OnBaseChange -= OnBaseChange;
+            value.Range.OnBaseChange -= OnRangeChange;
         }
 
     #endregion
@@ -117,7 +117,7 @@ namespace inonego
         
         }
 
-        private void OnValueChange(object sender, ValueChangeEventArgs<float> args)
+        private void OnBaseChange(object sender, ValueChangeEventArgs<float> args)
         {
             Refresh();
         }

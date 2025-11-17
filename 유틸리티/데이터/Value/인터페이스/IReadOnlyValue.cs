@@ -9,16 +9,16 @@ namespace inonego
     {
         // ------------------------------------------------------------
         /// <summary>
-        /// 현재 값입니다.
+        /// 기본 값입니다.
         /// </summary>
         // ------------------------------------------------------------
-        public T Current { get; }
+        public T Base { get; }
 
         // ------------------------------------------------------------
         /// <summary>
-        /// 현재 값이 변경될 때 발생하는 이벤트입니다.
+        /// 기본 값이 변경될 때 발생하는 이벤트입니다.
         /// </summary>
         // ------------------------------------------------------------
-        public event ValueChangeEventHandler<T> OnCurrentChange;
+        public event ValueChangeEventHandler<T> OnBaseChange;
     }
 }

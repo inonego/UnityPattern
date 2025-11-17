@@ -14,14 +14,14 @@ namespace inonego
     {
         // ------------------------------------------------------------
         /// <summary>
-        /// 현재 값입니다.
+        /// 기본 값입니다.
         /// </summary>
         // ------------------------------------------------------------
         [SerializeField]
-        protected T current;
-        public T Current
+        protected T @base;
+        public T Base
         {
-            get => current;
+            get => @base;
             set => Set(value);
         }
 
@@ -32,18 +32,18 @@ namespace inonego
         // ------------------------------------------------------------
         public virtual void Set(T value, bool invokeEvent = true)
         {
-            var (prev, next) = (this.current, value);
+            var (prev, next) = (this.@base, value);
 
-            ProcessValue(prev, ref next);
+            ProcessBase(prev, ref next);
 
             // 값 변화가 없으면 종료합니다.
             if (Equals(prev, next)) return;
 
-            this.current = next;
+            this.@base = next;
 
             if (invokeEvent)
             {
-                OnCurrentChange?.Invoke(this, new() { Previous = prev, Current = this.current } );
+                OnBaseChange?.Invoke(this, new() { Previous = prev, Current = this.@base } );
             }
         }
 
@@ -54,7 +54,7 @@ namespace inonego
         /// 값이 변경될 때 발생하는 이벤트입니다.
         /// </summary>
         // ------------------------------------------------------------
-        public event ValueChangeEventHandler<T> OnCurrentChange = null;
+        public event ValueChangeEventHandler<T> OnBaseChange = null;
 
     #endregion
 
@@ -64,8 +64,8 @@ namespace inonego
 
         public Value(T value)
         {
-            current = value;
-            ProcessValue(default, ref current);
+            @base = value;
+            ProcessBase(default, ref @base);
         }
 
     #endregion
@@ -77,7 +77,7 @@ namespace inonego
         /// 값을 설정하기 전에 처리하는 메서드입니다.
         /// </summary>
         // ------------------------------------------------------------
-        protected virtual void ProcessValue(in T prev, ref T next) { }
+        protected virtual void ProcessBase(in T prev, ref T next) { }
 
     #endregion
 
@@ -100,7 +100,7 @@ namespace inonego
             }
 
             // 값 복사
-            current = source.current;
+            @base = source.@base;
         }
 
     #endregion
@@ -114,7 +114,7 @@ namespace inonego
         // ------------------------------------------------------------
         public static implicit operator T(Value<T> wrapper)
         {
-            return wrapper != null ? wrapper.current : default;
+            return wrapper != null ? wrapper.@base : default;
         }
 
     #endregion
@@ -124,15 +124,15 @@ namespace inonego
         public override bool Equals(object obj)
         {
             if (obj is Value<T> other)
-                return Equals(current, other.current);
+                return Equals(@base, other.@base);
             if (obj is T directValue)
-                return Equals(current, directValue);
+                return Equals(@base, directValue);
             return false;
         }
 
-        public override int GetHashCode() => current.GetHashCode();
+        public override int GetHashCode() => @base.GetHashCode();
 
-        public override string ToString() => current.ToString();
+        public override string ToString() => @base.ToString();
 
     #endregion
 

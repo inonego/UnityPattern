@@ -44,16 +44,16 @@ namespace inonego.Editor
             float yOffset = lineHeight + spacing;
             float indent = 15f; // 들여쓰기
 
-            // Current 값 (슬라이더로 표시)
+            // Base 값 (슬라이더로 표시)
             Rect currentLabelRect = new Rect(position.x + indent, position.y + yOffset, 60, lineHeight);
             Rect currentSliderRect = new Rect(position.x + indent + 65, position.y + yOffset, position.width - indent - 65, lineHeight);
             
-            EditorGUI.LabelField(currentLabelRect, "Current");
-            T newCurrent = DrawSlider(currentSliderRect, value.Current, value.Min, value.Max);
+            EditorGUI.LabelField(currentLabelRect, "Base");
+            T newBase = DrawSlider(currentSliderRect, value.Base, value.Min, value.Max);
             
-            if (!newCurrent.Equals(value.Current))
+            if (!newBase.Equals(value.Base))
             {
-                value.Current = newCurrent;
+                value.Base = newBase;
                 EditorUtility.SetDirty(property.serializedObject.targetObject);
                 property.serializedObject.ApplyModifiedProperties();
             }
@@ -82,7 +82,7 @@ namespace inonego.Editor
             {
                 try
                 {
-                    value.Range.Current = (newMin, newMax);
+                    value.Range.Base = (newMin, newMax);
                     EditorUtility.SetDirty(property.serializedObject.targetObject);
                     property.serializedObject.ApplyModifiedProperties();
                 }
@@ -97,7 +97,7 @@ namespace inonego.Editor
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            return EditorGUIUtility.singleLineHeight * 3 + 4; // 라벨 + Current + Min/Max + 여백
+            return EditorGUIUtility.singleLineHeight * 3 + 4; // 라벨 + Base + Min/Max + 여백
         }
 
         // ------------------------------------------------------------

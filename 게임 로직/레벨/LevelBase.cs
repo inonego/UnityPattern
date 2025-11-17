@@ -30,8 +30,8 @@ namespace inonego
 
         public virtual int Value
         {
-            get => this.value.Current;
-            set => this.value.Current = value;
+            get => this.value.Base;
+            set => this.value.Base = value;
         }
 
         public int Min => 0;
@@ -51,7 +51,7 @@ namespace inonego
                 // ------------------------------------------------------------
                 // 최대 레벨을 업데이트합니다.
                 // ------------------------------------------------------------
-                this.value.Range.Current = (Min, Max);
+                this.value.Range.Base = (Min, Max);
             }
         }
         
@@ -86,7 +86,7 @@ namespace inonego
             // Reset()은 파생 클래스에서 FullMax 설정 후 호출해야 함
         }
 
-        private void OnValueChangeHandler(object sender, ValueChangeEventArgs<int> e)
+        private void OnBaseChangeHandler(object sender, ValueChangeEventArgs<int> e)
         {
             OnValueChange?.Invoke(this, e);
         }
@@ -96,8 +96,8 @@ namespace inonego
             LimitMax = FullMax;
 
             // 이벤트 핸들러 중복 등록 방지
-            value.OnCurrentChange -= OnValueChangeHandler;
-            value.OnCurrentChange += OnValueChangeHandler;
+            value.OnBaseChange -= OnBaseChangeHandler;
+            value.OnBaseChange += OnBaseChangeHandler;
         }
 
     #endregion

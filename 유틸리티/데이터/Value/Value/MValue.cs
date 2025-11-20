@@ -1,11 +1,12 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 using UnityEngine;
 
 namespace inonego
 {
     using Modifier;
-    using Serializable;
 
     // ============================================================
     /// <summary>
@@ -17,39 +18,6 @@ namespace inonego
     where T : struct
     {
 
-    #region 내부 구조체
-    
-        // ============================================================
-        /// <summary>
-        /// Key와 Modifier를 함께 저장하는 엔트리입니다.
-        /// </summary>
-        // ============================================================
-        [Serializable]
-        protected class ModifierEntry : IEquatable<ModifierEntry>
-        {
-            [SerializeField]
-            private string key;
-            public string Key => key;
-            
-            [SerializeReference]
-            private IModifier<T> modifier;
-            public IModifier<T> Modifier => modifier;
-            
-            private ModifierEntry() {}
-            
-            public ModifierEntry(string key, IModifier<T> modifier)
-            {
-                this.key = key;
-                this.modifier = modifier;
-            }
-            
-            public bool Equals(ModifierEntry other) => key == other.key;
-            public override bool Equals(object obj) => obj is ModifierEntry other && Equals(other);
-            public override int GetHashCode() => key?.GetHashCode() ?? 0;
-        }
-
-    #endregion
-
     #region 필드
 
         // ------------------------------------------------------------
@@ -58,7 +26,8 @@ namespace inonego
         /// </summary>
         // ------------------------------------------------------------
         [SerializeField, HideInInspector]
-        private XOrdered<ModifierEntry, int> modifiers = new();
+        private ModifierCollection<T> modifiers = new();
+        public IReadOnlyList<IModifier<T>> Modifiers => modifiers;
         
         // ------------------------------------------------------------
         /// <summary>
@@ -123,9 +92,9 @@ namespace inonego
         // ------------------------------------------------------------
         private T Modify(T value)
         {
-            foreach (var (entry, order) in modifiers)
+            foreach (var modifier in modifiers)
             {
-                value = entry.Modifier.Modify(value);
+                value = modifier.Modify(value);
             }
             
             return value;
@@ -154,19 +123,7 @@ namespace inonego
         // ------------------------------------------------------------
         public void AddModifier(string key, IModifier<T> modifier, int order = 0, bool invokeEvent = true)
         {
-            if (modifier == null)
-            {
-                throw new ArgumentNullException(nameof(modifier), "추가하려는 수정자가 null입니다.");
-            }
-
-            var entry = new ModifierEntry(key, null);
-
-            if (modifiers.Contains(entry))
-            {
-                throw new ArgumentException($"이미 존재하는 키({key})입니다.");
-            }
-
-            modifiers.Add(new ModifierEntry(key, modifier), order);
+            modifiers.Add(key, modifier, order);
 
             Refresh(invokeEvent);
         }
@@ -178,18 +135,14 @@ namespace inonego
         // ------------------------------------------------------------
         public bool RemoveModifier(string key, bool invokeEvent = true)
         {
-            var entry = new ModifierEntry(key, null);
-
-            bool removed = modifiers.Remove(entry);
+            bool removed = modifiers.Remove(key);
             
             if (removed)
             {
                 Refresh(invokeEvent);
-
-                return true;
             }
             
-            return false;
+            return removed;
         }
 
         // ------------------------------------------------------------
@@ -232,14 +185,7 @@ namespace inonego
             cached = source.cached;
 
             // 수정자 목록 복사
-            modifiers.Clear();
-
-            foreach (var (entry, order) in source.modifiers)
-            {
-                var clonedModifier = entry.Modifier.Clone();
-
-                modifiers.Add(new ModifierEntry(entry.Key, clonedModifier), order);
-            }
+            modifiers.CloneFrom(source.modifiers);
         }
 
     #endregion

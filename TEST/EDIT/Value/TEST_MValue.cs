@@ -45,7 +45,7 @@ public class TEST_MValue
         // 테스트 준비
         // ------------------------------------------------------------
         var mValue = new MValue<int>(100);
-        var addModifier = new AddIModifier(10); // +10
+        var addModifier = new NumericIModifier(NumericIOperation.ADD, 10); // +10
 
         // ------------------------------------------------------------
         // Modifier 추가 - Modified 값 변경 확인
@@ -70,8 +70,8 @@ public class TEST_MValue
         var mValue = new MValue<int>(100);
         
         // Order가 낮을수록 먼저 적용됨
-        var addModifier = new AddIModifier(50);   // +50
-        var multiModifier = new MulIModifier(2); // *2
+        var addModifier = new NumericIModifier(NumericIOperation.ADD, 50);   // +50
+        var multiModifier = new NumericIModifier(NumericIOperation.MUL, 2); // *2
 
         // ------------------------------------------------------------
         // Modifier 추가 - 역순으로 추가해도 Order에 따라 적용
@@ -95,8 +95,8 @@ public class TEST_MValue
         // 테스트 준비
         // ------------------------------------------------------------
         var mValue = new MValue<int>(100);
-        mValue.AddModifier("add", new AddIModifier(20), order: 1);
-        mValue.AddModifier("multi", new MulIModifier(2), order: 2);
+        mValue.AddModifier("add", new NumericIModifier(NumericIOperation.ADD, 20), order: 1);
+        mValue.AddModifier("multi", new NumericIModifier(NumericIOperation.MUL, 2), order: 2);
         
         Assert.AreEqual(240, mValue.Modified); // (100 + 20) * 2 = 240
 
@@ -128,9 +128,9 @@ public class TEST_MValue
         // 테스트 준비
         // ------------------------------------------------------------
         var mValue = new MValue<int>(100);
-        mValue.AddModifier("add1", new AddIModifier(10), order: 1);
-        mValue.AddModifier("add2", new AddIModifier(20), order: 2);
-        mValue.AddModifier("multi", new MulIModifier(2), order: 3);
+        mValue.AddModifier("add1", new NumericIModifier(NumericIOperation.ADD, 10), order: 1);
+        mValue.AddModifier("add2", new NumericIModifier(NumericIOperation.ADD, 20), order: 2);
+        mValue.AddModifier("multi", new NumericIModifier(NumericIOperation.MUL, 2), order: 3);
         
         Assert.AreEqual(260, mValue.Modified); // ((100 + 10) + 20) * 2 = 260
 
@@ -183,7 +183,7 @@ public class TEST_MValue
         // ------------------------------------------------------------
         // Modifier 추가 - Modified 이벤트 발생
         // ------------------------------------------------------------
-        mValue.AddModifier("add", new AddIModifier(50), order: 1);
+        mValue.AddModifier("add", new NumericIModifier(NumericIOperation.ADD, 50), order: 1);
         
         Assert.IsTrue(modifiedChangeFired, "Modifier 추가 시 Modified 이벤트가 발생해야 합니다");
         Assert.AreEqual(200, modifiedChangeArgs.Previous);
@@ -213,7 +213,7 @@ public class TEST_MValue
         // 테스트 준비
         // ------------------------------------------------------------
         var mValue = new MValue<int>(100);
-        mValue.AddModifier("add", new AddIModifier(50), order: 1);
+        mValue.AddModifier("add", new NumericIModifier(NumericIOperation.ADD, 50), order: 1);
 
         // ------------------------------------------------------------
         // 암시적 변환 - MValue<T>를 T로 변환 (Modified 값 반환)
@@ -239,8 +239,8 @@ public class TEST_MValue
         // 테스트 준비
         // ------------------------------------------------------------
         var original = new MValue<int>(100);
-        original.AddModifier("add", new AddIModifier(20), order: 1);
-        original.AddModifier("multi", new MulIModifier(2), order: 2);
+        original.AddModifier("add", new NumericIModifier(NumericIOperation.ADD, 20), order: 1);
+        original.AddModifier("multi", new NumericIModifier(NumericIOperation.MUL, 2), order: 2);
         
         Assert.AreEqual(240, original.Modified); // (100 + 20) * 2
 
@@ -280,8 +280,8 @@ public class TEST_MValue
         // 테스트 준비
         // ------------------------------------------------------------
         var original = new MValue<int>(100);
-        original.AddModifier("add", new AddIModifier(30), order: 1);
-        original.AddModifier("multi", new MulIModifier(2), order: 2);
+        original.AddModifier("add", new NumericIModifier(NumericIOperation.ADD, 30), order: 1);
+        original.AddModifier("multi", new NumericIModifier(NumericIOperation.MUL, 2), order: 2);
         
         Assert.AreEqual(260, original.Modified); // (100 + 30) * 2
 
@@ -297,7 +297,7 @@ public class TEST_MValue
         // ------------------------------------------------------------
         // 역직렬화 후 Modifier 동작 확인
         // ------------------------------------------------------------
-        deserialized.AddModifier("add2", new AddIModifier(10), order: 3);
+        deserialized.AddModifier("add2", new NumericIModifier(NumericIOperation.ADD, 10), order: 3);
         
         Assert.AreEqual(270, deserialized.Modified); // ((100 + 30) * 2) + 10
     }

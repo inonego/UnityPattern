@@ -55,9 +55,9 @@ namespace inonego.Serializable
 
         public int Count => list.Count;
 
-    #endregion
+        #endregion
 
-    #region 생성자
+        #region 생성자
 
         public XOrdered() {}
 
@@ -148,19 +148,9 @@ namespace inonego.Serializable
             return Find(element) != -1;
         }
 
-        public IEnumerator<(TElement Element, TOrder Order)> GetEnumerator()
-        {
-            foreach (var pair in list)
-            {
-                yield return (pair.Element, pair.Order);
-            }
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
     #endregion
 
-    #region IReadOnlyList 구현
+    #region IReadOnlyList<(TElement Element, TOrder Order)> 구현
 
         public (TElement Element, TOrder Order) this[int index]
         {
@@ -171,6 +161,18 @@ namespace inonego.Serializable
                 return (pair.Element, pair.Order);
             }
         }
+
+        public IEnumerator<(TElement Element, TOrder Order)> GetEnumerator()
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                var pair = list[i];
+
+                yield return (pair.Element, pair.Order);
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     #endregion
 

@@ -7,7 +7,7 @@ namespace inonego
     using Serializable;
 
     [Serializable]
-    public abstract partial class Entity : ISpawnRegistryObject<ulong>
+    public abstract partial class Entity : ISpawnRegistryObject<ulong>, IDeepCloneableFrom<Entity>
     {
 
     #region 키 설정
@@ -116,6 +116,21 @@ namespace inonego
             this.hp = hp;
         }
 
+    #endregion
+
+    #region 복제 관련
+
+        public virtual void CloneFrom(Entity source)
+        {
+            key = source.key;
+
+            isSpawned = false;
+
+            lTeam.CloneFrom(source.lTeam);
+
+            hp.CloneFrom(source.hp);
+        }
+        
     #endregion
 
     #region 이벤트 핸들러   

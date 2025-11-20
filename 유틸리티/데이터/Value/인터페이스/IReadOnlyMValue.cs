@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
 namespace inonego
 {
     // =================================================================
@@ -17,13 +13,6 @@ namespace inonego
         /// </summary>
         // ------------------------------------------------------------
         public T Modified { get; }
-
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 수정자 목록입니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        public IReadOnlyList<IModifier<T>> Modifiers { get; }
 
         // ------------------------------------------------------------
         /// <summary>

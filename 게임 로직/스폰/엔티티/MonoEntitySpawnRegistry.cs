@@ -162,8 +162,10 @@ namespace inonego
 
         private void SpawnAll()
         {
-            foreach (var (key, entity) in connectedRegistry.Spawned)
+            foreach (var (key, wrapper) in connectedRegistry.Spawned)
             {
+                TEntity entity = wrapper.Value;
+
                 Spawn(entity);
             }
         }

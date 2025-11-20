@@ -1,19 +1,12 @@
-namespace inonego
+namespace inonego.Modifier
 {
     // ============================================================
     /// <summary>
     /// 값을 수정하는 수정자의 인터페이스입니다.
     /// </summary>
     // ============================================================
-    public interface IModifier<T> : IKeyable<string>, IDeepCloneable<IModifier<T>> where T : struct
+    public interface IModifier<T> : IDeepCloneable<IModifier<T>> where T : struct
     {
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 수정자가 적용되는 순서입니다. 낮은 숫자일수록 먼저 적용됩니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        public int Order { get; }
-
         // ------------------------------------------------------------
         /// <summary>
         /// 수정자가 값을 수정하여 반환합니다.

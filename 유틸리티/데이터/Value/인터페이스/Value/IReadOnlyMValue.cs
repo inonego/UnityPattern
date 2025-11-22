@@ -18,7 +18,7 @@ namespace inonego
         /// 수정자 목록입니다.
         /// </summary>
         // ------------------------------------------------------------
-        public IReadOnlyList<IModifier<T>> Modifiers { get; }
+        public IReadOnlyList<(IModifier<T> Modifier, int Order)> Modifiers { get; }
 
         // ------------------------------------------------------------
         /// <summary>

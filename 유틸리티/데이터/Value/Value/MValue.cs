@@ -7,6 +7,7 @@ using UnityEngine;
 namespace inonego
 {
     using Modifier;
+    using Serializable;
 
     // ============================================================
     /// <summary>
@@ -26,8 +27,8 @@ namespace inonego
         /// </summary>
         // ------------------------------------------------------------
         [SerializeField, HideInInspector]
-        private ModifierCollection<T> modifiers = new();
-        public IReadOnlyList<IModifier<T>> Modifiers => modifiers;
+        private XOrdered<string, IModifier<T>, int> modifiers = new();
+        public IReadOnlyList<(IModifier<T> Modifier, int Order)> Modifiers => modifiers;
         
         // ------------------------------------------------------------
         /// <summary>
@@ -92,7 +93,7 @@ namespace inonego
         // ------------------------------------------------------------
         private T Modify(T value)
         {
-            foreach (var modifier in modifiers)
+            foreach (var (modifier, order) in modifiers)
             {
                 value = modifier.Modify(value);
             }
@@ -123,6 +124,11 @@ namespace inonego
         // ------------------------------------------------------------
         public void AddModifier(string key, IModifier<T> modifier, int order = 0, bool invokeEvent = true)
         {
+            if (modifier == null)
+            {
+                throw new ArgumentNullException(nameof(modifier), "추가하려는 수정자가 null입니다.");
+            }
+
             modifiers.Add(key, modifier, order);
 
             Refresh(invokeEvent);
@@ -184,7 +190,6 @@ namespace inonego
 
             cached = source.cached;
 
-            // 수정자 목록 복사
             modifiers.CloneFrom(source.modifiers);
         }
 

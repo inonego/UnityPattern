@@ -150,12 +150,12 @@ namespace inonego
 
     #region 메서드
 
-        public virtual void ApplyDamage(int damage)
+        public virtual void ApplyDamage(int damage, Entity source = null)
         {
             hp.ApplyDamage(damage);
         }
 
-        public virtual void ApplyHeal(int amount)
+        public virtual void ApplyHeal(int amount, Entity source = null)
         {
             hp.ApplyHeal(amount);
         }

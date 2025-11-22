@@ -15,7 +15,7 @@ namespace inonego.Serializable
     // ============================================================
     [Serializable]
     public class XPriorityQueue<TElement, TPriority> 
-    where TElement : class, IEquatable<TElement>
+    where TElement : class
     where TPriority : struct, IComparable<TPriority>
     {
         [Serializable]
@@ -87,7 +87,7 @@ namespace inonego.Serializable
                 throw new InvalidOperationException("우선순위 큐가 비어있습니다.");
             }
 
-            var result = heap[0];
+            var pair = heap[0];
 
             // 마지막 요소를 루트로 이동
             heap[0] = heap[heap.Count - 1];
@@ -99,7 +99,7 @@ namespace inonego.Serializable
                 HeapifyDown(0);
             }
 
-            return (result.Element, result.Priority);
+            return (pair.Element, pair.Priority);
         }
 
         // ------------------------------------------------------------
@@ -114,9 +114,9 @@ namespace inonego.Serializable
                 throw new InvalidOperationException("우선순위 큐가 비어있습니다.");
             }
 
-            var item = heap[0];
+            var pair = heap[0];
 
-            return (item.Element, item.Priority);
+            return (pair.Element, pair.Priority);
         }
 
         // ------------------------------------------------------------
@@ -138,7 +138,17 @@ namespace inonego.Serializable
         {
             for (int i = 0; i < heap.Count; i++)
             {
-                if (heap[i].Element.Equals(element))
+                var other = heap[i].Element;
+
+                if (element != null && other != null)
+                {
+                    if (element.Equals(other))
+                    {
+                        return true;
+                    }
+                }
+
+                if (element == null && other == null)
                 {
                     return true;
                 }

@@ -60,26 +60,29 @@ Addressables를 사용하여 게임 오브젝트를 생성하는 프로바이더
 
 ## 사용 예시
 
-```csharp
-// 프리팹 기반 프로바이더 사용
-var prefabProvider = new PrefabGameObjectProvider(prefab, parentTransform);
-var gameObject = prefabProvider.Acquire();
-// ... 사용 ...
-prefabProvider.Release(gameObject);
+> `MonoBehaviour`나 `ScriptableObject`의 **필드로 사용할 때는**
+> 반드시 `SerializeReference`가 붙은 `IGameObjectProvider` 타입으로 선언해야  
+> 커스텀 에디터를 통해 프리팹/Addressables 설정 UI가 제대로 표시됩니다.
 
-// Addressables 기반 프로바이더 사용
-var addressableProvider = new AddressableGameObjectProvider
+```csharp
+using UnityEngine;
+
+public class BulletSpawner : MonoBehaviour
 {
-    AssetReference = assetReference,
-    Parent = parentTransform,
-    WorldPositionStays = true
-};
-var gameObject = addressableProvider.Acquire();
-// ... 사용 ...
-addressableProvider.Release(gameObject);
+    // 전용 에디터를 사용하기 위해 SerializeReference + IGameObjectProvider 조합으로 선언
+    [SerializeReference]
+    private IGameObjectProvider provider = new PrefabGameObjectProvider();
+
+    public void Spawn()
+    {
+        var gameObject = provider.Acquire();
+        // ... 사용 ...
+        provider.Release(gameObject);
+    }
+}
 
 // 비동기 방식 사용
-var gameObject = await addressableProvider.AcquireAsync();
+var asyncGameObject = await provider.AcquireAsync();
 ```
 
 ## 주의사항

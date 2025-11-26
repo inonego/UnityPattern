@@ -30,7 +30,7 @@ namespace inonego
     #region 필드
 
         [SerializeField]
-        private XDictionary<string, TTableValue> dictionary = new();
+        private XDictionary_VV<string, TTableValue> dictionary = new();
 
         [XmlIgnore]
         public virtual Dictionary<string, TTableValue> Dictionary => dictionary;

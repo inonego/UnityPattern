@@ -17,9 +17,9 @@ namespace inonego
 
     #region 필드
 
-        [SerializeField] private XDictionary<string, int> valIs = new();
-        [SerializeField] private XDictionary<string, float> valFs = new();
-        [SerializeField] private XHashSet<string> valFlags = new();    
+        [SerializeField] private XDictionary_VV<string, int> valIs = new();
+        [SerializeField] private XDictionary_VV<string, float> valFs = new();
+        [SerializeField] private XHashSet_V<string> valFlags = new();    
 
     #endregion
 
@@ -30,7 +30,7 @@ namespace inonego
         /// 특정 키의 값이 존재하는지 확인합니다.
         /// </summary>
         // ------------------------------------------------------------
-        private bool Has<T>(XDictionary<string, T> dictionary, string key)
+        private bool Has<T>(XDictionary_VV<string, T> dictionary, string key)
         where T : struct
         {
             return dictionary.ContainsKey(key);
@@ -48,7 +48,7 @@ namespace inonego
         /// 특정 키에 값을 설정합니다.
         /// </summary>
         // ------------------------------------------------------------
-        private T Set<T>(XDictionary<string, T> dictionary, string key, T value)
+        private T Set<T>(XDictionary_VV<string, T> dictionary, string key, T value)
         where T : struct
         {
             if (Has(dictionary, key))

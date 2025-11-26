@@ -162,10 +162,8 @@ namespace inonego
 
         private void SpawnAll()
         {
-            foreach (var (key, wrapper) in connectedRegistry.Spawned)
+            foreach (var (key, entity) in connectedRegistry.Spawned)
             {
-                TEntity entity = wrapper.Value;
-
                 Spawn(entity);
             }
         }
@@ -198,10 +196,8 @@ namespace inonego
 
         protected virtual void OnEntityDespawn(ulong key, TEntity entity)
         {
-            if (Spawned.TryGetValue(key, out var spawned))
+            if (Spawned.TryGetValue(key, out TMonoEntity monoEntity))
             {
-                var monoEntity = spawned.Value;
-                
                 if (monoEntity != null)
                 {
                     monoEntity.Despawn();

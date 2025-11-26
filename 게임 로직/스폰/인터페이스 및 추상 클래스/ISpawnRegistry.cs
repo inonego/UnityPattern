@@ -6,7 +6,7 @@ namespace inonego
 {
     using Serializable;
 
-    public interface ISpawnedDictionary<TKey, T> : IReadOnlyDictionary<TKey, SerializeReferenceWrapper<T>>
+    public interface ISpawnedDictionary<TKey, T> : IReadOnlyDictionary<TKey, T>
     where TKey : IEquatable<TKey>
     where T : class, ISpawnRegistryObject<TKey> {}
 

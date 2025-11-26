@@ -28,7 +28,7 @@ namespace inonego
     }
     
     [Serializable]
-    public class SpawnedDictionary<TKey, T> : XDictionary<TKey, SerializeReferenceWrapper<T>>, ISpawnedDictionary<TKey, T>
+    public class SpawnedDictionary<TKey, T> : XDictionary_VR<TKey, T>, ISpawnedDictionary<TKey, T>
     where TKey : IEquatable<TKey>
     where T : class, ISpawnRegistryObject<TKey> {}
 

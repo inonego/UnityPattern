@@ -98,7 +98,7 @@ namespace inonego.Serializable
     #region 필드
 
         [SerializeField]
-        private XDictionary<TKey, SerializeReferenceWrapper<TElement>> dictionary = new();
+        private XDictionary_VR<TKey, TElement> dictionary = new();
 
     #endregion
 
@@ -110,18 +110,7 @@ namespace inonego.Serializable
 
     #region 메서드
         
-        public TElement this[TKey key]
-        {
-            get
-            {
-                if (dictionary.TryGetValue(key, out var wrapper))
-                {
-                    return wrapper.Value;
-                }
-                
-                return null;
-            }
-        }
+        public TElement this[TKey key] => dictionary.TryGetValue(key, out var value) ? value : null;
 
         // ------------------------------------------------------------
         /// <summary>
@@ -130,16 +119,7 @@ namespace inonego.Serializable
         // ------------------------------------------------------------
         public bool TryGetValue(TKey key, out TElement element)
         {
-            if (dictionary.TryGetValue(key, out var wrapper))
-            {
-                element = wrapper.Value;
-
-                return true;
-            }
-
-            element = null; 
-
-            return false;
+            return dictionary.TryGetValue(key, out element);
         }
 
         // ------------------------------------------------------------
@@ -202,22 +182,13 @@ namespace inonego.Serializable
 
         public IEnumerable<TKey> Keys => dictionary.Keys;
 
-        public IEnumerable<TElement> Values
-        {
-            get
-            {
-                foreach (var wrapper in dictionary.Values)
-                {
-                    yield return wrapper.Value;
-                }
-            }
-        }
+        public IEnumerable<TElement> Values => dictionary.Values;
 
         IEnumerator<KeyValuePair<TKey, TElement>> IEnumerable<KeyValuePair<TKey, TElement>>.GetEnumerator()
         {
-            foreach (var (key, wrapper) in dictionary)
+            foreach (var (key, value) in dictionary)
             {
-                yield return new(key, wrapper.Value);
+                yield return new(key, value);
             }
         }
 
@@ -259,10 +230,8 @@ namespace inonego.Serializable
             dictionary.Clear();
 
             // Dictionary 복제 (매핑 사용)
-            foreach (var (key, wrapper) in source.dictionary)
+            foreach (var (key, original) in source.dictionary)
             {
-                var original = wrapper.Value;
-
                 var cloned = original != null && cloneMap.TryGetValue(original, out var mapped) ? mapped : original;
 
                 dictionary.Add(key, cloned);

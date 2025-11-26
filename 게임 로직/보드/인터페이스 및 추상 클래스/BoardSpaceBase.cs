@@ -21,7 +21,7 @@ namespace inonego
     #region 필드
 
         [SerializeField]
-        protected XDictionary<TIndex, SerializeReferenceWrapper<TPlaceable>> placeableMap = new();
+        protected XDictionary_VR<TIndex, TPlaceable> placeableMap = new();
 
     #endregion
 

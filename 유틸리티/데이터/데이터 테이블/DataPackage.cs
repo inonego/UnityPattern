@@ -69,10 +69,10 @@ namespace inonego
     #region 필드
 
         [SerializeField]
-        private XDictionary<XType, SerializeReferenceWrapper<ITable>> dictionary = new();
+        private XDictionary_VR<XType, ITable> dictionary = new();
 
         [XmlIgnore]
-        public Dictionary<XType, SerializeReferenceWrapper<ITable>> Dictionary => dictionary;
+        public Dictionary<XType, ITable> Dictionary => dictionary;
 
     #endregion
 
@@ -101,9 +101,9 @@ namespace inonego
         {
             var valueType = typeof(TTableValue);
 
-            if (dictionary.TryGetValue(valueType, out var lTableSR))
+            if (dictionary.TryGetValue(valueType, out ITable lTable))
             {
-                return lTableSR.Value as IReadOnlyTable<TTableValue>;
+                return lTable as IReadOnlyTable<TTableValue>;
             }
 
             throw new InvalidOperationException($"데이터 패키지에 {valueType.Name} 타입의 데이터 테이블이 존재하지 않습니다.");

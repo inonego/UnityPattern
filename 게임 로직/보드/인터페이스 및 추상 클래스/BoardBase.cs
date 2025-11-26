@@ -58,10 +58,10 @@ namespace inonego
     #region 필드
 
         [SerializeField]
-        protected XDictionary<TVector, TSpace> spaceMap = new();
+        protected XDictionary_VV<TVector, TSpace> spaceMap = new();
 
         [SerializeField]
-        protected XDictionary<SerializeReferenceWrapper<TPlaceable>, Point> pointMap = new();
+        protected XDictionary_RV<TPlaceable, Point> pointMap = new();
 
         protected virtual bool IsValidVector(TVector vector) => true;
 

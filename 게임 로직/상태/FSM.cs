@@ -55,7 +55,7 @@ namespace inonego
 
             next?.Enter(sender);
 
-            OnStateChange?.Invoke(sender, new() { Previous = prev, Current = next });
+            OnStateChange?.Invoke(sender, new(prev, next));
         }
 
     #endregion

@@ -113,7 +113,7 @@ namespace inonego
 
                 this.current = next;
 
-                OnStateChange?.Invoke(this, new() { Previous = prev, Current = next });
+                OnStateChange?.Invoke(this, new(prev, next));
             }
         }
         
@@ -145,7 +145,7 @@ namespace inonego
                 // 타이머의 시간이 목표 시간을 초과하면 타이머를 종료합니다.
                 if (elapsedTime >= duration)
                 {
-                    OnEnd?.Invoke(this, new() { });
+                    OnEnd?.Invoke(this, new());
 
                     Stop();
                 }

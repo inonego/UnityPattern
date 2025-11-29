@@ -46,7 +46,7 @@ namespace inonego
     #region 필드
 
         [SerializeField, HideInInspector]
-        private SpawnedDictionary<TKey, T> spawned = new();
+        protected SpawnedDictionary<TKey, T> spawned = new();
         public ISpawnedDictionary<TKey, T> Spawned => spawned;
 
     #endregion

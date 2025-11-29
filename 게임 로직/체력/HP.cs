@@ -184,7 +184,7 @@ public class HP : IDeepCloneable<HP>
             Set(IsAlive ? maxValue : 0, autoChangeState: false);
         }
         
-        OnStateChange?.Invoke(this, new() { Previous = prev, Current = next });
+        OnStateChange?.Invoke(this, new(prev, next));
     }
 
     // ------------------------------------------------------------
@@ -214,7 +214,7 @@ public class HP : IDeepCloneable<HP>
 
         this.value = next;
 
-        OnValueChange?.Invoke(this, new() { Previous = prev, Current = next });
+        OnValueChange?.Invoke(this, new(prev, next));
     }
 
     // ------------------------------------------------------------
@@ -236,7 +236,7 @@ public class HP : IDeepCloneable<HP>
             Set(next);
         }
 
-        OnMaxValueChange?.Invoke(this, new() { Previous = prev, Current = next });
+        OnMaxValueChange?.Invoke(this, new(prev, next));
     }
 
     // ------------------------------------------------------------

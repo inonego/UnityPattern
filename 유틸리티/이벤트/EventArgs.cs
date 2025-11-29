@@ -10,5 +10,11 @@ namespace inonego
         public T Previous;
         public T Current;
         public bool HasChanged => !Equals(Previous, Current);
+
+        public ValueChangeEventArgs(T previous, T current)
+        {
+            Previous = previous;
+            Current = current;
+        }
     }
 }

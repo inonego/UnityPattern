@@ -43,7 +43,7 @@ namespace inonego
 
             if (invokeEvent)
             {
-                OnBaseChange?.Invoke(this, new() { Previous = prev, Current = this.@base } );
+                OnBaseChange?.Invoke(this, new(prev, this.@base));
             }
         }
 

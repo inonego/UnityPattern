@@ -83,14 +83,14 @@ namespace inonego
 
             if (prev != null)
             {
-                OnLeave?.Invoke(this, new() { Previous = prev, Current = next });
+                OnLeave?.Invoke(this, new(prev, next));
             }
 
             this.ground = next;
 
             if (next != null)
             {
-                OnLand?.Invoke(this, new() { Previous = prev, Current = next });
+                OnLand?.Invoke(this, new(prev, next));
             }
         }
 

@@ -17,7 +17,7 @@ namespace inonego
     #region 필드
 
         [SerializeReference]
-        private IKeyGenerator<ulong> keyGenerator = new IncreKeyGenerator();
+        protected IKeyGenerator<ulong> keyGenerator = new IncreKeyGenerator();
         public IKeyGenerator<ulong> KeyGenerator => keyGenerator;
 
     #endregion

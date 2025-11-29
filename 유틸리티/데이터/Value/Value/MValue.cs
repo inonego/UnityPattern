@@ -81,7 +81,7 @@ namespace inonego
 
             if (invokeEvent)
             {
-                OnModifiedChange?.Invoke(this, new() { Previous = prev, Current = cached });
+                OnModifiedChange?.Invoke(this, new(prev, cached));
             }
         }
 

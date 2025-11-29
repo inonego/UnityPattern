@@ -8,7 +8,7 @@ namespace inonego
     /// </summary>
     /// <typeparam name="TKey">키의 타입입니다.</typeparam>
     // ========================================================================
-    public interface IKeyGenerator<TKey> where TKey : IEquatable<TKey>
+    public interface IKeyGenerator<TKey> : IDeepCloneable<IKeyGenerator<TKey>> where TKey : IEquatable<TKey>
     {
         public TKey Generate();
     }

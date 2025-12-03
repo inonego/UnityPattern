@@ -10,7 +10,7 @@ namespace inonego
     /// </summary>
     // ========================================================================
     [Serializable]
-    public abstract class EntitySpawnRegistryBase<TEntity> : SpawnRegistryBase<ulong, TEntity> 
+    public abstract class EntitySpawnRegistryBase<TEntity> : SpawnRegistryBase<ulong, TEntity>, IDeepCloneableFrom<EntitySpawnRegistryBase<TEntity>>
     where TEntity : Entity
     {
 
@@ -36,9 +36,9 @@ namespace inonego
             this.keyGenerator = keyGenerator;
         }
 
-        #endregion
+    #endregion
 
-        #region 메서드
+    #region 메서드
 
         protected override void OnBeforeSpawn(TEntity spawnable)
         {
@@ -59,6 +59,21 @@ namespace inonego
 
     #endregion
 
+    #region 복제 관련
+
+        public void CloneFrom(EntitySpawnRegistryBase<TEntity> source)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException("EntitySpawnRegistryBase<TEntity>.CloneFrom()의 인자가 null입니다.");
+            }
+
+            keyGenerator = source.keyGenerator.Clone();
+
+            base.CloneFrom(source);
+        }
+
+    #endregion
     }
 
     [Serializable]

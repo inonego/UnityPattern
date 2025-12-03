@@ -195,7 +195,7 @@ namespace inonego.Serializable
         {
             if (source == null)
             {
-                throw new ArgumentNullException(nameof(source));
+                throw new ArgumentNullException("XOrdered<TKey, TElement, TOrder>.CloneFrom()의 인자가 null입니다.");
             }
 
             base.CloneFrom(source);

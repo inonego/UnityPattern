@@ -196,12 +196,11 @@ namespace inonego
 
         protected virtual void OnEntityDespawn(ulong key, TEntity entity)
         {
-            if (Spawned.TryGetValue(key, out TMonoEntity monoEntity))
+            var monoEntity = Find(key);
+
+            if (monoEntity != null)
             {
-                if (monoEntity != null)
-                {
-                    monoEntity.Despawn();
-                }
+                monoEntity.Despawn();
             }
         }
 

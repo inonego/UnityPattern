@@ -45,6 +45,12 @@
 - 레지스트리에 등록된 모든 객체를 디스폰
 - 예외 발생 시에도 나머지 객체 계속 처리
 
+### Find(key) / Find(IKeyable)
+- `SpawnRegistryBase<TKey, T>`에서 제공하는 검색 헬퍼
+- `Find(TKey key)`: 키로 바로 객체를 조회, 없으면 `null` 반환
+- `Find(IKeyable<TKey> keyable)`: `IKeyable<TKey>` 동일 키를 가진 객체를 조회, 없으면 `null` 반환
+- 키 기반 매핑/복제 시 `Spawned.TryGetValue(...)` 직접 사용 대신 `Find(...)` 사용 권장
+
 ## 이벤트 및 후크 메서드
 
 ### 이벤트 (Event)

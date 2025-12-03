@@ -16,6 +16,20 @@ namespace inonego
     {
         public ISpawnedDictionary<TKey, T> Spawned { get; }
 
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 해당 키를 가지는 객체를 찾습니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public T Find(TKey key);
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 동일 키를 가지는 객체를 찾습니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public T Find(IKeyable<TKey> keyable);
+
         public event Action<TKey, T> OnSpawn;
         public event Action<TKey, T> OnDespawn;
     }

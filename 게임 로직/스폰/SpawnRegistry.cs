@@ -38,7 +38,7 @@ namespace inonego
     /// </summary>
     // ========================================================================
     [Serializable]
-    public abstract class SpawnRegistryBase<TKey, T> : ISpawnRegistry<TKey, T>
+    public abstract class SpawnRegistryBase<TKey, T> : ISpawnRegistry<TKey, T>, IDeepCloneableFrom<SpawnRegistryBase<TKey, T>>
     where TKey : IEquatable<TKey>
     where T : class, ISpawnRegistryObject<TKey>
     {
@@ -58,7 +58,60 @@ namespace inonego
 
     #endregion
 
-    #region 메서드
+    #region 복제 관련
+
+        public void CloneFrom(SpawnRegistryBase<TKey, T> source)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException("SpawnRegistryBase<TKey, T>.CloneFrom()의 인자가 null입니다.");
+            }
+
+            spawned.Clear();
+
+            foreach (var (key, entity) in source.spawned)
+            {
+                var cloned = entity is IDeepCloneable<T> cloneable ? cloneable.Clone() : entity;
+                
+                spawned.Add(key, cloned);
+            }
+        }
+
+    #endregion
+
+    #region 검색 메서드
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 해당 키를 가지는 객체를 찾습니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public T Find(TKey key)
+        {
+            return spawned.TryGetValue(key, out var value) ? value : null;
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 동일 키를 가지는 객체를 찾습니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public T Find(IKeyable<TKey> keyable)
+        {
+            if (keyable != null)
+            {
+                if (keyable.HasKey && spawned.TryGetValue(keyable.Key, out var value))
+                {
+                    return value;
+                }
+            }
+
+            return null;
+        }
+
+    #endregion
+
+    #region 스폰 / 디스폰 메서드
 
         protected virtual void OnBeforeSpawn(T spawnable) {}
         protected virtual void OnAfterDespawn(T despawnable) {}

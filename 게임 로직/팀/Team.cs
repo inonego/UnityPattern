@@ -17,13 +17,6 @@ namespace inonego
 
         public Team @new() => new Team();
 
-        public Team Clone()
-        {
-            var result = @new();
-            result.CloneFrom(this);
-            return result;
-        }
-
         public void CloneFrom(Team source)
         {
             index = source.index;

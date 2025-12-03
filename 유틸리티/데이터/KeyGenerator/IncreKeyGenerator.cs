@@ -17,13 +17,6 @@ namespace inonego
 
         public IKeyGenerator<ulong> @new() => new IncreKeyGenerator();
 
-        public IKeyGenerator<ulong> Clone()
-        {
-            var result = @new();
-            result.CloneFrom(this);
-            return result;
-        }
-
         public void CloneFrom(IKeyGenerator<ulong> source)
         {
             if (source == null)

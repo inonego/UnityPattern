@@ -53,13 +53,6 @@ namespace inonego.Modifier
 
         public IModifier<float> @new() => new NumericFModifier();
 
-        public IModifier<float> Clone()
-        {
-            var cloned = @new();
-            cloned.CloneFrom(this);
-            return cloned;
-        }
-
         public void CloneFrom(IModifier<float> source)
         {
             if (source is NumericFModifier other)

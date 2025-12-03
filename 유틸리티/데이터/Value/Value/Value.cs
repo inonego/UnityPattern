@@ -85,13 +85,6 @@ namespace inonego
 
         public Value<T> @new() => new Value<T>();
 
-        public Value<T> Clone()
-        {
-            var result = @new();
-            result.CloneFrom(this);
-            return result;
-        }
-
         public void CloneFrom(Value<T> source)
         {
             if (source == null)

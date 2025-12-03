@@ -59,13 +59,6 @@ namespace inonego.Modifier
 
         public IModifier<bool> @new() => new BooleanModifier();
 
-        public IModifier<bool> Clone()
-        {
-            var cloned = @new();
-            cloned.CloneFrom(this);
-            return cloned;
-        }
-
         public void CloneFrom(IModifier<bool> source)
         {
             if (source is BooleanModifier other)

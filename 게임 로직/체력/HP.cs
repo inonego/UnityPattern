@@ -124,13 +124,6 @@ public class HP : IDeepCloneable<HP>
 
     public HP @new() => new HP();
 
-    public HP Clone()    
-    {
-        var result = @new();
-        result.CloneFrom(this);
-        return result;
-    }
-
     public void CloneFrom(HP source)
     {
         if (source == null)

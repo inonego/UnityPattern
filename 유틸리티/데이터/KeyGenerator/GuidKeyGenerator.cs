@@ -12,13 +12,6 @@ namespace inonego
 
         public IKeyGenerator<string> @new() => new GuidGenerator();
 
-        public IKeyGenerator<string> Clone()
-        {
-            var result = @new();
-            result.CloneFrom(this);
-            return result;
-        }
-
         public void CloneFrom(IKeyGenerator<string> source)
         {
             if (source == null)

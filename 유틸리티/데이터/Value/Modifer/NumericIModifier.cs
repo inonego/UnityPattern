@@ -53,13 +53,6 @@ namespace inonego.Modifier
 
         public IModifier<int> @new() => new NumericIModifier();
 
-        public IModifier<int> Clone()
-        {
-            var cloned = @new();
-            cloned.CloneFrom(this);
-            return cloned;
-        }
-
         public void CloneFrom(IModifier<int> source)
         {
             if (source is NumericIModifier other)

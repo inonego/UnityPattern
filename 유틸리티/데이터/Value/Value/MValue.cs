@@ -172,13 +172,6 @@ namespace inonego
 
         public new MValue<T> @new() => new MValue<T>();
 
-        public new MValue<T> Clone()
-        {
-            var result = @new();
-            result.CloneFrom(this);
-            return result;
-        }
-
         public void CloneFrom(MValue<T> source)
         {
             if (source == null)

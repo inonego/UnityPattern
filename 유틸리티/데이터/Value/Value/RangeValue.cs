@@ -88,13 +88,6 @@ namespace inonego
 
         public new RangeValue<T> @new() => new RangeValue<T>();
 
-        public new RangeValue<T> Clone()
-        {
-            var result = @new();
-            result.CloneFrom(this);
-            return result;
-        }
-
         public void CloneFrom(RangeValue<T> source)
         {
             if (source == null)

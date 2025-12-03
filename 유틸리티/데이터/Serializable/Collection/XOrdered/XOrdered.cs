@@ -61,13 +61,6 @@ namespace inonego.Serializable
 
         public XOrdered<TElement, TOrder> @new() => new XOrdered<TElement, TOrder>();
 
-        public XOrdered<TElement, TOrder> Clone()
-        {
-            var result = @new();
-            result.CloneFrom(this);
-            return result;
-        }
-
         public void CloneFrom(XOrdered<TElement, TOrder> source)
         {
             if (source == null)
@@ -197,13 +190,6 @@ namespace inonego.Serializable
     #region 복제 관련 메서드
 
         public XOrdered<TKey, TElement, TOrder> @new() => new XOrdered<TKey, TElement, TOrder>();
-
-        public XOrdered<TKey, TElement, TOrder> Clone()
-        {
-            var result = @new();
-            result.CloneFrom(this);
-            return result;
-        }
 
         public void CloneFrom(XOrdered<TKey, TElement, TOrder> source)
         {

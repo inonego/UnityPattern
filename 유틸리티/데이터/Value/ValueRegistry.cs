@@ -248,13 +248,6 @@ namespace inonego
 
         public ValueRegistry @new() => new ValueRegistry();
 
-        public ValueRegistry Clone()
-        {
-            var result = new ValueRegistry();
-            result.CloneFrom(this);
-            return result;
-        }
-
         public void CloneFrom(ValueRegistry source)
         {
             Clear();

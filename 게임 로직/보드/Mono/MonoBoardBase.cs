@@ -90,31 +90,69 @@ namespace inonego
 
     #endregion
 
-    #region 메서드
+    #region 좌표 변환 메서드
 
         /// ------------------------------------------------------------
         /// <summary>
         /// 보드상의 벡터를 월드상의 좌표로 변환합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public abstract Vector3 ToPos(TVector vector);
+        public abstract Vector3 ToLocalPos(TVector vector);
 
         /// ------------------------------------------------------------
         /// <summary>
         /// 보드상의 벡터와 인덱스를 월드상의 좌표로 변환합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public abstract Vector3 ToPos(TVector vector, TIndex index);
+        public abstract Vector3 ToLocalPos(TVector vector, TIndex index);
 
         /// ------------------------------------------------------------
         /// <summary>
         /// 보드상의 포인트를 월드상의 좌표로 변환합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public Vector3 ToPos(IBoardPoint<TVector, TIndex> point)
+        public Vector3 ToLocalPos(IBoardPoint<TVector, TIndex> point)
         {
-            return ToPos(point.Vector, point.Index);
+            return ToLocalPos(point.Vector, point.Index);
         }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 보드상의 벡터를 월드상의 좌표로 변환합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public Vector3 ToWorldPos(TVector vector)
+        {
+            var localPos = ToLocalPos(vector);
+
+            return lTileProvider.Parent.TransformPoint(localPos);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 보드상의 벡터와 인덱스를 월드상의 좌표로 변환합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public Vector3 ToWorldPos(TVector vector, TIndex index)
+        {
+            var localPos = ToLocalPos(vector, index);
+
+            return lTileProvider.Parent.TransformPoint(localPos);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 보드상의 포인트를 월드상의 좌표로 변환합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public Vector3 ToWorldPos(IBoardPoint<TVector, TIndex> point)
+        {
+            return ToWorldPos(point.Vector, point.Index);
+        }
+
+    #endregion
+
+    #region 타일 관리 메서드
 
         /// ------------------------------------------------------------
         /// <summary>
@@ -141,7 +179,7 @@ namespace inonego
 
                 lTileMap[vector] = lTile;
 
-                lTile.transform.position = ToPos(vector);
+                lTile.transform.localPosition = ToLocalPos(vector);
 
                 lTile.SetActive(true);
             }
@@ -168,7 +206,7 @@ namespace inonego
                     lTileMap.Remove(vector);
                 }
 
-                lTile.transform.position = Vector3.zero;
+                lTile.transform.localPosition = Vector3.zero;
 
                 lTile.SetActive(false);
             }

@@ -2,21 +2,23 @@ namespace inonego
 {
     // ========================================================================
     /// <summary>
-    /// 매개변수를 초기화해야 하는 객체를 위한 인터페이스입니다.
+    /// 연결해야 하는 객체를 위한 인터페이스입니다.
     /// </summary>
     // ========================================================================
-    public interface IInitNeeded
+    public interface INeedToConnect<T>
     {
-        public void Init();
+        public void Connect(T lTarget);
+        public void Disconnect();
     }
-
+    
     // ========================================================================
     /// <summary>
-    /// 매개변수를 초기화해야 하는 객체를 위한 인터페이스입니다.
+    /// 연결해야 하는 객체를 위한 인터페이스입니다.
     /// </summary>
     // ========================================================================
-    public interface IInitNeeded<TParam>
+    public interface INeedToConnect<T, TParam>
     {
-        public void Init(TParam param);
+        public void Connect(T lTarget, TParam param);
+        public void Disconnect();
     }
 }

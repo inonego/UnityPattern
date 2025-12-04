@@ -10,7 +10,7 @@ namespace inonego
         public Entity Entity { get; }
     }
 
-    public interface IMonoEntity<TEntity> : IMonoEntity, IInitNeeded<TEntity>
+    public interface IMonoEntity<TEntity> : IMonoEntity, INeedToInit<TEntity>
     where TEntity : Entity
     {
         public new TEntity Entity { get; }

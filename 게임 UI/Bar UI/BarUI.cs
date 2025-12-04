@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using DG.Tweening;
 #endif
 
-namespace inonego
+namespace inonego.UI
 {
     using Serializable;
 

@@ -318,7 +318,7 @@ namespace inonego
     [Serializable]
     public abstract class SpawnRegistry<TKey, T, TParam> : SpawnRegistry<TKey, T>
     where TKey : IEquatable<TKey>
-    where T : class, ISpawnRegistryObject<TKey>, IInitNeeded<TParam>
+    where T : class, ISpawnRegistryObject<TKey>, INeedToInit<TParam>
     {
         protected virtual void OnInit(T spawnable, TParam param) {}
 

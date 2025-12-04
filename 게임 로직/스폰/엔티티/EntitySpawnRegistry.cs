@@ -107,7 +107,7 @@ namespace inonego
 
     [Serializable]
     public abstract class EntitySpawnRegistry<TEntity, TParam> : EntitySpawnRegistryBase<TEntity>
-    where TEntity : Entity, IInitNeeded<TParam>
+    where TEntity : Entity, INeedToInit<TParam>
     {
         protected virtual void OnInit(TEntity spawnable, TParam param) {}
         

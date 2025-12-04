@@ -7,6 +7,7 @@ using NUnit.Framework;
 
 using UnityEngine;
 
+using inonego;
 using inonego.Serializable;
 
 // ============================================================================

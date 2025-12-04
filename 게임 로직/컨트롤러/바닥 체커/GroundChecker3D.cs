@@ -6,7 +6,7 @@ namespace inonego
 {
     [Serializable]
     [RequireComponent(typeof(Rigidbody))]
-    public class GroundChecker3D : GroundChecker<Rigidbody, Collider>, IInitNeeded<GameObject>
+    public class GroundChecker3D : GroundChecker<Rigidbody, Collider>, INeedToInit<GameObject>
     {
 
     #region 필드

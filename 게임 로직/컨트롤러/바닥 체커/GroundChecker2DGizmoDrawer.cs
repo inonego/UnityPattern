@@ -8,7 +8,7 @@ namespace inonego
     /// GroundChecker2D의 기즈모를 그리는 컴포넌트입니다.
     /// </summary>
     // ============================================================================
-    public class GroundChecker2DGizmoDrawer : MonoBehaviour, IInitNeeded<GroundChecker2D>
+    public class GroundChecker2DGizmoDrawer : MonoBehaviour, INeedToInit<GroundChecker2D>
     {
 
     #region 생성자

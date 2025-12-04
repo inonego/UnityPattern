@@ -72,14 +72,14 @@ public class TEST_MonoBoardBase
         [SerializeField]
         private float lTileSize = 1f;
 
-        public override Vector3 ToPos(Vector2Int vector)
+        public override Vector3 ToLocalPos(Vector2Int vector)
         {
             return new Vector3(vector.x * lTileSize, 0f, vector.y * lTileSize);
         }
 
-        public override Vector3 ToPos(Vector2Int vector, int index)
+        public override Vector3 ToLocalPos(Vector2Int vector, int index)
         {
-            return ToPos(vector) + Vector3.zero;
+            return ToLocalPos(vector) + Vector3.zero;
         }
 
         // ------------------------------------------------------------
@@ -250,11 +250,11 @@ public class TEST_MonoBoardBase
         foreach (var point in basePoints)
         {
             var lTile = monoBoard.TileMap[point];
-            var expectedPos = monoBoard.ToPos(point);
+            var expectedPos = monoBoard.ToLocalPos(point);
 
             Assert.That(monoBoard.TileMap.ContainsKey(point), Is.True);
             Assert.That(lTile, Is.Not.Null);
-            Assert.That(Vector3.Distance(lTile.transform.position, expectedPos), Is.LessThan(0.01f));
+            Assert.That(Vector3.Distance(lTile.transform.localPosition, expectedPos), Is.LessThan(0.01f));
         }
 
         // ------------------------------------------------------------
@@ -295,15 +295,15 @@ public class TEST_MonoBoardBase
         {
             var point = kvp.Key;
             var space = kvp.Value;
-            
+        
             spaceCount++;
 
             var lTile = monoBoard.TileMap[point];
-            var expectedPos = monoBoard.ToPos(point);
-            
+            var expectedPos = monoBoard.ToLocalPos(point);
+        
             Assert.That(monoBoard.TileMap.ContainsKey(point), Is.True);
             Assert.That(lTile, Is.Not.Null);
-            Assert.That(Vector3.Distance(lTile.transform.position, expectedPos), Is.LessThan(0.01f));
+            Assert.That(Vector3.Distance(lTile.transform.localPosition, expectedPos), Is.LessThan(0.01f));
         }
 
         Assert.That(monoBoard.TileMap.Count, Is.EqualTo(spaceCount));

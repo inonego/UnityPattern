@@ -10,7 +10,7 @@ namespace inonego
     /// </summary>
     // ========================================================================
     [Serializable]
-    public abstract class MonoEntitySpawnRegistry<TMonoEntity, TEntity> : SpawnRegistryBase<ulong, TMonoEntity>, IConnectable<EntitySpawnRegistryBase<TEntity>>
+    public abstract class MonoEntitySpawnRegistry<TMonoEntity, TEntity> : SpawnRegistryBase<ulong, TMonoEntity>, INeedToConnect<EntitySpawnRegistryBase<TEntity>>
     where TMonoEntity : MonoEntity<TEntity>
     where TEntity : Entity
     {

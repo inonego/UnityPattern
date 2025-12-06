@@ -51,7 +51,7 @@ namespace inonego.Editor
 
             bool enabled = GUI.enabled;
 
-            GUI.enabled = hasValueProp.boolValue;
+            GUI.enabled = enabled && hasValueProp.boolValue;
             EditorGUI.PropertyField(valueRect, valueProp, GUIContent.none, true);
             GUI.enabled = enabled;
 

@@ -34,5 +34,10 @@ namespace inonego
         {
             (Duration, Delay, Ease) = (duration, delay, ease);
         }
+
+        public void Deconstruct(out float duration, out float delay, out Ease ease)
+        {
+            (duration, delay, ease) = (Duration, Delay, Ease);
+        }
     }
 }

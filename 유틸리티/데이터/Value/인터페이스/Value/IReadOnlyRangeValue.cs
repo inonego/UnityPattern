@@ -9,7 +9,8 @@ namespace inonego
     /// 읽기 전용 RangeValue 인터페이스입니다.
     /// </summary>
     // ===================================================================
-    public interface IReadOnlyRangeValue<T> : IReadOnlyValue<T>, IComparable<T> where T : struct, IComparable<T>
+    public interface IReadOnlyRangeValue<T> : IReadOnlyValue<T>, IComparable<T>
+    where T : struct, IComparable<T>
     {
         // ------------------------------------------------------------
         /// <summary>

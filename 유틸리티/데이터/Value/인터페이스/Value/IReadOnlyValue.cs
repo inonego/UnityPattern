@@ -1,3 +1,5 @@
+using System;
+
 namespace inonego
 {
     // ============================================================
@@ -5,7 +7,7 @@ namespace inonego
     /// 읽기 전용 Value 인터페이스입니다.
     /// </summary>
     // ============================================================
-    public interface IReadOnlyValue<T> where T : struct
+    public interface IReadOnlyValue<T>
     {
         // ------------------------------------------------------------
         /// <summary>

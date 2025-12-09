@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 using UnityEngine;
 
@@ -12,7 +14,8 @@ namespace inonego
     /// </summary>
     // ============================================================
     [Serializable]
-    public class RangeValue<T> : Value<T>, IReadOnlyRangeValue<T>, IDeepCloneable<RangeValue<T>> where T : struct, IComparable<T>
+    public class RangeValue<T> : Value<T>, IReadOnlyRangeValue<T>, IDeepCloneable<RangeValue<T>>
+    where T : struct, IComparable<T>
     {
 
     #region 필드
@@ -123,9 +126,9 @@ namespace inonego
         public override bool Equals(object obj)
         {
             if (obj is RangeValue<T> other)
-                return Equals(@base, other.@base);
+                return comparer.Equals(@base, other.@base);
             if (obj is T directValue)
-                return Equals(@base, directValue);
+                return comparer.Equals(@base, directValue);
             return false;
         }
 

@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 using UnityEngine;
 
@@ -10,8 +12,10 @@ namespace inonego
     /// </summary>
     // ============================================================
     [Serializable]
-    public class Value<T> : IReadOnlyValue<T>, IDeepCloneable<Value<T>> where T : struct
+    public class Value<T> : IReadOnlyValue<T>, IDeepCloneable<Value<T>>
     {
+        protected static readonly EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+
         // ------------------------------------------------------------
         /// <summary>
         /// 기본 값입니다.
@@ -37,7 +41,7 @@ namespace inonego
             ProcessBase(prev, ref next);
 
             // 값 변화가 없으면 종료합니다.
-            if (Equals(prev, next)) return;
+            if (comparer.Equals(prev, next)) return;
 
             this.@base = next;
 
@@ -117,9 +121,9 @@ namespace inonego
         public override bool Equals(object obj)
         {
             if (obj is Value<T> other)
-                return Equals(@base, other.@base);
+                return comparer.Equals(@base, other.@base);
             if (obj is T directValue)
-                return Equals(@base, directValue);
+                return comparer.Equals(@base, directValue);
             return false;
         }
 
@@ -130,5 +134,4 @@ namespace inonego
     #endregion
 
     }
-
 }

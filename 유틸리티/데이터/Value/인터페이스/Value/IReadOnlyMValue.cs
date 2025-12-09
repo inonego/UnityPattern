@@ -11,7 +11,8 @@ namespace inonego
     /// 읽기 전용 MValue 인터페이스입니다.
     /// </summary>
     // =================================================================
-    public interface IReadOnlyMValue<T> : IReadOnlyValue<T> where T : struct
+    public interface IReadOnlyMValue<T> : IReadOnlyValue<T>
+    where T : struct
     {
         // ------------------------------------------------------------
         /// <summary>

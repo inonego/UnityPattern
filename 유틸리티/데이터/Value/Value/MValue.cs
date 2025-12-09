@@ -75,7 +75,7 @@ namespace inonego
         {
             var (prev, next) = (cached, Modify(Base));
 
-            if (Equals(prev, next)) return;
+            if (comparer.Equals(prev, next)) return;
 
             cached = next;
 
@@ -207,9 +207,9 @@ namespace inonego
         public override bool Equals(object obj)
         {
             if (obj is MValue<T> other)
-                return Equals(Modified, other.Modified);
+                return comparer.Equals(Modified, other.Modified);
             if (obj is T directValue)
-                return Equals(Modified, directValue);
+                return comparer.Equals(Modified, directValue);
             return false;
         }
 

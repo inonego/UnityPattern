@@ -39,9 +39,8 @@ namespace inonego.UI
         public bool CanDrop = true;
 
         [Header("드롭 정보")]
-        [SerializeField, ReadOnly]
-        private bool isDropping = false;
-        public bool IsDropping => isDropping;
+        public bool IsDropping => current != null;
+        private PointerEventData current = null;
 
         [SerializeField, ReadOnly]
         private DraggableUI draggable = null;
@@ -59,6 +58,24 @@ namespace inonego.UI
         public event DropEventHandler OnDropEnter = null;
         public event DropEventHandler OnDropExit = null;
         public event DropEventHandler OnDropDone = null;
+
+    #endregion
+
+    #region 유니티 이벤트
+
+        private void Update()
+        {
+            if (IsDropping)
+            {
+                if (draggable != null)
+                {
+                    if (!draggable.IsDragging)
+                    {
+                        _OnDropExit(current);
+                    }
+                }
+            }
+        }
 
     #endregion
 
@@ -107,7 +124,6 @@ namespace inonego.UI
         private void _OnDropEnter(PointerEventData eventData)
         {
             if (eventData == null) return;
-            if (isDropping) return;
 
             var pointerDrag = eventData.pointerDrag;
             if (pointerDrag == null) return;
@@ -120,9 +136,9 @@ namespace inonego.UI
             // ------------------------------------------------------------
             // 드롭 정보 설정
             // ------------------------------------------------------------
-            isDropping = true;
-
             this.draggable = draggable;
+
+            current = eventData;
 
             // ------------------------------------------------------------
             // 드롭 진입 이벤트 발생
@@ -140,7 +156,6 @@ namespace inonego.UI
         private void _OnDrop(PointerEventData eventData)
         {
             if (eventData == null) return;
-            if (!isDropping) return;
 
             var pointerDrag = eventData.pointerDrag;
             if (pointerDrag == null) return;
@@ -170,7 +185,6 @@ namespace inonego.UI
         private void _OnDropExit(PointerEventData eventData)
         {
             if (eventData == null) return;
-            if (!isDropping) return;
             
             // ------------------------------------------------------------
             // 드롭 이탈 이벤트 발생
@@ -180,7 +194,7 @@ namespace inonego.UI
             // ------------------------------------------------------------
             // 드롭 정보 설정
             // ------------------------------------------------------------
-            isDropping = false;
+            current = null;
 
             this.draggable = null;
 
@@ -194,17 +208,26 @@ namespace inonego.UI
 
         void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
         {
-            _OnDropEnter(eventData);
+            if (!IsDropping)
+            {
+                _OnDropEnter(eventData);
+            }
         }
 
         void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
         {
-            _OnDropExit(eventData);
+            if (IsDropping)
+            {
+                _OnDropExit(eventData);
+            }
         }
 
         void IDropHandler.OnDrop(PointerEventData eventData)
         {
-            _OnDrop(eventData);
+            if (IsDropping)
+            {
+                _OnDrop(eventData);
+            }
         }
 
     #endregion

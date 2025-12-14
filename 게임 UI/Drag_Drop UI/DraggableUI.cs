@@ -71,9 +71,8 @@ namespace inonego.UI
         public DropZoneUI SpecificDropZone = null;
 
         [Header("드래그 정보")]
-        [SerializeField, ReadOnly]
-        private bool isDragging = false;
-        public bool IsDragging => isDragging;
+        public bool IsDragging => current != null;
+        private PointerEventData current = null;
 
         [SerializeField, ReadOnly]
         private XNullable<Vector2> origin = null;
@@ -84,8 +83,6 @@ namespace inonego.UI
         public Vector2? Offset => offset;
         
         private bool originalBlocksRaycasts = true;
-        
-        private PointerEventData current = null;
 
     #endregion
 
@@ -112,6 +109,14 @@ namespace inonego.UI
         {
             canvasGroup = GetComponent<CanvasGroup>();
             rectTransform = GetComponent<RectTransform>();
+        }
+
+        private void Update()
+        {
+            if (IsDragging)
+            {
+                _OnDrag(current);
+            }
         }
 
     #endregion
@@ -202,7 +207,6 @@ namespace inonego.UI
         private void _OnDragBegin(PointerEventData eventData)
         {
             if (eventData == null) return;
-            if (isDragging) return;
 
             originalBlocksRaycasts = canvasGroup.blocksRaycasts;
 
@@ -216,8 +220,6 @@ namespace inonego.UI
             // ------------------------------------------------------------
             // 드래그 정보 설정
             // ------------------------------------------------------------
-            isDragging = true;
-
             offset = rectTransform.anchoredPosition - localPoint;
             origin = rectTransform.anchoredPosition;
 
@@ -241,7 +243,6 @@ namespace inonego.UI
         private void _OnDrag(PointerEventData eventData)
         {
             if (eventData == null) return;
-            if (!isDragging) return;
 
             // Canvas 좌표계로 변환
             Vector2 localPoint = ScreenToLocalPoint(eventData);
@@ -267,7 +268,6 @@ namespace inonego.UI
         private void _OnDragEnd(PointerEventData eventData)
         {
             if (eventData == null) return;
-            if (!isDragging) return;
 
             canvasGroup.blocksRaycasts = originalBlocksRaycasts;
 
@@ -281,8 +281,6 @@ namespace inonego.UI
             // ------------------------------------------------------------
             // 드래그 정보 설정
             // ------------------------------------------------------------
-            isDragging = false;
-
             origin = null;
             offset = null;
             
@@ -324,17 +322,24 @@ namespace inonego.UI
 
         void IBeginDragHandler.OnBeginDrag(PointerEventData eventData)
         {
-            _OnDragBegin(eventData);
+            if (!IsDragging)
+            {
+                _OnDragBegin(eventData);
+            }
         }
 
         void IDragHandler.OnDrag(PointerEventData eventData)
-        {
-            _OnDrag(eventData);
+        {           
+            // 업데이트에서 처리하도록 합니다.
+            // 이 구현은 유지하여야 Drop이 작동됩니다.
         }
 
         void IEndDragHandler.OnEndDrag(PointerEventData eventData)
         {
-            _OnDragEnd(eventData);
+            if (IsDragging)
+            {
+                _OnDragEnd(eventData);
+            }
         }
 
     #endregion

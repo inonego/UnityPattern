@@ -17,7 +17,7 @@ namespace inonego
     public abstract class BoardBase<TVector, TIndex, TSpace, TPlaceable> : IBoard<TVector, TIndex, TPlaceable>, IEnumerable<KeyValuePair<TVector, TSpace>>, IEnumerable
     where TVector : struct where TIndex : struct
     where TSpace : BoardSpaceBase<TIndex, TPlaceable>, new()
-    where TPlaceable : class, new()
+    where TPlaceable : class
     {
 
     #region 내부 구조체

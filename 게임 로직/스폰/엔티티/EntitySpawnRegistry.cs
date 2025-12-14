@@ -80,6 +80,8 @@ namespace inonego
     public abstract class EntitySpawnRegistry<TEntity> : EntitySpawnRegistryBase<TEntity>
     where TEntity : Entity
     {
+        protected abstract TEntity Acquire();
+
         // ------------------------------------------------------------
         /// <summary>
         /// 엔티티를 스폰합니다.
@@ -89,19 +91,9 @@ namespace inonego
         {
             var entity = Acquire();
 
-            SpawnUsingAquired(entity);
+            Spawn(entity);
 
             return entity;
-        }
-
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 만들어진 엔티티를 이용하여 스폰합니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        public void SpawnUsingAquired(TEntity entity)
-        {
-            SpawnInternal(entity);
         }
     }
 
@@ -110,7 +102,9 @@ namespace inonego
     where TEntity : Entity, INeedToInit<TParam>
     {
         protected virtual void OnInit(TEntity spawnable, TParam param) {}
-        
+
+        protected abstract TEntity Acquire(TParam param);
+
         // ------------------------------------------------------------
         /// <summary>
         /// 엔티티를 스폰합니다.
@@ -118,27 +112,17 @@ namespace inonego
         // ------------------------------------------------------------
         public TEntity Spawn(TParam param)
         {
-            var entity = Acquire();
+            var entity = Acquire(param);
 
-            SpawnUsingAquired(entity, param);
-
-            return entity;
-        }
-
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 만들어진 엔티티를 이용하여 스폰합니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        public void SpawnUsingAquired(TEntity entity, TParam param)
-        {
             void InitAction(TEntity spawnable)
             {
                 OnInit(spawnable, param);
                 spawnable.Init(param);
             }
 
-            SpawnInternal(entity, InitAction);
+            Spawn(entity, InitAction);
+
+            return entity;
         }
     }
 

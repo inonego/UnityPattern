@@ -16,7 +16,7 @@ namespace inonego
     [Serializable]
     public abstract class BoardSpaceBase<TIndex, TPlaceable> : IBoardSpace<TIndex, TPlaceable>, IEnumerable<KeyValuePair<TIndex, TPlaceable>>, IEnumerable
     where TIndex : struct
-    where TPlaceable : class, new()
+    where TPlaceable : class
     {
     #region 필드
 

@@ -29,14 +29,6 @@
 - 초기화 매개변수를 받아 객체를 생성하고 스폰
 - `SpawnRegistry<TKey, T, TParam>` 버전에서만 사용 가능
 
-### SpawnUsingAquired(T)
-- 이미 획득된 객체를 레지스트리에 등록하여 스폰
-- 외부에서 생성한 객체를 관리 체계에 포함시킬 때 유용
-
-### SpawnUsingAquired(T, TParam)
-- 초기화 매개변수와 함께 이미 획득된 객체를 스폰
-- `SpawnRegistry<TKey, T, TParam>` 버전에서만 사용 가능
-
 ### Despawn()
 - 확장 메서드로 객체를 디스폰
 - `entity.Despawn()` 형태로 사용
@@ -59,11 +51,15 @@
 
 ### 후크 메서드 (Hook Methods)
 - `OnBeforeSpawn(T)`: 레지스트리에서 객체 스폰 **전** 처리
+- `OnAfterSpawn(T)`: 레지스트리에서 객체 스폰 **후** 처리
+- `OnBeforeDespawn(T)`: 레지스트리에서 객체 디스폰 **전** 처리
 - `OnAfterDespawn(T)`: 레지스트리에서 객체 디스폰 **후** 처리
 - `OnInit(T, TParam)`: 레지스트리에서 객체 초기화 **전** 처리 (TParam 버전)
 
 ### 객체 자체의 메서드
 - `spawnable.OnBeforeSpawn()`: 객체가 스폰되기 **전** 호출
+- `spawnable.OnAfterSpawn()`: 객체가 스폰된 **후** 호출
+- `spawnable.OnBeforeDespawn()`: 객체가 디스폰되기 **전** 호출
 - `spawnable.OnAfterDespawn()`: 객체가 디스폰된 **후** 호출
 - `spawnable.Init(TParam)`: 객체 초기화 (TParam 버전)
 
@@ -112,17 +108,29 @@ entity.Despawn(); // SpawnRegistryUtility의 확장 메서드 사용
 | 5 | `OnInit(spawnable, param)` | 레지스트리 초기화 **(TParam 버전)** |
 | 6 | `spawnable.Init(param)` | 객체 초기화 **(TParam 버전)** |
 | 7 | 유효성 검증 (2차) | HasKey, 중복 키 확인 |
-| 8 | 딕셔너리 등록 | 스폰 목록 추가 |
-| 9 | `OnSpawn` 이벤트 | 스폰 완료 알림 |
+| 8 | 상태 설정 | `IsSpawned = true`, `DespawnFromRegistry` 설정 |
+| 9 | 딕셔너리 등록 | `spawned.Add()` - 스폰 목록 추가 |
+| 10 | `OnAfterSpawn(spawnable)` | 레지스트리 후처리 |
+| 11 | `spawnable.OnAfterSpawn()` | 객체 후처리 |
+| 12 | `OnSpawn` 이벤트 | 스폰 완료 알림 |
 
-> **참고**: 5~6번은 `SpawnRegistry<TKey, T, TParam>` 사용 시에만 호출됩니다.
+> **참고**: 
+> - 5~6번은 `SpawnRegistry<TKey, T, TParam>` 사용 시에만 호출됩니다.
+> - 3~6번에서 예외가 발생하면 `DespawnInternal()`이 호출되어 정리 작업이 수행됩니다.
 
 ### Despawn 시 호출 순서
 
 | 순서 | 메서드 | 설명 |
 |:---:|:---|:---|
-| 1 | 유효성 검증 | IsSpawned, HasKey 등 확인 |
-| 2 | 딕셔너리 해제 | 스폰 목록 제거 |
-| 3 | `despawnable.OnAfterDespawn()` | 객체 후처리 |
-| 4 | `OnAfterDespawn(despawnable)` | 레지스트리 후처리 |
-| 5 | `OnDespawn` 이벤트 | 디스폰 완료 알림 |
+| 1 | 유효성 검증 | null, IsSpawned, HasKey, ContainsKey 확인 |
+| 2 | `OnDespawn` 이벤트 | 디스폰 시작 알림 |
+| 3 | `despawnable.OnBeforeDespawn()` | 객체 전처리 |
+| 4 | `OnBeforeDespawn(despawnable)` | 레지스트리 전처리 |
+| 5 | 딕셔너리 해제 | `spawned.Remove()` - 스폰 목록 제거 **(조건부)** |
+| 6 | 상태 해제 | `IsSpawned = false`, `DespawnFromRegistry = null` |
+| 7 | `despawnable.OnAfterDespawn()` | 객체 후처리 |
+| 8 | `OnAfterDespawn(despawnable)` | 레지스트리 후처리 |
+
+> **참고**: 
+> - 5번 딕셔너리 해제는 `removeFromDictionary`가 `true`일 때만 수행됩니다.
+> - `DespawnAll()` 메서드 사용 시 `removeFromDictionary`가 `false`로 설정되어 5번 딕셔너리 해제가 각 객체 디스폰 시점이 아닌 마지막에 일괄 처리됩니다.

@@ -7,9 +7,9 @@ namespace inonego
     /// 팀 상대 진영 관계를 나타냅니다.
     /// </summary>
     //============================================================
-    public enum TeamRelativeFaction
+    public enum TeamRelativeFaction : int
     {
-        Me, Ally, Enemy, None
+        Me, Ally, Enemy, None = -1
     }
 
     //============================================================

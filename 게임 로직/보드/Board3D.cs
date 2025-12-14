@@ -14,7 +14,7 @@ namespace inonego
     // ============================================================
     [Serializable]
     public class Board3D<TPlaceable> : Board3D<int, BoardSpace<TPlaceable>, TPlaceable>
-    where TPlaceable : class, new()
+    where TPlaceable : class
     {
         public Board3D(int width, int height, int depth, bool init = true) : base(width, height, depth, init) {}
     }
@@ -28,7 +28,7 @@ namespace inonego
     public class Board3D<TIndex, TSpace, TPlaceable> : BoardBase<Vector3Int, TIndex, TSpace, TPlaceable>
     where TIndex : struct
     where TSpace : BoardSpaceBase<TIndex, TPlaceable>, new()
-    where TPlaceable : class, new()
+    where TPlaceable : class
     {
         [SerializeField]
         protected int width;

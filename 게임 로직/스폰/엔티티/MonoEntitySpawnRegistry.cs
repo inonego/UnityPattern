@@ -48,7 +48,7 @@ namespace inonego
             gameObjectProvider.Release(go);
         }
 
-        protected override TMonoEntity Acquire()
+        protected TMonoEntity Acquire()
         {
             var go = GameObjectProvider.Acquire();
 
@@ -66,9 +66,9 @@ namespace inonego
             return monoEntity;
         }
 
-        protected virtual void OnBeforeDespawn(TMonoEntity despawnable)
+        protected override void OnBeforeSpawn(TMonoEntity spawnable)
         {
-            base.OnBeforeSpawn(despawnable);
+            base.OnBeforeSpawn(spawnable);
         }
 
         protected virtual void OnInit(TMonoEntity spawnable, TEntity entity) {}
@@ -91,25 +91,15 @@ namespace inonego
         {
             var monoEntity = Acquire();
 
-            SpawnUsingAquired(monoEntity, entity);
-
-            return monoEntity;
-        }
-
-        // --------------------------------------------------------------------------------
-        /// <summary>
-        /// 만들어진 모노 엔티티를 이용하여 스폰합니다.
-        /// </summary>
-        // --------------------------------------------------------------------------------
-        public void SpawnUsingAquired(TMonoEntity monoEntity, TEntity entity)
-        {
             void InitAction(TMonoEntity spawnable)
             {
                 OnInit(spawnable, entity);
                 spawnable.Init(entity);
             }
 
-            SpawnInternal(monoEntity, InitAction);
+            Spawn(monoEntity, InitAction);
+
+            return monoEntity;
         }
 
     #endregion

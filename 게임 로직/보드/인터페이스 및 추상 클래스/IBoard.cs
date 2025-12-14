@@ -9,7 +9,7 @@ namespace inonego
     // ============================================================
     public interface IBoard<TVector, TIndex, TPlaceable>
     where TVector : struct where TIndex : struct
-    where TPlaceable : class, new()
+    where TPlaceable : class
     {
 
     #region 공간

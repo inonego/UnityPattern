@@ -16,7 +16,7 @@ namespace inonego
     where TBoard : BoardBase<TVector, TIndex, TSpace, TPlaceable>
     where TVector : struct where TIndex : struct
     where TSpace : BoardSpaceBase<TIndex, TPlaceable>, new()
-    where TPlaceable : class, new()
+    where TPlaceable : class
     {
 
     #region 원본 보드

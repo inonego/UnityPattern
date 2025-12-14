@@ -25,6 +25,7 @@ namespace inonego
     public interface ISpawnable
     {
         public void OnBeforeSpawn();
+        public void OnAfterSpawn();
     }
 
     // ========================================================================
@@ -34,6 +35,7 @@ namespace inonego
     // ========================================================================
     public interface IDespawnable
     {
+        public void OnBeforeDespawn();
         public void OnAfterDespawn();
 
         protected internal Action DespawnFromRegistry { get; set; }

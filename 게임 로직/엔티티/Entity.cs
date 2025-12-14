@@ -32,6 +32,13 @@ namespace inonego
         protected internal virtual void SetKey(ulong key) => this.key = key;
         protected internal virtual void ClearKey() => this.key = null;
 
+        // --------------------------------------------------------------------------------
+        /// <summary>
+        /// 디스폰 시 죽음 상태로 설정합니다.
+        /// </summary>
+        // --------------------------------------------------------------------------------
+        public bool MakeDeadOnDespawn = true;
+
     #endregion
 
     #region 필드
@@ -74,11 +81,20 @@ namespace inonego
                 throw new InvalidOperationException("체력이 설정되어 있지 않습니다.");
             }
             
+            // --------------------------------------------------------------------------------
+            // 먼저 이벤트를 해제함으로써, 디스폰이 중복으로 호출되는 것을 방지합니다.
+            // --------------------------------------------------------------------------------
             hp.OnStateChange -= OnHPStateChange;
 
-            if (hp.IsAlive)
+            // --------------------------------------------------------------------------------
+            // 그 다음에 체력을 죽음 상태로 설정합니다.
+            // --------------------------------------------------------------------------------
+            if (MakeDeadOnDespawn)
             {
-                hp.MakeDead();
+                if (hp.IsAlive)
+                {
+                    hp.MakeDead();
+                }
             }
         }
     
@@ -92,12 +108,22 @@ namespace inonego
 
         public virtual void OnBeforeSpawn()
         {
+            // NONE
+        }
+
+        void ISpawnable.OnAfterSpawn()
+        {
             InitHP();
+        }
+
+        void IDespawnable.OnBeforeDespawn()
+        {
+            ReleaseHP();
         }
 
         public virtual void OnAfterDespawn()
         {
-            ReleaseHP();
+            // NONE
         }
 
     #endregion

@@ -13,7 +13,7 @@ namespace inonego
     // ============================================================
     [Serializable]
     public class Board2D<TPlaceable> : Board2D<int, BoardSpace<TPlaceable>, TPlaceable>
-    where TPlaceable : class, new()
+    where TPlaceable : class
     {
         public Board2D(int width, int height, bool init = true) : base(width, height, init) {}
     }
@@ -27,7 +27,7 @@ namespace inonego
     public class Board2D<TIndex, TSpace, TPlaceable> : BoardBase<Vector2Int, TIndex, TSpace, TPlaceable>
     where TIndex : struct
     where TSpace : BoardSpaceBase<TIndex, TPlaceable>, new()
-    where TPlaceable : class, new()
+    where TPlaceable : class
     {
         [SerializeField]
         protected int width;

@@ -9,7 +9,7 @@ namespace inonego
     // ============================================================
     public interface IBoardSpace<TIndex, TPlaceable>
     where TIndex : struct
-    where TPlaceable : class, new()
+    where TPlaceable : class
     {
         //------------------------------------------------------------
         /// <summary>

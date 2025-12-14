@@ -15,7 +15,7 @@ namespace inonego
     where TBoard : class, IBoard<TVector, TIndex, TPlaceable>
     where TVector : struct where TIndex : struct
     where TBoardSpace : class, IBoardSpace<TIndex, TPlaceable>, new()
-    where TPlaceable : class, new()
+    where TPlaceable : class
     {
         public TBoard Board { get; }
 

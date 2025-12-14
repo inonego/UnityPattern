@@ -99,6 +99,16 @@ namespace inonego
                 this.entity = entity;
             }
 
+            public virtual void OnAfterSpawn()
+            {
+                // NONE
+            }
+
+            public virtual void OnBeforeDespawn()
+            {
+                // NONE
+            }
+
             public virtual void OnAfterDespawn()
             {
                 entity = null;

@@ -11,7 +11,7 @@ namespace inonego
     // ============================================================
     [Serializable]
     public class BoardSpace<TPlaceable> : BoardSpaceBase<int, TPlaceable>
-    where TPlaceable : class, new()
+    where TPlaceable : class
     {
         // NONE
     }

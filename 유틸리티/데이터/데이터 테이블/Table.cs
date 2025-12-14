@@ -19,21 +19,46 @@ namespace inonego
 
     // ============================================================
     /// <summary>
+    /// 테이블을 위한 클래스입니다. 값 형태로 직렬화됩니다.
+    /// </summary>
+    // ============================================================
+    [Serializable]
+    public class Table_V<TTableValue> : Table<TTableValue>
+    where TTableValue : class, ITableValue
+    {
+        [SerializeField]
+        private XDictionary_VV<string, TTableValue> dictionary = new();
+        public override Dictionary<string, TTableValue> Dictionary => dictionary;
+    }
+
+    // ============================================================
+    /// <summary>
+    /// 테이블을 위한 클래스입니다. 참조 형태로 직렬화됩니다.
+    /// </summary>
+    // ============================================================
+    [Serializable]
+    public class Table_R<TTableValue> : Table<TTableValue>
+    where TTableValue : class, ITableValue
+    {
+        [SerializeField]
+        private XDictionary_VR<string, TTableValue> dictionary = new();
+        public override Dictionary<string, TTableValue> Dictionary => dictionary;
+    }
+
+    // ============================================================
+    /// <summary>
     /// 테이블을 위한 클래스입니다.
     /// </summary>
     // ============================================================
     [Serializable]
-    public class Table<TTableValue> : ITable<TTableValue>
-    where TTableValue : class, ITableValue, new()
+    public abstract class Table<TTableValue> : ITable<TTableValue>
+    where TTableValue : class, ITableValue
     {
 
     #region 필드
 
-        [SerializeField]
-        private XDictionary_VV<string, TTableValue> dictionary = new();
-
         [XmlIgnore]
-        public virtual Dictionary<string, TTableValue> Dictionary => dictionary;
+        public abstract Dictionary<string, TTableValue> Dictionary { get; }
 
     #endregion
 

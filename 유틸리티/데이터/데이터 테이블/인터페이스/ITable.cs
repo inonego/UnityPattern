@@ -22,7 +22,7 @@ namespace inonego
     /// </summary>
     // ============================================================
     public interface ITable<TTableValue> : ITable, IReadOnlyTable<TTableValue>
-    where TTableValue : class, ITableValue, new()
+    where TTableValue : class, ITableValue
     {
         public new Dictionary<string, TTableValue> Dictionary { get; }
 

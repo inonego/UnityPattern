@@ -437,9 +437,7 @@ public class TEST_DataPackage
     /// </summary>
     // ------------------------------------------------------------
     [Serializable]
-    private class TestTable : Table<TestData>
-    {
-    }
+    private class TestTable : Table_V<TestData> {}
 
     // ------------------------------------------------------------
     /// <summary>
@@ -447,9 +445,7 @@ public class TEST_DataPackage
     /// </summary>
     // ------------------------------------------------------------
     [Serializable]
-    private class TestTable2 : Table<TestData2>
-    {
-    }
+    private class TestTable2 : Table_V<TestData2> {}
 
 #endregion
 

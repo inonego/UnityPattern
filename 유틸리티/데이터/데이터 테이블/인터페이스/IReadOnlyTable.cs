@@ -31,7 +31,7 @@ namespace inonego
     /// </summary>
     // ============================================================
     public interface IReadOnlyTable<TTableValue> : IReadOnlyTable
-    where TTableValue : class, ITableValue, new()
+    where TTableValue : class, ITableValue
     {
         public IReadOnlyDictionary<string, TTableValue> Dictionary { get; }
 

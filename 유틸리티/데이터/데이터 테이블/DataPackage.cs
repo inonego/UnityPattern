@@ -19,10 +19,10 @@ namespace inonego
     public interface IReadOnlyDataPackage
     {
         public TTableValue Read<TTableValue>(string key)
-        where TTableValue : class, ITableValue, new();
+        where TTableValue : class, ITableValue;
 
         public IReadOnlyTable<TTableValue> Table<TTableValue>()
-        where TTableValue : class, ITableValue, new();
+        where TTableValue : class, ITableValue;
     }
     
     // ================================================================
@@ -72,7 +72,7 @@ namespace inonego
         private XDictionary_VR<XType, ITable> dictionary = new();
 
         [XmlIgnore]
-        public Dictionary<XType, ITable> Dictionary => dictionary;
+        public IReadOnlyDictionary<XType, ITable> Dictionary => dictionary;
 
     #endregion
 
@@ -84,7 +84,7 @@ namespace inonego
         /// </summary>
         // ----------------------------------------------------------------
         public TTableValue Read<TTableValue>(string key)
-        where TTableValue : class, ITableValue, new()
+        where TTableValue : class, ITableValue
         {
             var lTable = Table<TTableValue>();
 
@@ -97,7 +97,7 @@ namespace inonego
         /// </summary>
         // ----------------------------------------------------------------
         public IReadOnlyTable<TTableValue> Table<TTableValue>()
-        where TTableValue : class, ITableValue, new()
+        where TTableValue : class, ITableValue
         {
             var valueType = typeof(TTableValue);
 
@@ -116,7 +116,7 @@ namespace inonego
         // ----------------------------------------------------------------
         public void AddTable<TTable, TTableValue>(TTable lTable)
         where TTable : Table<TTableValue>
-        where TTableValue : class, ITableValue, new()
+        where TTableValue : class, ITableValue
         {
             var valueType = typeof(TTableValue);
 
@@ -134,7 +134,7 @@ namespace inonego
         /// </summary>
         // ----------------------------------------------------------------
         public void RemoveTable<TTableValue>()
-        where TTableValue : class, ITableValue, new()
+        where TTableValue : class, ITableValue
         {
             var valueType = typeof(TTableValue);
 

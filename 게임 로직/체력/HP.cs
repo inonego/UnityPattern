@@ -20,7 +20,7 @@ public class HP : IDeepCloneable<HP>
         ByMissingValue,
     }
 
-    public enum State        { Alive, Dead }
+    public enum State        { None, Alive, Dead }
     
     private enum ApplyType   { Heal, Damage }
 
@@ -92,7 +92,7 @@ public class HP : IDeepCloneable<HP>
     private int value = 0;
     public int Value
     {
-        get => value;
+        get => current == State.None ? 0 : value;
         set => Set(value);
     }
 
@@ -105,7 +105,7 @@ public class HP : IDeepCloneable<HP>
     private int maxValue = 0;
     public int MaxValue
     {
-        get => maxValue;
+        get => current == State.None ? 0 : maxValue;
         set => SetMax(value);
     }
 
@@ -161,11 +161,27 @@ public class HP : IDeepCloneable<HP>
 
     // ------------------------------------------------------------
     /// <summary>
+    /// None 상태를 토글합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    public void ToggleNone(bool value)
+    {
+        var state = value ? State.None : State.Dead;
+
+        // Set 메서드를 사용하여 None 상태로 변경
+        Set(state, autoChangeValue: true, bypassNoneCheck: true);
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
     /// 현재 상태를 설정합니다.
     /// </summary>
     // ------------------------------------------------------------
-    private void Set(State state, bool autoChangeValue = true)
+    private void Set(State state, bool autoChangeValue = true, bool bypassNoneCheck = false)
     {
+        // None 상태면 상태 변경을 허용하지 않습니다.
+        if (!bypassNoneCheck && current == State.None) return;
+
         var (prev, next) = (this.current, state);
         
         if (prev == next) return;
@@ -174,7 +190,7 @@ public class HP : IDeepCloneable<HP>
 
         if (autoChangeValue)
         {
-            Set(IsAlive ? maxValue : 0, autoChangeState: false);
+            Set(IsAlive ? maxValue : 0, autoChangeState: false, bypassNoneCheck: bypassNoneCheck);
         }
         
         OnStateChange?.Invoke(this, new(prev, next));
@@ -185,8 +201,11 @@ public class HP : IDeepCloneable<HP>
     /// 현재 체력을 설정합니다.
     /// </summary>
     // ------------------------------------------------------------
-    private void Set(int value, bool autoChangeState = true)
+    private void Set(int value, bool autoChangeState = true, bool bypassNoneCheck = false)
     {
+        // None 상태면 체력 변경을 허용하지 않습니다. (bypassNoneCheck가 true인 경우 제외)
+        if (!bypassNoneCheck && current == State.None) return;
+
         var (prev, next) = (this.value, Math.Clamp(value, 0, maxValue));
 
         if (prev == next) return;
@@ -217,6 +236,9 @@ public class HP : IDeepCloneable<HP>
     // ------------------------------------------------------------
     private void SetMax(int maxValue)
     {
+        // None 상태면 최대 체력 변경을 허용하지 않습니다.
+        if (current == State.None) return;
+
         var (prev, next) = (this.maxValue, Math.Max(0, maxValue));
 
         if (prev == next) return;
@@ -239,8 +261,8 @@ public class HP : IDeepCloneable<HP>
     // ------------------------------------------------------------
     public void ApplyHeal(int amount)
     {
-        // 죽은 상태면 힐을 받지 않습니다.
-        if (IsDead) return;
+        // None 상태이거나 죽은 상태면 힐을 받지 않습니다.
+        if (current == State.None || IsDead) return;
 
         if (amount < 0) {
             #if UNITY_EDITOR
@@ -263,8 +285,8 @@ public class HP : IDeepCloneable<HP>
     // ------------------------------------------------------------
     public void ApplyDamage(int amount)
     {
-        // 죽은 상태면 데미지를 받지 않습니다.
-        if (IsDead) return;
+        // None 상태이거나 죽은 상태면 데미지를 받지 않습니다.
+        if (current == State.None || IsDead) return;
 
         if (amount < 0) {
             #if UNITY_EDITOR
@@ -287,6 +309,9 @@ public class HP : IDeepCloneable<HP>
     // ------------------------------------------------------------
     public int CalculateApplyAmount(float ratio, ApplyRatioType applyRatioType)
     {
+        // None 상태면 계산을 수행하지 않습니다.
+        if (current == State.None) return 0;
+
         switch (applyRatioType)
         {
             case ApplyRatioType.ByValue:

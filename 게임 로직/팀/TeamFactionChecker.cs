@@ -9,7 +9,7 @@ namespace inonego
     //============================================================
     public enum TeamRelativeFaction : int
     {
-        Me, Ally, Enemy, None = -1
+        Me, Ally, Enemy, Neutral = -1
     }
 
     //============================================================
@@ -24,8 +24,8 @@ namespace inonego
         All,        // 모두
         AllyNotMe,  // 아군 (자신 제외)
         AllNotMe,   // 모두 (자신 제외)
+        Neutral,    // 중립
         Enemy,      // 적군
-        None,       // 없음
     }
 
     [Serializable]

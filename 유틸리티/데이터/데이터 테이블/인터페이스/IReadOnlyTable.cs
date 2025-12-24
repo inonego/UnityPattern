@@ -20,9 +20,9 @@ namespace inonego
 
         public bool Has(string key);
 
-        public IEnumerator GetEnumerator();
-
         public Type ValueType { get; }
+
+        public IEnumerator<KeyValuePair<string, ITableValue>> GetEnumerator();
     }
 
     // ============================================================

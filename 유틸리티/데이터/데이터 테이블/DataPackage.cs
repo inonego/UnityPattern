@@ -23,6 +23,8 @@ namespace inonego
 
         public IReadOnlyTable<TTableValue> Table<TTableValue>()
         where TTableValue : class, ITableValue;
+
+        public IReadOnlyTable Table(Type valueType);
     }
     
     // ================================================================
@@ -101,9 +103,19 @@ namespace inonego
         {
             var valueType = typeof(TTableValue);
 
+            return Table(valueType) as IReadOnlyTable<TTableValue>; 
+        }
+
+        // ----------------------------------------------------------------
+        /// <summary>
+        /// 데이터 패키지에서 데이터 테이블을 사용합니다.
+        /// </summary>
+        // ----------------------------------------------------------------
+        public IReadOnlyTable Table(Type valueType)
+        {
             if (dictionary.TryGetValue(valueType, out ITable lTable))
             {
-                return lTable as IReadOnlyTable<TTableValue>;
+                return lTable;
             }
 
             throw new InvalidOperationException($"데이터 패키지에 {valueType.Name} 타입의 데이터 테이블이 존재하지 않습니다.");

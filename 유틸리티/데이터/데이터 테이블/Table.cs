@@ -102,7 +102,15 @@ namespace inonego
 
         bool IReadOnlyTable.Has(string key) => Dictionary.ContainsKey(key);
 
-        IEnumerator IReadOnlyTable.GetEnumerator() => Dictionary.GetEnumerator();
+        IEnumerator<KeyValuePair<string, ITableValue>> IReadOnlyTable.GetEnumerator()
+        {
+            foreach (var (key, value) in Dictionary)
+            {
+                yield return new KeyValuePair<string, ITableValue>(key, value);
+            }
+        }
+
+        public IEnumerator GetEnumerator() => Dictionary.GetEnumerator();
 
         Type IReadOnlyTable.ValueType => typeof(TTableValue);
 
@@ -125,7 +133,7 @@ namespace inonego
         /// ITable 인터페이스 구현: 다른 테이블과 합칩니다.
         /// </summary>
         // ------------------------------------------------------------
-        void ITable.Merge(ITable other)
+        public void Merge(ITable other)
         {
             if (other == null)
             {
@@ -142,12 +150,42 @@ namespace inonego
 
         // ------------------------------------------------------------
         /// <summary>
+        /// 데이터를 추가합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void Add(object value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            if (value is not TTableValue lTableValue)
+            {
+                throw new InvalidOperationException($"추가하려는 데이터가 {typeof(TTableValue).Name} 타입이 아닙니다.");
+            }
+
+            Add(lTableValue);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
         /// 다른 데이터베이스와 합칩니다.
         /// </summary>
         // ------------------------------------------------------------
         public void Merge(Table<TTableValue> other)
         {
             Merge(other as ITable<TTableValue>);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 데이터를 추가합니다. XML 직렬화 전용입니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void Add(TTableValue value)
+        {
+            Dictionary.Add(value.Key, value);
         }
 
         // ------------------------------------------------------------

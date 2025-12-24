@@ -13,6 +13,8 @@ namespace inonego
     public interface ITable : IReadOnlyTable
     {
         public void Reload();
+
+        public void Add(object value);
         public void Merge(ITable other);
     }
 
@@ -26,6 +28,7 @@ namespace inonego
     {
         public new Dictionary<string, TTableValue> Dictionary { get; }
 
+        public void Add(TTableValue value);
         public void Merge(ITable<TTableValue> other);
     }
 }

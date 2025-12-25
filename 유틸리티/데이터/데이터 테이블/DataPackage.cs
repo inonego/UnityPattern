@@ -132,6 +132,16 @@ namespace inonego
         {
             var valueType = typeof(TTableValue);
 
+            AddTable(valueType, lTable);
+        }
+
+        // ----------------------------------------------------------------
+        /// <summary>
+        /// 데이터 테이블을 추가합니다.
+        /// </summary>
+        // ----------------------------------------------------------------
+        public void AddTable(Type valueType, ITable lTable)
+        {
             if (dictionary.ContainsKey(valueType))
             {
                 throw new InvalidOperationException($"데이터 패키지에 {valueType.Name} 타입의 데이터 테이블이 이미 존재합니다. RemoveTable<{valueType.Name}>() 메서드를 호출해주세요.");

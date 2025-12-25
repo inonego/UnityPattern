@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 
 using UnityEngine;
+
+#if UNITY_EDITOR
+
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 
@@ -62,6 +65,7 @@ namespace inonego
             if (DataPackage.Loaded == null)
             {
                 EditorUtility.DisplayDialog("오류", "데이터 패키지가 로드되지 않았습니다.", "확인");
+
                 return;
             }
 
@@ -563,3 +567,5 @@ namespace inonego
 
     }
 }
+
+#endif

@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 using UnityEngine;
 
@@ -20,6 +22,10 @@ namespace inonego
         [SerializeField] private XDictionary_VV<string, int> valIs = new();
         [SerializeField] private XDictionary_VV<string, float> valFs = new();
         [SerializeField] private XHashSet_V<string> valFlags = new();    
+
+        public IReadOnlyDictionary<string, int> ValIs => valIs;
+        public IReadOnlyDictionary<string, float> ValFs => valFs;
+        public IReadOnlyCollection<string> ValFlags => valFlags;
 
     #endregion
 

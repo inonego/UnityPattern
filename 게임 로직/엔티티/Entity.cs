@@ -56,7 +56,7 @@ namespace inonego
     #region 체력 관련
 
         [SerializeField]
-        private HP hp = new HP();
+        private HP hp = null;
         public HP HP => hp;
 
         private void InitHP()
@@ -130,16 +130,16 @@ namespace inonego
 
     #region 생성자
 
-        public Entity() : base() {}
-
-        public Entity(HP hp) : this()
+        public Entity(HP overrideHP = null)
         {
-            if (hp == null)
+            if (overrideHP != null)
             {
-                throw new ArgumentNullException("HP가 null입니다.");
+                this.hp = overrideHP;
             }
-            
-            this.hp = hp;
+            else
+            {
+                this.hp = new HP();
+            }
         }
 
     #endregion

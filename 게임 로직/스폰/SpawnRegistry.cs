@@ -301,13 +301,25 @@ namespace inonego
         /// 객체를 스폰합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public T Spawn()
+        protected T Spawn()
         {
             var spawnable = Acquire();
 
             Spawn(spawnable);
 
             return spawnable;
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 객체를 스폰합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public virtual bool TrySpawn(out T spawned)
+        {
+            spawned = Spawn();
+
+            return spawned != null;
         }
     }
 
@@ -333,7 +345,7 @@ namespace inonego
         /// 객체를 스폰합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public T Spawn(TParam param)
+        protected T Spawn(TParam param)
         {
             var spawnable = Acquire(param);
 
@@ -346,6 +358,18 @@ namespace inonego
             Spawn(spawnable, InitAction);
 
             return spawnable;
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 객체를 스폰합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public virtual bool TrySpawn(TParam param, out T spawned)
+        {
+            spawned = Spawn(param);
+
+            return spawned != null;
         }
     }
 }

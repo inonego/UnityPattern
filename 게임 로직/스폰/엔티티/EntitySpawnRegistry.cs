@@ -87,13 +87,25 @@ namespace inonego
         /// 엔티티를 스폰합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public TEntity Spawn()
+        protected TEntity Spawn()
         {
             var entity = Acquire();
 
             Spawn(entity);
 
             return entity;
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 엔티티를 스폰합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public virtual bool TrySpawn(out TEntity spawned)
+        {
+            spawned = Spawn();
+
+            return spawned != null;
         }
     }
 
@@ -110,7 +122,7 @@ namespace inonego
         /// 엔티티를 스폰합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public TEntity Spawn(TParam param)
+        protected TEntity Spawn(TParam param)
         {
             var entity = Acquire(param);
 
@@ -123,6 +135,18 @@ namespace inonego
             Spawn(entity, InitAction);
 
             return entity;
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 엔티티를 스폰합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public virtual bool TrySpawn(TParam param, out TEntity spawned)
+        {
+            spawned = Spawn(param);
+
+            return spawned != null;
         }
     }
 

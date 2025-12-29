@@ -98,11 +98,11 @@ namespace inonego
       /// 게임 오브젝트를 반환합니다.
       /// </summary>
       // ------------------------------------------------------------
-      public void Release(GameObject target)
+      public void Release(GameObject go)
       {
-         if (target != null)
+         if (go != null)
          {
-            GameObject.Destroy(target);
+            GameObject.Destroy(go);
          }
       }
 

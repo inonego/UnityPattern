@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+using UnityEngine;
+
 using NUnit.Framework;
 
 using inonego.Pool;
@@ -88,6 +90,15 @@ public class TEST_Pool_PoolBase
 
         Assert.AreEqual(0, pool.Acquired.Count);
         Assert.AreEqual(2, pool.Released.Count);
+
+        // ------------------------------------------------------------
+        // Release - item3 (No Push) 
+        // ------------------------------------------------------------
+        var item3 = pool.Acquire();
+        pool.Release(item3, pushToReleased: false);
+
+        Assert.AreEqual(0, pool.Acquired.Count, "Acquired 목록에서 제거되어야 합니다.");
+        Assert.AreEqual(1, pool.Released.Count, "Released 큐에 추가되지 않아야 합니다.");
     }
 
     // ------------------------------------------------------------
@@ -208,6 +219,112 @@ public class TEST_Pool_PoolBase
         Assert.AreEqual(2, pool.AcquireCallCount);
         Assert.AreEqual(1, pool.ReleaseCallCount);
         Assert.AreSame(item, item2);
+    }
+
+#endregion
+
+#region PoolBase 풀 관리 메서드 테스트
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// PushToReleased 메서드를 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void PoolBase_08_PushToReleased_테스트()
+    {
+        // Arrange
+        var pool = new TestPoolWithCallbacks();
+        var item = new TestPoolItem();
+
+        // Act
+        pool.PushToReleased(item);
+
+        // Assert
+        Assert.AreEqual(1, pool.Released.Count);
+        Assert.AreEqual(0, pool.Acquired.Count);
+        Assert.AreEqual(1, pool.ReleaseCallCount, "PushToReleased 시 OnRelease가 호출되어야 합니다.");
+        
+        // 중복 추가 시도 시 예외 발생 확인
+        Assert.Throws<Exception>(() => pool.PushToReleased(item), "이미 풀에 있는 아이템을 추가하려고 하면 예외가 발생해야 합니다.");
+
+        // 이미 사용 중인 아이템 추가 시도 시 예외 발생 확인
+        var acquiredItem = pool.Acquire();
+        Assert.Throws<Exception>(() => pool.PushToReleased(acquiredItem), "이미 사용 중인 아이템을 풀에 추가하려고 하면 예외가 발생해야 합니다.");
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// PopFromReleased 메서드를 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void PoolBase_09_PopFromReleased_테스트()
+    {
+        // Arrange
+        var pool = new TestPool();
+        var item1 = new TestPoolItem();
+        pool.PushToReleased(item1);
+
+        // Act & Assert - 풀에 아이템이 있는 경우
+        var poppedItem1 = pool.PopFromReleased();
+        Assert.AreSame(item1, poppedItem1);
+        Assert.AreEqual(0, pool.Released.Count);
+
+        // Act & Assert - 풀이 비어있는 경우 (새로 생성되어야 함)
+        var poppedItem2 = pool.PopFromReleased();
+        Assert.IsNotNull(poppedItem2);
+        Assert.AreNotSame(item1, poppedItem2);
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// MoveAcquiredTo 메서드를 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void PoolBase_10_MoveAcquiredTo_테스트()
+    {
+        // Arrange
+        var pool1 = new TestPoolWithCallbacks();
+        var pool2 = new TestPoolWithCallbacks();
+        var item = pool1.Acquire();
+
+        // Act
+        pool1.MoveAcquiredOneTo(pool2, item);
+
+        // Assert
+        Assert.AreEqual(0, pool1.Acquired.Count, "원본 풀에서 제거되어야 합니다.");
+        Assert.AreEqual(1, pool1.ReleaseCallCount, "원본 풀의 OnRelease가 호출되어야 합니다.");
+        Assert.AreEqual(1, pool2.Acquired.Count, "대상 풀에 추가되어야 합니다.");
+        Assert.AreEqual(1, pool2.AcquireCallCount, "대상 풀의 OnAcquire가 호출되어야 합니다.");
+    }
+
+    // ------------------------------------------------------------
+    /// <summary>
+    /// MoveReleasedTo 메서드를 테스트합니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    [Test]
+    public void PoolBase_11_MoveReleasedTo_테스트()
+    {
+        // Arrange
+        var pool1 = new TestPoolWithCallbacks();
+        var pool2 = new TestPoolWithCallbacks();
+        
+        pool1.PushToReleased(new TestPoolItem());
+        pool1.PushToReleased(new TestPoolItem());
+        
+        Assert.AreEqual(2, pool1.Released.Count);
+        Assert.AreEqual(0, pool2.Released.Count);
+
+        // Act
+        pool1.MoveReleasedOneTo(pool2);
+
+        // Assert
+        Assert.AreEqual(1, pool1.Released.Count, "원본 풀에 1개가 남아있어야 합니다.");
+        Assert.AreEqual(1, pool2.Released.Count, "대상 풀로 1개가 이동되어야 합니다.");
+        Assert.AreEqual(1, pool2.ReleaseCallCount, "대상 풀로 이동 시 OnRelease가 1번 호출되어야 합니다.");
     }
 
 #endregion

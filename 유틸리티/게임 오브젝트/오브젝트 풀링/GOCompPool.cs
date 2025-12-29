@@ -13,26 +13,34 @@ namespace inonego.Pool
     /// </summary>
     // ===============================================================================
     [Serializable]
-    public class GOCompPool<T> : GOPool, IPool<T> where T : Component
+    public class GOCompPool<T> : PoolBase<T>, IGOCompPool where T : Component
     {
 
     #region 필드
 
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 풀에 남아있는 컴포넌트 목록입니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        private Dictionary<GameObject, T> releasedComp = new();
-        public IReadOnlyCollection<T> ReleasedComp => releasedComp.Values;
+        [SerializeReference]
+        protected IGameObjectProvider gameObjectProvider = new PrefabGameObjectProvider();
+        public IGameObjectProvider GameObjectProvider => gameObjectProvider;
 
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 풀에 사용중인 컴포넌트 목록입니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        private Dictionary<GameObject, T> acquiredComp = new();
-        public IReadOnlyCollection<T> AcquiredComp => acquiredComp.Values;
+        [SerializeField]
+        protected Transform pool = null;
+        public Transform Pool
+        {
+            get => pool;
+            set => pool = value;
+        }
+
+        public Transform Parent 
+        { 
+            get => gameObjectProvider.Parent;
+            set => gameObjectProvider.Parent = value;
+        }
+
+        public bool WorldPositionStays
+        { 
+            get => gameObjectProvider.WorldPositionStays;
+            set => gameObjectProvider.WorldPositionStays = value;
+        }
 
     #endregion
 
@@ -40,118 +48,119 @@ namespace inonego.Pool
 
         public GOCompPool() : base() {}
 
-        public GOCompPool(IGameObjectProvider provider) : base(provider) {}
-
-    #endregion
-
-    #region GOPool 오버라이드
-
-        protected override void OnAcquire(GameObject gameObject)
+        public GOCompPool(IGameObjectProvider gameObjectProvider) : base() 
         {
-            base.OnAcquire(gameObject);
-
-            if (releasedComp.TryGetValue(gameObject, out var comp))
+            if (gameObjectProvider == null)
             {
-                releasedComp.Remove(gameObject);
-            }
-            else
-            {
-                comp = gameObject.GetComponent<T>();
-            }   
-
-            if (comp != null)
-            {
-                acquiredComp.Add(gameObject, comp); 
-            } 
-        }
-
-        protected override void OnRelease(GameObject gameObject)
-        {
-            base.OnRelease(gameObject);
-
-            if (acquiredComp.TryGetValue(gameObject, out var comp))
-            {
-                acquiredComp.Remove(gameObject);
-            }
-            else
-            {
-                comp = gameObject.GetComponent<T>();
+                throw new ArgumentNullException("게임 오브젝트 프로바이더가 null입니다.");
             }
 
-            if (comp != null)
-            {
-                releasedComp.Add(gameObject, comp);
-            }
+            this.gameObjectProvider = gameObjectProvider;
         }
 
     #endregion
 
-    #region 인터페이스 IPool<T> 구현
+    #region PoolBase 오버라이드
 
-        IReadOnlyCollection<T> IPool<T>.Released => ReleasedComp;
-        IReadOnlyCollection<T> IPool<T>.Acquired => AcquiredComp;
-
-        T IPool<T>.Acquire()
+        protected override T AcquireNew()
         {
-            return AcquireComp();
-        }
-
-        void IPool<T>.Release(T comp)
-        {
-            ReleaseComp(comp);
-        }
-
-    #endregion
-
-    #region 메서드
-
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 풀에서 컴포넌트를 가져옵니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        public T AcquireComp()
-        {
-            var gameObject = Acquire();
-
-            if (acquiredComp.TryGetValue(gameObject, out var comp))
+            if (GameObjectProvider == null)
             {
-                return comp;
+                throw new NullReferenceException("GameObjectProvider가 설정되지 않았습니다.");
             }
 
-            throw new Exception($"GameObject '{gameObject.name}'에서 컴포넌트 '{typeof(T).Name}'을(를) 찾을 수 없습니다.");
+            var gameObject = GameObjectProvider.Acquire();
+            var comp = gameObject.GetComponent<T>();
+
+            if (comp == null)
+            {
+                throw new Exception($"게임 오브젝트 '{gameObject.name}'에서 컴포넌트 '{typeof(T).Name}'을(를) 찾을 수 없습니다.");
+            }
+
+            return comp;
         }
 
+        protected async Awaitable<T> AcquireNewAsync()
+        {
+            if (GameObjectProvider == null)
+            {
+                throw new NullReferenceException("GameObjectProvider가 설정되지 않았습니다.");
+            }
+
+            var gameObject = await GameObjectProvider.AcquireAsync();
+            var comp = gameObject.GetComponent<T>();
+            
+            if (comp == null)
+            {
+                throw new Exception($"게임 오브젝트 '{gameObject.name}'에서 컴포넌트 '{typeof(T).Name}'을(를) 찾을 수 없습니다.");
+            }
+            
+            return comp;
+        }
+        
         // ------------------------------------------------------------
         /// <summary>
         /// 풀에서 컴포넌트를 비동기로 가져옵니다.
         /// </summary>
         // ------------------------------------------------------------
-        public async Awaitable<T> AcquireCompAsync()
+        public async Awaitable<T> AcquireAsync()
         {
-            var gameObject = await AcquireAsync();
-
-            if (acquiredComp.TryGetValue(gameObject, out var comp))
-            {
-                return comp;
-            }
-
-            throw new Exception($"GameObject '{gameObject.name}'에서 컴포넌트 '{typeof(T).Name}'을(를) 찾을 수 없습니다.");
+            return await AcquireInternalAsync(AcquireNewAsync);
         }
 
-        // ------------------------------------------------------------
-        /// <summary>
-        /// 풀에 컴포넌트를 반환합니다.
-        /// </summary>
-        // ------------------------------------------------------------
-        public void ReleaseComp(T comp)
+        protected override void OnAcquire(T item)
         {
-            if (comp == null)
+            var gameObject = item.gameObject;
+
+            if (gameObject.transform.parent != Parent)
             {
-                throw new Exception($"컴포넌트 '{typeof(T).Name}'이(가) null입니다.");
+                gameObject.transform.SetParent(Parent, WorldPositionStays);
             }
 
-            Release(comp.gameObject);
+            gameObject.SetActive(true);
+        }
+
+        protected override void OnRelease(T item)
+        {
+            var gameObject = item.gameObject;
+
+            if (gameObject.transform.parent != Pool)
+            {
+                gameObject.transform.SetParent(Pool, WorldPositionStays);
+            }
+
+            gameObject.SetActive(false);
+        }
+
+    #endregion
+
+    #region IGameObjectProvider 구현
+
+        GameObject IGameObjectProvider.Acquire()
+        {
+            var comp = Acquire();
+
+            return comp.gameObject;
+        }
+
+        async Awaitable<GameObject> IGameObjectProvider.AcquireAsync()
+        {
+            var comp = await AcquireAsync();
+
+            return comp.gameObject;
+        }
+
+        void IGameObjectProvider.Release(GameObject go)
+        {
+            if (go == null)
+            {
+                throw new ArgumentNullException("타겟이 null입니다.");
+            }
+            
+            if (go.TryGetComponent(out T comp))
+            {
+                Release(comp);
+            }
         }
 
     #endregion

@@ -7,7 +7,7 @@ namespace inonego.Pool
     /// 게임 오브젝트를 생성하는 오브젝트 풀링을 위한 인터페이스입니다.
     /// </summary>
     // ============================================================
-    public interface IGOPool : IPool<GameObject>, IGameObjectProvider
+    public interface IGOCompPool : IGameObjectProvider
     {
 
     #region 필드

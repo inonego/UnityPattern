@@ -1,7 +1,9 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.EventSystems;
-
-using System;
 
 namespace inonego.UI
 {
@@ -57,6 +59,21 @@ namespace inonego.UI
     [DisallowMultipleComponent]
     public class DraggableUI : MonoBehaviour, IInitializePotentialDragHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
+
+    #region 정적 관리
+
+        private static HashSet<DraggableUI> activeCollection = new();
+        public static IReadOnlyCollection<DraggableUI> ActiveCollection => activeCollection;
+
+        public static event Action OnActiveCollectionChange = null;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void OnRuntimeInitializeOnLoad()
+        {
+            activeCollection.Clear();
+        }
+
+    #endregion
 
     #region 필드
 
@@ -117,6 +134,11 @@ namespace inonego.UI
             {
                 _OnDrag(current);
             }
+        }
+
+        private void OnDisable()
+        {
+            ForceDragEnd();
         }
 
     #endregion
@@ -208,6 +230,12 @@ namespace inonego.UI
         {
             if (eventData == null) return;
 
+            if (!activeCollection.Contains(this))
+            {
+                activeCollection.Add(this);
+                OnActiveCollectionChange?.Invoke();
+            }
+
             originalBlocksRaycasts = canvasGroup.blocksRaycasts;
 
             if (!RaycastTarget)
@@ -269,6 +297,12 @@ namespace inonego.UI
         {
             if (eventData == null) return;
 
+            if (activeCollection.Contains(this))
+            {
+                activeCollection.Remove(this);
+                OnActiveCollectionChange?.Invoke();
+            }
+
             canvasGroup.blocksRaycasts = originalBlocksRaycasts;
 
             Vector2 localPoint = ScreenToLocalPoint(eventData);
@@ -304,6 +338,20 @@ namespace inonego.UI
         public void ForceDragEnd()
         {
             _OnDragEnd(current);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 현재 마우스 위치와 부모를 기준으로 드래그 오프셋을 재계산합니다.
+        /// 드래그 도중에 부모가 변경된 경우 호출해야 합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void RefreshDragOffset()
+        {
+            if (!IsDragging) return;
+
+            Vector2 localPoint = ScreenToLocalPoint(current);
+            offset = rectTransform.anchoredPosition - localPoint;
         }
 
     #endregion

@@ -28,6 +28,7 @@ namespace inonego.UI
     /// 드래그된 UI 요소를 받을 수 있는 드롭존 컴포넌트입니다.
     /// </summary>
     // ========================================================================
+    [RequireComponent(typeof(CanvasGroup))]
     [RequireComponent(typeof(RectTransform))]
     [DisallowMultipleComponent]
     public class DropZoneUI : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointerExitHandler
@@ -46,6 +47,10 @@ namespace inonego.UI
         private DraggableUI draggable = null;
         public DraggableUI Draggable => draggable;
 
+        [SerializeField, ReadOnly]
+        private CanvasGroup canvasGroup = null;
+        public CanvasGroup CanvasGroup => canvasGroup;
+
     #endregion
 
     #region 이벤트
@@ -62,6 +67,16 @@ namespace inonego.UI
     #endregion
 
     #region 유니티 이벤트
+
+        private void Awake()
+        {
+            GetComponents();
+        }   
+
+        private void GetComponents()
+        {
+            canvasGroup = GetComponent<CanvasGroup>();
+        }
 
         private void Update()
         {

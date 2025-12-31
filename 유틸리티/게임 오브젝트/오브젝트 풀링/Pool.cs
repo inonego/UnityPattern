@@ -1,4 +1,8 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+using UnityEngine;
 
 namespace inonego.Pool
 {
@@ -18,6 +22,16 @@ namespace inonego.Pool
         protected override T AcquireNew()
         {
             return new T();
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 새로운 오브젝트를 비동기로 생성합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        protected override async Awaitable<T> AcquireNewAsync()
+        {
+            return await Task.FromResult(new T());
         }
     }
 }

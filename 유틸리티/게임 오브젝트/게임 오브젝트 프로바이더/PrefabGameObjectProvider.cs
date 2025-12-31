@@ -44,32 +44,15 @@ namespace inonego
       [SerializeField]
       private Transform parent = null;
 
-      // ------------------------------------------------------------
-      /// <summary>
-      /// 게임 오브젝트를 생성할 위치를 유지할지에 대한 여부입니다.
-      /// </summary>
-      // ------------------------------------------------------------
-      public bool WorldPositionStays
-      {
-         get => worldPositionStays;
-         set => worldPositionStays = value;
-      }
-
-      [SerializeField]
-      private bool worldPositionStays = false;
-
    #endregion
 
    #region 생성자
 
       public PrefabGameObjectProvider() : base() {}
 
-      public PrefabGameObjectProvider(GameObject prefab, Transform parent, bool worldPositionStays = true) : this()
+      public PrefabGameObjectProvider(GameObject prefab, Transform parent) : this()
       {
-         this.prefab = prefab;
-         this.parent = parent;
-
-         this.worldPositionStays = worldPositionStays;
+         (this.prefab, this.parent) = (prefab, parent);
       }
 
    #endregion
@@ -81,7 +64,7 @@ namespace inonego
       /// 게임 오브젝트를 가져옵니다.
       /// </summary>
       // ------------------------------------------------------------
-      public GameObject Acquire()
+      public GameObject Acquire(bool worldPositionStays = true)
       {
          if (prefab == null)
          {
@@ -95,46 +78,46 @@ namespace inonego
 
       // ------------------------------------------------------------
       /// <summary>
-      /// 게임 오브젝트를 반환합니다.
-      /// </summary>
-      // ------------------------------------------------------------
-      public void Release(GameObject go)
-      {
-         if (go != null)
-         {
-            GameObject.Destroy(go);
-         }
-      }
-
-      // ------------------------------------------------------------
-      /// <summary>
       /// 게임 오브젝트를 비동기로 가져옵니다.
       /// </summary>
       // ------------------------------------------------------------
-      public async Awaitable<GameObject> AcquireAsync()
+      public async Awaitable<GameObject> AcquireAsync(bool worldPositionStays = true)
       {
          if (prefab == null)
          {
             throw new NullReferenceException("프리팹이 설정되지 않았습니다.");
          }
 
-         var instances = await GameObject.InstantiateAsync(prefab);
+         var parameters = new InstantiateParameters
+         {
+            parent = parent,
+
+            worldSpace = worldPositionStays
+         };
+
+         var instances = await GameObject.InstantiateAsync(prefab, parameters);
          
          if (instances != null && instances.Length > 0)
          {
-            var instance = instances[0];
-
-            if (parent != null)
-            {
-               instance.transform.SetParent(parent, worldPositionStays);
-            }
-
-            return instance;
+            return instances[0];
          }
          
          return null;
       }
 
+      // ------------------------------------------------------------
+      /// <summary>
+      /// 게임 오브젝트를 반환합니다.
+      /// </summary>
+      // ------------------------------------------------------------
+      public void Release(GameObject go, bool worldPositionStays = true)
+      {
+         if (go != null)
+         {
+            GameObject.Destroy(go);
+         }
+      }
+      
    #endregion
 
    }

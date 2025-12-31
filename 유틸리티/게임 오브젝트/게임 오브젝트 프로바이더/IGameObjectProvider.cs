@@ -20,13 +20,6 @@ namespace inonego
       // ------------------------------------------------------------
       public Transform Parent { get; set; }
 
-      // ------------------------------------------------------------
-      /// <summary>
-      /// 게임 오브젝트를 생성할 위치를 유지할지에 대한 여부입니다.
-      /// </summary>
-      // ------------------------------------------------------------
-      public bool WorldPositionStays { get; set; }
-
    #endregion
 
    #region 메서드
@@ -36,21 +29,21 @@ namespace inonego
       /// 게임 오브젝트를 가져옵니다.
       /// </summary>
       // ------------------------------------------------------------
-      public GameObject Acquire();
-
-      // ------------------------------------------------------------
-      /// <summary>
-      /// 게임 오브젝트를 반환합니다.
-      /// </summary>
-      // ------------------------------------------------------------
-      public void Release(GameObject go);
+      public GameObject Acquire(bool worldPositionStays = true);
 
       // ------------------------------------------------------------
       /// <summary>
       /// 게임 오브젝트를 비동기로 가져옵니다.
       /// </summary>
       // ------------------------------------------------------------
-      public Awaitable<GameObject> AcquireAsync();
+      public Awaitable<GameObject> AcquireAsync(bool worldPositionStays = true);
+
+      // ------------------------------------------------------------
+      /// <summary>
+      /// 게임 오브젝트를 반환합니다.
+      /// </summary>
+      // ------------------------------------------------------------
+      public void Release(GameObject go, bool worldPositionStays = true);
 
    #endregion
 

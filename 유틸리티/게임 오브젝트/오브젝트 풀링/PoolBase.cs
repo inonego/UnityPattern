@@ -32,9 +32,6 @@ namespace inonego.Pool
         // ------------------------------------------------------------
         protected HashSet<T> acquired = new();
         public IReadOnlyCollection<T> Acquired => acquired;
-        
-        protected virtual void OnRelease(T item) {}
-        protected virtual void OnAcquire(T item) {}
 
     #endregion
 
@@ -51,12 +48,17 @@ namespace inonego.Pool
             return released.Contains(item);
         }
 
-        public T Acquire()
+        public virtual T Acquire()
         {
             return AcquireInternal();
         }
 
-        public void Release(T item, bool pushToReleased = true)
+        public virtual async Awaitable<T> AcquireAsync()
+        {
+            return await AcquireInternalAsync();
+        }
+
+        public virtual void Release(T item, bool pushToReleased = true)
         {
             if (item == null)
             {
@@ -81,7 +83,12 @@ namespace inonego.Pool
             acquired.Clear();
         }
 
-        public void MoveAcquiredOneTo(PoolBase<T> other, T item)
+        // ------------------------------------------------------------
+        /// <summary>
+        /// Acquired된 아이템을 다른 풀의 Acquired로 이동합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public virtual void MoveAcquiredOneTo(IPool<T> other, T item)
         {
             if (other == null || item == null)
             {
@@ -100,7 +107,13 @@ namespace inonego.Pool
             other.AcquireInternal(item);
         }
 
-        public void MoveReleasedOneTo(PoolBase<T> other)
+        // ----------------------------------------------------------------------
+        /// <summary>
+        /// <br/>Released된 아이템을 다른 풀의 Released로 이동합니다.
+        /// <br/>풀에 남아있는 오브젝트가 없으면 새로운 오브젝트를 생성하여 이동합니다.
+        /// </summary>
+        // ----------------------------------------------------------------------
+        public virtual void MoveReleasedOneTo(IPool<T> other)
         {
             if (other == null)
             {
@@ -123,7 +136,7 @@ namespace inonego.Pool
         /// 오브젝트를 풀에 추가합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void PushToReleased(T item)
+        public virtual void PushToReleased(T item)
         {
             if (item == null)
             {
@@ -141,9 +154,7 @@ namespace inonego.Pool
                 throw new Exception($"풀에 이미 존재하는 아이템을 추가하려고 했습니다.");
             }
 
-            released.Enqueue(item);
-
-            OnRelease(item);
+            ReleaseInternal(item, removeFromAcquired: false);
         }
 
         // -------------------------------------------------------------------------
@@ -152,7 +163,7 @@ namespace inonego.Pool
         /// <br/>풀에 남아있는 오브젝트가 없으면 새로운 오브젝트를 생성하여 반환합니다.
         /// </summary>
         // -------------------------------------------------------------------------
-        public T PopFromReleased()
+        public virtual T PopFromReleased()
         {
             T item;
 
@@ -177,13 +188,8 @@ namespace inonego.Pool
         /// <br/>풀에 남아있는 오브젝트가 없으면 새로운 오브젝트를 생성하여 반환합니다.
         /// </summary>
         // -------------------------------------------------------------------------
-        public async Awaitable<T> PopFromReleasedAsync(Func<Awaitable<T>> acquireNewAsyncFunc)
+        public virtual async Awaitable<T> PopFromReleasedAsync()
         {
-            if (acquireNewAsyncFunc == null)
-            {
-                throw new ArgumentNullException();
-            }
-
             T item;
 
             // 풀에 남아있는 오브젝트가 있는 경우
@@ -195,7 +201,7 @@ namespace inonego.Pool
             else
             {
                 // 새로운 오브젝트를 비동기로 생성합니다.
-                item = await acquireNewAsyncFunc();
+                item = await AcquireNewAsync();
             }
 
             return item;
@@ -212,6 +218,13 @@ namespace inonego.Pool
         // ------------------------------------------------------------
         protected abstract T AcquireNew();
 
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 새로운 오브젝트를 비동기로 생성합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        protected abstract Awaitable<T> AcquireNewAsync();
+
         protected T AcquireInternal()
         {
             T item = PopFromReleased();
@@ -219,21 +232,19 @@ namespace inonego.Pool
             return item;
         }
 
-        protected async Awaitable<T> AcquireInternalAsync(Func<Awaitable<T>> acquireNewAsyncFunc)
+        protected async Awaitable<T> AcquireInternalAsync()
         {
-            T item = await PopFromReleasedAsync(acquireNewAsyncFunc);
+            T item = await PopFromReleasedAsync();
             AcquireInternal(item);
             return item;
         }
 
-        protected void AcquireInternal(T item)
+        protected virtual void AcquireInternal(T item)
         {
             acquired.Add(item);
-            
-            OnAcquire(item);
         }
 
-        protected void ReleaseInternal(T item, bool removeFromAcquired = true, bool pushToReleased = true)
+        protected virtual void ReleaseInternal(T item, bool removeFromAcquired = true, bool pushToReleased = true)
         {
             if (removeFromAcquired)
             {
@@ -246,8 +257,15 @@ namespace inonego.Pool
                 // 풀에 남아있는 오브젝트 목록에 추가합니다.
                 released.Enqueue(item);
             }
+        }
 
-            OnRelease(item);
+    #endregion
+
+    #region IPool<T> 구현
+
+        void IPool<T>.AcquireInternal(T item)
+        {
+            AcquireInternal(item);
         }
 
     #endregion

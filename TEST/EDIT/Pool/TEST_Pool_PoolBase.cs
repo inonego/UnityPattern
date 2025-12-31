@@ -1,6 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 using UnityEngine;
 
@@ -352,6 +352,11 @@ public class TEST_Pool_PoolBase
         {
             return new TestPoolItem();
         }
+
+        protected override async Awaitable<TestPoolItem> AcquireNewAsync()
+        {
+            return await Task.FromResult(new TestPoolItem());
+        }
     }
 
     // ------------------------------------------------------------
@@ -369,14 +374,21 @@ public class TEST_Pool_PoolBase
             return new TestPoolItem();
         }
 
-        protected override void OnAcquire(TestPoolItem item)
+        protected override async Awaitable<TestPoolItem> AcquireNewAsync()
         {
+            return await Task.FromResult(new TestPoolItem());
+        }
+
+        protected override void AcquireInternal(TestPoolItem item)
+        {
+            base.AcquireInternal(item);
             AcquireCallCount++;
             item.Value = 100;
         }
 
-        protected override void OnRelease(TestPoolItem item)
+        protected override void ReleaseInternal(TestPoolItem item, bool removeFromAcquired = true, bool pushToReleased = true)
         {
+            base.ReleaseInternal(item, removeFromAcquired, pushToReleased);
             ReleaseCallCount++;
             item.Value = 0;
         }

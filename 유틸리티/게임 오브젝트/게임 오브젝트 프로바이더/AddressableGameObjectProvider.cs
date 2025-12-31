@@ -46,20 +46,6 @@ namespace inonego
       [SerializeField]
       private Transform parent = null;
 
-      // ------------------------------------------------------------
-      /// <summary>
-      /// 게임 오브젝트를 생성할 위치를 유지할지에 대한 여부입니다.
-      /// </summary>
-      // ------------------------------------------------------------
-      public bool WorldPositionStays
-      {
-         get => worldPositionStays;
-         set => worldPositionStays = value;
-      }
-
-      [SerializeField]
-      private bool worldPositionStays = false;
-
    #endregion
 
    #region 메서드
@@ -69,21 +55,35 @@ namespace inonego
       /// 게임 오브젝트를 가져옵니다.
       /// </summary>
       // ------------------------------------------------------------
-      public GameObject Acquire()
+      public GameObject Acquire(bool worldPositionStays = true)
       {
          if (assetReference == null)
          {
             throw new NullReferenceException("AssetReference가 설정되지 않았습니다.");
          }
 
-         AsyncOperationHandle<GameObject> handle = assetReference.InstantiateAsync();
+         AsyncOperationHandle<GameObject> handle = assetReference.InstantiateAsync(parent, worldPositionStays);
 
          var instance = handle.WaitForCompletion();
 
-         if (instance != null && parent != null)
+         return instance;
+      }
+
+      // ------------------------------------------------------------
+      /// <summary>
+      /// 게임 오브젝트를 비동기로 가져옵니다.
+      /// </summary>
+      // ------------------------------------------------------------
+      public async Awaitable<GameObject> AcquireAsync(bool worldPositionStays = true)
+      {
+         if (assetReference == null)
          {
-            instance.transform.SetParent(parent, worldPositionStays);
+            throw new NullReferenceException("AssetReference가 설정되지 않았습니다.");
          }
+
+         AsyncOperationHandle<GameObject> handle = assetReference.InstantiateAsync(parent, worldPositionStays);
+         
+         var instance = await handle.Task;
 
          return instance;
       }
@@ -93,38 +93,14 @@ namespace inonego
       /// 게임 오브젝트를 반환합니다.
       /// </summary>
       // ------------------------------------------------------------
-      public void Release(GameObject go)
+      public void Release(GameObject go, bool worldPositionStays = true)
       {
          if (go != null)
          {
             Addressables.ReleaseInstance(go);
          }
       }
-
-      // ------------------------------------------------------------
-      /// <summary>
-      /// 게임 오브젝트를 비동기로 가져옵니다.
-      /// </summary>
-      // ------------------------------------------------------------
-      public async Awaitable<GameObject> AcquireAsync()
-      {
-         if (assetReference == null)
-         {
-            throw new NullReferenceException("AssetReference가 설정되지 않았습니다.");
-         }
-
-         AsyncOperationHandle<GameObject> handle = assetReference.InstantiateAsync();
-         
-         var instance = await handle.Task;
-
-         if (instance != null && parent != null)
-         {
-            instance.transform.SetParent(parent, worldPositionStays);
-         }
-
-         return instance;
-      }
-
+      
    #endregion
 
    }

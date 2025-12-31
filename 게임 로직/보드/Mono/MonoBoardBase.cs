@@ -175,7 +175,7 @@ namespace inonego
             // 타일이 배치되어 있지 않고 배치할 수 있는 경우 타일을 배치합니다.
             if (!isPlaced && canPlace)
             {
-                var lTile = TileProvider.Acquire();
+                var lTile = TileProvider.Acquire(worldPositionStays: false);
 
                 lTileMap[vector] = lTile;
 

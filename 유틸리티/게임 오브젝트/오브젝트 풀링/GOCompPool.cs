@@ -13,7 +13,7 @@ namespace inonego.Pool
     /// </summary>
     // ===============================================================================
     [Serializable]
-    public class GOCompPool<T> : PoolBase<T>, IGOCompPool where T : Component
+    public class GOCompPool<T> : PoolBase<T>, IGOCompPool<T> where T : Component
     {
 
     #region 필드
@@ -30,17 +30,18 @@ namespace inonego.Pool
             set => pool = value;
         }
 
-        public Transform Parent 
-        { 
+        public Transform Parent
+        {
             get => gameObjectProvider.Parent;
             set => gameObjectProvider.Parent = value;
         }
 
-        public bool WorldPositionStays
-        { 
-            get => gameObjectProvider.WorldPositionStays;
-            set => gameObjectProvider.WorldPositionStays = value;
-        }
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 다음 Acquire/Release 시 적용할 위치 유지 여부 플래그입니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        protected bool nextWorldPositionStays = true;
 
     #endregion
 
@@ -48,7 +49,7 @@ namespace inonego.Pool
 
         public GOCompPool() : base() {}
 
-        public GOCompPool(IGameObjectProvider gameObjectProvider) : base() 
+        public GOCompPool(IGameObjectProvider gameObjectProvider) : base()
         {
             if (gameObjectProvider == null)
             {
@@ -62,6 +63,11 @@ namespace inonego.Pool
 
     #region PoolBase 오버라이드
 
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 새로운 컴포넌트를 생성합니다.
+        /// </summary>
+        // ------------------------------------------------------------
         protected override T AcquireNew()
         {
             if (GameObjectProvider == null)
@@ -80,7 +86,12 @@ namespace inonego.Pool
             return comp;
         }
 
-        protected async Awaitable<T> AcquireNewAsync()
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 새로운 컴포넌트를 비동기로 생성합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        protected override async Awaitable<T> AcquireNewAsync()
         {
             if (GameObjectProvider == null)
             {
@@ -89,77 +100,249 @@ namespace inonego.Pool
 
             var gameObject = await GameObjectProvider.AcquireAsync();
             var comp = gameObject.GetComponent<T>();
-            
+
             if (comp == null)
             {
                 throw new Exception($"게임 오브젝트 '{gameObject.name}'에서 컴포넌트 '{typeof(T).Name}'을(를) 찾을 수 없습니다.");
             }
-            
+
             return comp;
         }
-        
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 풀에서 컴포넌트를 가져옵니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public override T Acquire() 
+        {
+            return Acquire(worldPositionStays: true);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 풀에서 컴포넌트를 가져옵니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public T Acquire(bool worldPositionStays)
+        {
+            nextWorldPositionStays = worldPositionStays;
+            return base.Acquire();
+        }
+
         // ------------------------------------------------------------
         /// <summary>
         /// 풀에서 컴포넌트를 비동기로 가져옵니다.
         /// </summary>
         // ------------------------------------------------------------
-        public async Awaitable<T> AcquireAsync()
+        public override async Awaitable<T> AcquireAsync() 
         {
-            return await AcquireInternalAsync(AcquireNewAsync);
+            return await AcquireAsync(worldPositionStays: true);
         }
 
-        protected override void OnAcquire(T item)
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 풀에서 컴포넌트를 비동기로 가져옵니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public async Awaitable<T> AcquireAsync(bool worldPositionStays)
         {
-            var gameObject = item.gameObject;
-
-            if (gameObject.transform.parent != Parent)
-            {
-                gameObject.transform.SetParent(Parent, WorldPositionStays);
-            }
-
-            gameObject.SetActive(true);
+            return await AcquireInternalAsync(worldPositionStays);
         }
 
-        protected override void OnRelease(T item)
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 풀에 컴포넌트를 반환합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public override void Release(T item, bool pushToReleased = true) 
         {
-            var gameObject = item.gameObject;
+            Release(item, pushToReleased, worldPositionStays: true);
+        }
 
-            if (gameObject.transform.parent != Pool)
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 풀에 컴포넌트를 반환합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void Release(T item, bool pushToReleased = true, bool worldPositionStays = true)
+        {
+            nextWorldPositionStays = worldPositionStays;
+            base.Release(item, pushToReleased);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 풀에 이미 존재하는 아이템을 추가합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public override void PushToReleased(T item) 
+        {
+            PushToReleased(item, worldPositionStays: true);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 풀에 이미 존재하는 아이템을 추가합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void PushToReleased(T item, bool worldPositionStays)
+        {
+            nextWorldPositionStays = worldPositionStays;
+            base.PushToReleased(item);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// Acquired된 아이템을 다른 풀의 Acquired로 이동합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public override void MoveAcquiredOneTo(IPool<T> other, T item) 
+        {
+            MoveAcquiredOneTo(other, item, worldPositionStays: true);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// Acquired된 아이템을 다른 풀의 Acquired로 이동합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void MoveAcquiredOneTo(IPool<T> other, T item, bool worldPositionStays)
+        {
+            if (other is GOCompPool<T> otherGoPool)
             {
-                gameObject.transform.SetParent(Pool, WorldPositionStays);
+                otherGoPool.nextWorldPositionStays = worldPositionStays;
+            }
+            
+            nextWorldPositionStays = worldPositionStays;
+            base.MoveAcquiredOneTo(other, item);
+        }
+
+        // ----------------------------------------------------------------------
+        /// <summary>
+        /// <br/>Released된 아이템을 다른 풀의 Released로 이동합니다.
+        /// <br/>풀에 남아있는 오브젝트가 없으면 새로운 오브젝트를 생성하여 이동합니다.
+        /// </summary>
+        // ----------------------------------------------------------------------
+        public override void MoveReleasedOneTo(IPool<T> other) 
+        {
+            MoveReleasedOneTo(other, worldPositionStays: true);
+        }
+
+        // ----------------------------------------------------------------------
+        /// <summary>
+        /// <br/>Released된 아이템을 다른 풀의 Released로 이동합니다.
+        /// <br/>풀에 남아있는 오브젝트가 없으면 새로운 오브젝트를 생성하여 이동합니다.
+        /// </summary>
+        // ----------------------------------------------------------------------
+        public void MoveReleasedOneTo(IPool<T> other, bool worldPositionStays)
+        {
+            if (other is GOCompPool<T> otherGoPool)
+            {
+                otherGoPool.nextWorldPositionStays = worldPositionStays;
             }
 
-            gameObject.SetActive(false);
+            nextWorldPositionStays = worldPositionStays;
+            base.MoveReleasedOneTo(other);
+        }
+
+    #endregion
+
+    #region 내부 처리
+    
+        protected async Awaitable<T> AcquireInternalAsync(bool worldPositionStays)
+        {
+            T item = await PopFromReleasedAsync();
+            AcquireInternal(item, worldPositionStays);
+            return item;
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 아이템을 풀에서 가져왔을 때의 내부 처리입니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        protected override void AcquireInternal(T item)
+        {
+            AcquireInternal(item, nextWorldPositionStays);
+
+            // 플래그 초기화
+            nextWorldPositionStays = true;
+        }
+
+        protected void AcquireInternal(T item, bool worldPositionStays)
+        {
+            base.AcquireInternal(item);
+
+            if (item.transform.parent != Parent)
+            {
+                item.transform.SetParent(Parent, worldPositionStays);
+            }
+
+            item.gameObject.SetActive(true);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 아이템을 풀에 반환했을 때의 내부 처리입니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        protected override void ReleaseInternal(T item, bool removeFromAcquired = true, bool pushToReleased = true)
+        {
+            base.ReleaseInternal(item, removeFromAcquired, pushToReleased);
+
+            if (item.transform.parent != Pool)
+            {
+                item.transform.SetParent(Pool, nextWorldPositionStays);
+            }
+
+            item.gameObject.SetActive(false);
+
+            // 플래그 초기화
+            nextWorldPositionStays = true;
         }
 
     #endregion
 
     #region IGameObjectProvider 구현
 
-        GameObject IGameObjectProvider.Acquire()
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 게임 오브젝트를 가져옵니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        GameObject IGameObjectProvider.Acquire(bool worldPositionStays)
         {
-            var comp = Acquire();
-
+            var comp = Acquire(worldPositionStays);
             return comp.gameObject;
         }
 
-        async Awaitable<GameObject> IGameObjectProvider.AcquireAsync()
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 게임 오브젝트를 비동기로 가져옵니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        async Awaitable<GameObject> IGameObjectProvider.AcquireAsync(bool worldPositionStays)
         {
-            var comp = await AcquireAsync();
-
+            var comp = await AcquireAsync(worldPositionStays);
             return comp.gameObject;
         }
 
-        void IGameObjectProvider.Release(GameObject go)
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 게임 오브젝트를 반환합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        void IGameObjectProvider.Release(GameObject go, bool worldPositionStays)
         {
             if (go == null)
             {
                 throw new ArgumentNullException("타겟이 null입니다.");
             }
-            
+
             if (go.TryGetComponent(out T comp))
             {
-                Release(comp);
+                Release(comp, true, worldPositionStays);
             }
         }
 

@@ -57,7 +57,7 @@ namespace inonego.UI
     [RequireComponent(typeof(CanvasGroup))]
     [RequireComponent(typeof(RectTransform))]
     [DisallowMultipleComponent]
-    public class DraggableUI : MonoBehaviour, IInitializePotentialDragHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+    public class DraggableUI : MonoBehaviour, IPointerDownHandler, IInitializePotentialDragHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
     {
 
     #region 정적 관리
@@ -100,6 +100,9 @@ namespace inonego.UI
         public Vector2? Offset => offset;
         
         private bool originalBlocksRaycasts = true;
+
+        private Vector2? beginOrigin = null;
+        private Vector2? beginOffset = null;
 
     #endregion
 
@@ -248,12 +251,24 @@ namespace inonego.UI
             // ------------------------------------------------------------
             // 드래그 정보 설정
             // ------------------------------------------------------------
-            offset = rectTransform.anchoredPosition - localPoint;
-            origin = rectTransform.anchoredPosition;
+            offset = beginOffset;
+            origin = beginOrigin;
+
+            beginOffset = null;
+            beginOrigin = null;
 
             current = eventData;
             
             eventData.pointerDrag = gameObject;
+
+            // ------------------------------------------------------------
+            // 드래그 시작 시점에 즉시 위치를 마우스 위치 + 오프셋으로 이동시켜 
+            // Threshold로 인한 지연을 보정합니다.
+            // ------------------------------------------------------------
+            if (CanMove)
+            {
+                rectTransform.anchoredPosition = CalculateTarget(localPoint);
+            }
 
             // ------------------------------------------------------------
             // 드래그 이벤트 발생
@@ -346,17 +361,31 @@ namespace inonego.UI
         /// 드래그 도중에 부모가 변경된 경우 호출해야 합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public void RefreshDragOffset()
+        public void RefreshDragOriginAndOffset()
         {
             if (!IsDragging) return;
 
             Vector2 localPoint = ScreenToLocalPoint(current);
+
             offset = rectTransform.anchoredPosition - localPoint;
+            origin = rectTransform.anchoredPosition;
         }
 
     #endregion
 
     #region 인터페이스 구현
+
+        void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
+        {
+            // 드래그가 되기 이전 마우스 클릭되었을때 오프셋과 원점을 미리 계산합니다.
+            Vector2 localPoint = ScreenToLocalPoint(eventData);
+
+            // ------------------------------------------------------------
+            // 드래그 정보 설정
+            // ------------------------------------------------------------
+            beginOffset = rectTransform.anchoredPosition - localPoint;
+            beginOrigin = rectTransform.anchoredPosition;
+        }
 
         void IInitializePotentialDragHandler.OnInitializePotentialDrag(PointerEventData eventData)
         {

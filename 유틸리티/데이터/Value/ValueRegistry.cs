@@ -19,10 +19,12 @@ namespace inonego
 
     #region 필드
 
+        [SerializeField] private XDictionary_VV<string, string> valSs = new();
         [SerializeField] private XDictionary_VV<string, int> valIs = new();
         [SerializeField] private XDictionary_VV<string, float> valFs = new();
         [SerializeField] private XHashSet_V<string> valFlags = new();    
 
+        public IReadOnlyDictionary<string, string> ValSs => valSs;
         public IReadOnlyDictionary<string, int> ValIs => valIs;
         public IReadOnlyDictionary<string, float> ValFs => valFs;
         public IReadOnlyCollection<string> ValFlags => valFlags;
@@ -37,7 +39,6 @@ namespace inonego
         /// </summary>
         // ------------------------------------------------------------
         private bool Has<T>(XDictionary_VV<string, T> dictionary, string key)
-        where T : struct
         {
             return dictionary.ContainsKey(key);
         }
@@ -47,7 +48,7 @@ namespace inonego
         /// 키가 존재하는지 확인합니다.
         /// </summary>
         // ------------------------------------------------------------
-        public bool Has(string key) => HasI(key) || HasF(key) || HasFlag(key);
+        public bool Has(string key) => HasS(key) || HasI(key) || HasF(key) || HasFlag(key);
 
         // ------------------------------------------------------------
         /// <summary>
@@ -55,7 +56,6 @@ namespace inonego
         /// </summary>
         // ------------------------------------------------------------
         private T Set<T>(XDictionary_VV<string, T> dictionary, string key, T value)
-        where T : struct
         {
             if (Has(dictionary, key))
             {
@@ -81,7 +81,7 @@ namespace inonego
         // ------------------------------------------------------------
         public bool Remove(string key)
         {
-            return valIs.Remove(key) || valFs.Remove(key) || valFlags.Remove(key);
+            return valSs.Remove(key) || valIs.Remove(key) || valFs.Remove(key) || valFlags.Remove(key);
         }
 
         // ------------------------------------------------------------
@@ -91,10 +91,36 @@ namespace inonego
         // ------------------------------------------------------------
         public void Clear()
         {
+            valSs.Clear();
             valIs.Clear();
             valFs.Clear();
             valFlags.Clear();
         }
+
+    #endregion
+
+    #region ValS Operator
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 특정 키의 값(string)이 존재하는지 확인합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public bool HasS(string key) => Has(valSs, key);
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 특정 키의 값(string)을 가져옵니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public string GetS(string key, string fallbackValue = "") => HasS(key) ? valSs[key] : fallbackValue;
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 특정 키에 값(string)을 설정합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public string SetS(string key, string value) => Set(valSs, key, value);
 
     #endregion
 

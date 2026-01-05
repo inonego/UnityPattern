@@ -284,6 +284,11 @@ namespace inonego
         {
             Clear();
 
+            foreach (var (key, value) in source.valSs)
+            {
+                valSs.Add(key, value);
+            }
+
             foreach (var (key, value) in source.valIs)
             {
                 valIs.Add(key, value);

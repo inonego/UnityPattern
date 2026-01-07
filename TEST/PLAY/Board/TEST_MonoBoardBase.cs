@@ -64,10 +64,17 @@ public class TEST_MonoBoardBase
 
     // ------------------------------------------------------------
     /// <summary>
+    /// 테스트용 타일입니다.
+    /// </summary>
+    // ------------------------------------------------------------
+    public class TestMonoTile : MonoBehaviour { }
+
+    // ------------------------------------------------------------
+    /// <summary>
     /// 테스트용 MonoBoardBase 구현체입니다.
     /// </summary>
     // ------------------------------------------------------------
-    public class TestMonoBoard2D : MonoBoardBase<Board2D<int, TestSpace, TestPiece>, Vector2Int, int, TestSpace, TestPiece>
+    public class TestMonoBoard2D : MonoBoardBase<Board2D<int, TestSpace, TestPiece>, Vector2Int, int, TestSpace, TestPiece, TestMonoTile>
     {
         [SerializeField]
         private float lTileSize = 1f;
@@ -102,6 +109,7 @@ public class TEST_MonoBoardBase
     {
         // 테스트용 프리팹 생성
         var prefab = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        prefab.AddComponent<TestMonoTile>();
 
         prefab.name = "TilePrefab";
         prefab.transform.localScale = Vector3.one * 0.9f;

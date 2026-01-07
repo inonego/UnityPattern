@@ -16,7 +16,6 @@ namespace inonego
     // ============================================================
     [Serializable]
     public class MValue<T> : Value<T>, IReadOnlyMValue<T>, IDeepCloneable<MValue<T>>
-    where T : struct
     {
 
     #region 필드
@@ -132,6 +131,17 @@ namespace inonego
             modifiers.Add(key, modifier, order);
 
             Refresh(invokeEvent);
+        }
+
+        // ------------------------------------------------------------
+        /// <summary>
+        /// 수정자를 추가합니다.
+        /// </summary>
+        // ------------------------------------------------------------
+        public void AddModifier<TModifier>(TModifier modifier, int order = 0, bool invokeEvent = true)
+        where TModifier : IModifier<T>, IKeyable<string>
+        {
+            AddModifier(modifier.Key, modifier, order, invokeEvent);
         }
 
         // ------------------------------------------------------------

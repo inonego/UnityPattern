@@ -8,6 +8,8 @@ namespace inonego
 {
     public static class CollectionUtility
     {
+        public static bool CheckInRange<T>(this IReadOnlyList<T> list, int index) => 0 <= index && index < list.Count;
+        
         public static void ClearAndAddRange<T>(this List<T> list, IEnumerable<T> collection)
         {
             list.Clear();

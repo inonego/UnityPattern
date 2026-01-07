@@ -12,7 +12,6 @@ namespace inonego
     /// </summary>
     // =================================================================
     public interface IReadOnlyMValue<T> : IReadOnlyValue<T>
-    where T : struct
     {
         // ------------------------------------------------------------
         /// <summary>

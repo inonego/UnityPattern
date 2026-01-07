@@ -7,7 +7,7 @@ namespace inonego.Modifier
     /// 값을 수정하는 수정자의 인터페이스입니다.
     /// </summary>
     // ============================================================
-    public interface IModifier<T> : IDeepCloneable<IModifier<T>> where T : struct
+    public interface IModifier<T> : IDeepCloneable<IModifier<T>>
     {
         // ------------------------------------------------------------
         /// <summary>

@@ -1,0 +1,34 @@
+---@meta
+
+---@class (exact) ValueRegistry
+---
+---@field Has fun(self, key: string): boolean
+---@field Remove fun(self, key: string): boolean
+---@field Clear fun(self)
+---
+---@field HasS fun(self, key: string): boolean
+---@field GetS fun(self, key: string, fallbackValue?: string): string
+---@field SetS fun(self, key: string, value: string): string
+---
+---@field HasI fun(self, key: string): boolean
+---@field GetI fun(self, key: string, fallbackValue?: integer): integer
+---@field SetI fun(self, key: string, value: integer): integer
+---@field AddI fun(self, key: string, value: integer, fallbackValue?: integer): integer
+---@field SubI fun(self, key: string, value: integer, fallbackValue?: integer): integer
+---@field MulI fun(self, key: string, value: integer, fallbackValue?: integer): integer
+---@field DivI fun(self, key: string, value: integer, fallbackValue?: integer): integer
+---@field MaxI fun(self, key: string, value: integer, fallbackValue?: integer): integer
+---@field MinI fun(self, key: string, value: integer, fallbackValue?: integer): integer
+---
+---@field HasF fun(self, key: string): boolean
+---@field GetF fun(self, key: string, fallbackValue?: number): number
+---@field SetF fun(self, key: string, value: number): number
+---@field AddF fun(self, key: string, value: number, fallbackValue?: number): number
+---@field SubF fun(self, key: string, value: number, fallbackValue?: number): number
+---@field MulF fun(self, key: string, value: number, fallbackValue?: number): number
+---@field DivF fun(self, key: string, value: number, fallbackValue?: number): number
+---@field MaxF fun(self, key: string, value: number, fallbackValue?: number): number
+---@field MinF fun(self, key: string, value: number, fallbackValue?: number): number
+---
+---@field HasFlag fun(self, key: string): boolean
+---@field SetFlag fun(self, key: string)

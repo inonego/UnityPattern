@@ -12,11 +12,12 @@ namespace inonego
     /// </summary>
     // --------------------------------------------------------------------------------
     [Serializable]
-    public abstract class MonoBoardBase<TBoard, TVector, TIndex, TSpace, TPlaceable> : MonoBehaviour, IMonoBoard<TBoard, TVector, TIndex, TSpace, TPlaceable>
+    public abstract class MonoBoardBase<TBoard, TVector, TIndex, TSpace, TPlaceable, TMonoTile> : MonoBehaviour, IMonoBoard<TBoard, TVector, TIndex, TSpace, TPlaceable, TMonoTile>
     where TBoard : BoardBase<TVector, TIndex, TSpace, TPlaceable>
     where TVector : struct where TIndex : struct
     where TSpace : BoardSpaceBase<TIndex, TPlaceable>, new()
     where TPlaceable : class
+    where TMonoTile : MonoBehaviour
     {
 
     #region 원본 보드
@@ -30,8 +31,8 @@ namespace inonego
     #region 필드
 
         [NonSerialized]
-        protected Dictionary<TVector, GameObject> lTileMap = new();
-        public IReadOnlyDictionary<TVector, GameObject> TileMap => lTileMap;
+        protected Dictionary<TVector, TMonoTile> lTileMap = new();
+        public IReadOnlyDictionary<TVector, TMonoTile> TileMap => lTileMap;
 
         [SerializeReference]
         protected IGameObjectProvider lTileProvider = new PrefabGameObjectProvider();
@@ -175,13 +176,18 @@ namespace inonego
             // 타일이 배치되어 있지 않고 배치할 수 있는 경우 타일을 배치합니다.
             if (!isPlaced && canPlace)
             {
-                var lTile = TileProvider.Acquire(worldPositionStays: false);
+                var lTileGO = TileProvider.Acquire(worldPositionStays: false);
 
+                if (!lTileGO.TryGetComponent(out TMonoTile lTile))
+                {
+                    throw new NullReferenceException($"게임 오브젝트에서 타일 컴포넌트({lTileGO.name})를 찾을 수 없습니다.");
+                }
+                
                 lTileMap[vector] = lTile;
 
-                lTile.transform.localPosition = ToLocalPos(vector);
+                lTileGO.transform.localPosition = ToLocalPos(vector);
 
-                lTile.SetActive(true);
+                lTileGO.SetActive(true);
             }
         }
 
@@ -199,7 +205,7 @@ namespace inonego
         {
             if (lTileMap.TryGetValue(vector, out var lTile))
             {
-                TileProvider.Release(lTile);
+                TileProvider.Release(lTile.gameObject);
 
                 if (removeFromMap)
                 {
@@ -208,7 +214,7 @@ namespace inonego
 
                 lTile.transform.localPosition = Vector3.zero;
 
-                lTile.SetActive(false);
+                lTile.gameObject.SetActive(false);
             }
         }
 

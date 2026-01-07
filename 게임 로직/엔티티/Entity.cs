@@ -176,14 +176,30 @@ namespace inonego
 
     #region 메서드
 
-        public virtual void ApplyDamage(int damage, Entity source = null)
+        public virtual bool ApplyDamage(int damage, Entity source = null)
         {
+            if (damage < 0)
+            {
+                Debug.LogError("데미지 값이 0보다 작을 수 없습니다.");
+                return false;
+            }
+
             hp.ApplyDamage(damage);
+
+            return true;
         }
 
-        public virtual void ApplyHeal(int amount, Entity source = null)
+        public virtual bool ApplyHeal(int amount, Entity source = null)
         {
+            if (amount < 0)
+            {
+                Debug.LogError("힐 값이 0보다 작을 수 없습니다.");
+                return false;
+            }
+
             hp.ApplyHeal(amount);
+
+            return true;
         }
 
     #endregion

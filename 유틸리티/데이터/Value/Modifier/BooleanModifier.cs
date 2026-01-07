@@ -30,14 +30,22 @@ namespace inonego.Modifier
         public static BooleanModifier NOT => new BooleanModifier(BooleanOperation.XOR, true);
 
         [SerializeField]
-        private BooleanOperation operation;
-        public BooleanOperation Operation => operation;
+        protected BooleanOperation operation;
+        public virtual BooleanOperation Operation
+        {
+            get => operation;
+            set => operation = value;
+        }
 
         [SerializeField]
-        private bool value;
-        public bool Value => value;
+        protected bool value;
+        public virtual bool Value
+        {
+            get => value;
+            set => this.value = value;
+        }
 
-        private BooleanModifier() {}
+        public BooleanModifier() {}
 
         public BooleanModifier(BooleanOperation operation, bool value)
         {

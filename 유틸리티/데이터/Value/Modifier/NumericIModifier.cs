@@ -23,14 +23,22 @@ namespace inonego.Modifier
     public class NumericIModifier : IModifier<int>
     {
         [SerializeField]
-        private NumericIOperation operation;
-        public NumericIOperation Operation => operation;
+        protected NumericIOperation operation;
+        public virtual NumericIOperation Operation
+        {
+            get => operation;
+            set => operation = value;
+        }
 
         [SerializeField]
-        private int value;
-        public int Value => value;
+        protected int value;
+        public virtual int Value
+        {
+            get => value;
+            set => this.value = value;
+        }
 
-        private NumericIModifier() {}
+        public NumericIModifier() {}
 
         public NumericIModifier(NumericIOperation operation, int value)
         {

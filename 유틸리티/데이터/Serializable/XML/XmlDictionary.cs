@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Xml;
+using System.Xml.Schema;
 using System.Xml.Serialization;
 
 namespace inonego.Serializable.Xml
@@ -14,7 +15,7 @@ namespace inonego.Serializable.Xml
 
         public XmlDictionary() { }
 
-        public System.Xml.Schema.XmlSchema GetSchema() => null;
+        public XmlSchema GetSchema() => null;
 
         public void ReadXml(XmlReader reader)
         {

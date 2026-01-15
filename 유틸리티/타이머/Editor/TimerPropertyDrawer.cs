@@ -48,7 +48,7 @@ namespace inonego.Editor
             property.serializedObject.Update();
 
             // 리플렉션으로 실제 객체 가져오기
-            Timer timer = SerializedPropertyUtility.GetTargetObjectOfProperty(property) as Timer;
+            Timer timer = property.GetTargetObject() as Timer;
 
             if (timer == null)
             {

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace inonego
 {
-    public static class LayerMaskUtility
+    public static partial class Utility
     {
         // ------------------------------------------------------------
         /// <summary>

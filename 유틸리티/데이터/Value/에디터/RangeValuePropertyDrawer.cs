@@ -26,7 +26,7 @@ namespace inonego.Editor
             property.serializedObject.Update();
 
             // 리플렉션으로 실제 객체 가져오기
-            RangeValue<T> value = SerializedPropertyUtility.GetTargetObjectOfProperty(property) as RangeValue<T>;
+            RangeValue<T> value = property.GetTargetObject() as RangeValue<T>;
             
             if (value == null)
             {

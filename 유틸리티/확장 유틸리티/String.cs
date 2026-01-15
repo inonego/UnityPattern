@@ -5,7 +5,7 @@ using System.Text;
 
 namespace inonego
 {
-    public static class StringUtility
+    public static partial class Utility
     {
         // --------------------------------------------------------------------- 
         /// <summary>

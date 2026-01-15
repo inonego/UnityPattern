@@ -1,0 +1,22 @@
+#bootstrapper-header-ext {
+    background-color: rgba(51, 51, 51, 0.8);
+    padding: 6px 10px;
+    margin-bottom: 12px;
+    border-bottom-width: 1px;
+    border-bottom-color: #808080;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bootstrapper-status {
+    flex-grow: 1;
+    flex-shrink: 1;
+    color: #ffff00;
+    font-size: 10px;
+}
+
+.bootstrapper-button {
+    height: 18px;
+    font-size: 10px;
+}

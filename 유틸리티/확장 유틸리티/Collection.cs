@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace inonego
 {
-    public static class CollectionUtility
+    public static partial class Utility
     {
         public static bool CheckInRange<T>(this IReadOnlyList<T> list, int index) => 0 <= index && index < list.Count;
         

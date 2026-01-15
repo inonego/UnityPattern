@@ -4,6 +4,16 @@ using UnityEngine;
 
 namespace inonego.Serializable
 {
+    [AttributeUsage(AttributeTargets.Field, Inherited = true, AllowMultiple = false)]
+    public class XTypeFilterAttribute : PropertyAttribute
+    {
+        public Type BaseType;
+        public string Assembly;
+        public string Namespace;
+
+        public bool Group = true;
+    }
+
     // ========================================================================
     /// <summary>
     /// 직렬화 가능한 Type입니다.

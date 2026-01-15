@@ -33,8 +33,12 @@ namespace inonego.UI
         // ------------------------------------------------------------
         public float Ratio => (Value.Base - Value.Min) / (Value.Max - Value.Min);
 
+    #if DOTWEEN
+
         [Header("Animation")]
         [SerializeField] private TweenCurve changeCurve;
+
+    #endif
 
         [Header("UI")]
         [SerializeField] private Image ForeFillImage;

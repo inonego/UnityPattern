@@ -46,6 +46,8 @@ namespace inonego.Core.Bootstrapper
         private async void Awake()
         {
             await InitModules();
+
+            await Awaitable.NextFrameAsync();
             
             LoadInitScene();
         }
@@ -85,7 +87,6 @@ namespace inonego.Core.Bootstrapper
         {
             if (Application.isPlaying)
             {
-
                 var activeScene = SceneManager.GetActiveScene();
                     
             #if UNITY_EDITOR

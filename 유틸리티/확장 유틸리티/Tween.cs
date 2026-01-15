@@ -1,16 +1,11 @@
+#if DOTWEEN
+
 using System;
 
-#if DOTWEEN
 using DG.Tweening;
-#endif
 
 namespace inonego
 {
-    
-#if !DOTWEEN
-    public enum Ease { None }
-#endif
-
     [Serializable]
     public struct TweenInOutCurve
     {
@@ -41,3 +36,5 @@ namespace inonego
         }
     }
 }
+
+#endif

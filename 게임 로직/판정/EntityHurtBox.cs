@@ -6,5 +6,6 @@ namespace inonego
 {
     public class EntityHurtBox : MonoEntityBehaviour
     {
+        // NONE
     }
 }
